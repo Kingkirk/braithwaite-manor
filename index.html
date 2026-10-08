@@ -45,39 +45,20 @@
     .custom-scroll::-webkit-scrollbar { width: 6px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #bfa068; border-radius: 3px; }
   </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center">
 
-  <!-- ================= PASSWORT-TOR ================= -->
-  <div id="gate-container" class="w-full max-w-md parchment-sheet rounded-lg border-2 border-leather-800 p-8 shadow-2xl text-center space-y-5" style="display: block;">
-    <div class="text-western-brass font-vintage text-base font-bold">★ Braithwaite Manor ★</div>
-    <h2 class="font-title text-3xl font-bold text-leather-900 tracking-wider">Geschlossenes Kontorbuch</h2>
-    <p class="text-xs font-vintage text-leather-800/80">Bitte autorisiere dich mit dem Hof-Passwort, um Einsicht in die Bücher zu erhalten.</p>
-    
-    <div class="space-y-3 pt-2">
-      <input type="password" id="gate-pass" placeholder="Hof-Passwort..." onkeydown="if(event.key==='Enter') directUnlock()" class="w-full bg-parchment-50 border border-leather-800/40 p-2.5 text-center text-sm font-semibold rounded focus:outline-none tracking-widest">
-      <button type="button" onclick="directUnlock()" class="w-full bg-leather-900 hover:bg-leather-800 text-parchment-100 py-3 rounded font-title text-xs tracking-widest uppercase font-bold shadow-md cursor-pointer transition">
-        Kontorbuch aufschlagen
-      </button>
-      <div id="gate-error" class="text-xs text-red-700 font-bold" style="display: none;">Ungültiges Hof-Passwort! Zugang verwehrt.</div>
-    </div>
-  </div>
-
-  <!-- ================= HAUPT-APP ================= -->
-  <div id="app-container" class="w-full max-w-6xl parchment-sheet rounded-lg border border-leather-800 flex-col min-h-[850px] shadow-2xl" style="display: none;">
+  <div id="app-container" class="w-full max-w-6xl parchment-sheet rounded-lg border border-leather-800 flex flex-col min-h-[850px] shadow-2xl">
     
     <!-- Buchkopf -->
     <header class="border-b-2 border-leather-800/40 bg-parchment-200/60 px-6 py-6 relative">
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="text-left w-full md:w-1/4">
           <div class="text-western-brass font-vintage text-sm font-bold">★ Gegr. 1899 ★</div>
-          <div id="db-status-badge" class="inline-flex items-center gap-1.5 text-[11px] font-title px-2 py-0.5 rounded bg-parchment-300/80 border border-leather-800/20 text-leather-900 mt-1">
-            <span id="db-status-dot" class="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span id="db-status-text">Verbindung prüfen...</span>
+          <div id="sync-status" class="inline-flex items-center gap-1.5 text-[11px] font-title px-2 py-0.5 rounded bg-parchment-300/80 border border-leather-800/20 text-leather-900 mt-1">
+            <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+            <span id="sync-text">Live synchronisiert</span>
           </div>
-          <button onclick="logoutGate()" class="text-[11px] text-leather-800/60 hover:text-leather-950 underline font-title tracking-wider mt-1 block">🔒 Hof abriegeln</button>
         </div>
 
         <div class="text-center w-full md:w-1/2">
@@ -597,14 +578,34 @@
     </div>
   </div>
 
-  <!-- ================= LOGIK ================= -->
+  <!-- ================= DIREKTER SUPABASE REST-CLIENT ================= -->
   <script>
-    const HOF_PASS = "Gold";
-    const SUPABASE_URL = "https://gfurkudezjewwsnpyboo.supabase.co";
-    const SUPABASE_ANON = "sb_publishable_z3v_DSs_V4WJnwwZ4O-9RA_Gu1hDLCD";
+    const API_URL = "https://gfurkudezjewwsnpyboo.supabase.co/rest/v1";
+    const API_KEY = "sb_publishable_z3v_DSs_V4WJnwwZ4O-9RA_Gu1hDLCD";
 
-    let supabase = null;
-    let isCloudConnected = false;
+    // Direkte Fetch-Funktion (100% nativ, keine fehleranfälligen CDNs)
+    async function apiRequest(endpoint, method = 'GET', body = null) {
+      const headers = {
+        'apikey': API_KEY,
+        'Authorization': 'Bearer ' + API_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      };
+      const opt = { method, headers };
+      if (body) opt.body = JSON.stringify(body);
+      
+      try {
+        const res = await fetch(`${API_URL}/${endpoint}`, opt);
+        if (!res.ok) {
+          console.warn("API Request Failed:", res.status, await res.text());
+          return null;
+        }
+        return await res.json();
+      } catch (e) {
+        console.warn("Network Error:", e);
+        return null;
+      }
+    }
 
     let db = {
       categories: ["Ackerbau", "Brauerei", "Tabak"],
@@ -622,149 +623,55 @@
     let currentActiveOrder = null;
     let cashFilter = 'all';
 
-    function setDbStatus(connected, text) {
-      isCloudConnected = connected;
-      const dot = document.getElementById('db-status-dot');
-      const label = document.getElementById('db-status-text');
-      if (!dot || !label) return;
-      if (connected) {
-        dot.className = "w-2 h-2 rounded-full bg-emerald-600";
-        label.innerText = text || "Supabase: Verbunden";
-      } else {
-        dot.className = "w-2 h-2 rounded-full bg-red-600";
-        label.innerText = text || "Supabase: Getrennt";
-      }
-    }
-
-    function directUnlock() {
-      const input = document.getElementById('gate-pass');
-      const val = (input ? input.value : "").trim();
-
-      if (val.toLowerCase() === HOF_PASS.toLowerCase()) {
-        try { sessionStorage.setItem('bm_auth', 'true'); } catch(e){}
-        
-        document.getElementById('gate-error').style.display = 'none';
-        document.getElementById('gate-container').style.display = 'none';
-        
-        const app = document.getElementById('app-container');
-        app.style.display = 'flex';
-        
-        renderAll();
-        initSupabaseAndSync();
-      } else {
-        document.getElementById('gate-error').style.display = 'block';
-      }
-    }
-
-    function checkGate() {
-      let isAuth = false;
-      try { isAuth = (sessionStorage.getItem('bm_auth') === 'true'); } catch(e){}
-      
-      if (isAuth) {
-        document.getElementById('gate-container').style.display = 'none';
-        const app = document.getElementById('app-container');
-        app.style.display = 'flex';
-        renderAll();
-        initSupabaseAndSync();
-      }
-    }
-
-    function logoutGate() {
-      try { sessionStorage.removeItem('bm_auth'); } catch(e){}
-      location.reload();
-    }
-
-    function initSupabaseAndSync() {
-      try {
-        if (!supabase && window.supabase && typeof window.supabase.createClient === 'function') {
-          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-        }
-        if (supabase) {
-          fetchAllData();
-          subscribeRealtime();
-        } else {
-          setDbStatus(false, "Supabase Skript fehlt");
-        }
-      } catch (e) {
-        setDbStatus(false, "Verbindungsfehler");
-        console.warn("Supabase Init Error:", e);
-      }
-    }
-
+    // DATEN LADEN
     async function fetchAllData() {
-      if (!supabase) return;
-      try {
-        const [cats, prods, custs, st, ords, csh, nts, meta] = await Promise.all([
-          supabase.from('categories').select('*').order('name'),
-          supabase.from('products').select('*').order('name'),
-          supabase.from('customers').select('*').order('company'),
-          supabase.from('staff').select('*').order('name'),
-          supabase.from('orders').select('*').order('order_number', { ascending: false }),
-          supabase.from('cash_entries').select('*').order('id', { ascending: false }),
-          supabase.from('notes').select('*').order('id', { ascending: false }),
-          supabase.from('farm_meta').select('*')
-        ]);
+      const [cats, prods, custs, st, ords, csh, nts, meta] = await Promise.all([
+        apiRequest('categories?select=*&order=name.asc'),
+        apiRequest('products?select=*&order=name.asc'),
+        apiRequest('customers?select=*&order=company.asc'),
+        apiRequest('staff?select=*&order=name.asc'),
+        apiRequest('orders?select=*&order=order_number.desc'),
+        apiRequest('cash_entries?select=*&order=id.desc'),
+        apiRequest('notes?select=*&order=id.desc'),
+        apiRequest('farm_meta?select=*')
+      ]);
 
-        if (cats.error || prods.error || custs.error) {
-          console.error("Datenbank Berechtigungsfehler:", cats.error || prods.error);
-          setDbStatus(false, "Supabase: Rechte fehlen (SQL ausführen!)");
-          return;
-        }
-
-        setDbStatus(true, "Supabase: Verbunden");
-
-        if (cats.data && cats.data.length > 0) db.categories = cats.data.map(c => c.name);
-        if (prods.data) db.products = prods.data;
-        if (custs.data) db.customers = custs.data;
-        if (st.data) db.staff = st.data;
-        if (ords.data) {
-          db.orders = ords.data.map(o => ({
-            id: o.id,
-            orderNumber: o.order_number,
-            customer: o.customer,
-            contact: o.contact,
-            location: o.location,
-            telegram: o.telegram,
-            items: o.items_json || [],
-            deliveryMode: o.delivery_mode,
-            timeslot: o.timeslot,
-            staffName: o.staff_name,
-            price: Number(o.price || 0),
-            status: o.status
-          }));
-        }
-        if (csh.data) {
-          db.cash = csh.data.map(c => ({
-            id: c.id,
-            date: c.date,
-            desc: c.description,
-            type: c.type,
-            amount: Number(c.amount || 0)
-          }));
-        }
-        if (nts.data) db.notes = nts.data;
-
-        if (meta.data) {
-          const coachRow = meta.data.find(m => m.key === 'coach_away');
-          if (coachRow) db.coachAway = (coachRow.value === 'true');
-        }
-
-        renderAll();
-      } catch (err) {
-        setDbStatus(false, "Verbindung getrennt");
-        console.warn("Sync Fehler:", err);
+      if (cats && cats.length > 0) db.categories = cats.map(c => c.name);
+      if (prods) db.products = prods;
+      if (custs) db.customers = custs;
+      if (st) db.staff = st;
+      if (ords) {
+        db.orders = ords.map(o => ({
+          id: o.id,
+          orderNumber: o.order_number,
+          customer: o.customer,
+          contact: o.contact,
+          location: o.location,
+          telegram: o.telegram,
+          items: o.items_json || [],
+          deliveryMode: o.delivery_mode,
+          timeslot: o.timeslot,
+          staffName: o.staff_name,
+          price: Number(o.price || 0),
+          status: o.status
+        }));
       }
-    }
+      if (csh) {
+        db.cash = csh.map(c => ({
+          id: c.id,
+          date: c.date,
+          desc: c.description,
+          type: c.type,
+          amount: Number(c.amount || 0)
+        }));
+      }
+      if (nts) db.notes = nts;
+      if (meta) {
+        const row = meta.find(m => m.key === 'coach_away');
+        if (row) db.coachAway = (row.value === 'true');
+      }
 
-    function subscribeRealtime() {
-      if (!supabase) return;
-      try {
-        supabase.channel('farm_realtime')
-          .on('postgres_changes', { event: '*', schema: 'public' }, () => {
-            fetchAllData();
-          })
-          .subscribe();
-      } catch(e){}
+      renderAll();
     }
 
     // REITER
@@ -802,9 +709,7 @@
     async function toggleCoach() {
       db.coachAway = !db.coachAway;
       renderCoach();
-      if (supabase) {
-        await supabase.from('farm_meta').upsert({ key: 'coach_away', value: String(db.coachAway) });
-      }
+      await apiRequest('farm_meta?key=eq.coach_away', 'PATCH', { value: String(db.coachAway) });
     }
 
     function renderNotes() {
@@ -830,27 +735,16 @@
       const content = document.getElementById('note-content').value.trim();
       if (!title || !content) return alert('Bitte Titel und Inhalt angeben.');
       
-      if (supabase) {
-        const res = await supabase.from('notes').insert([{ title, content }]);
-        if (res.error) alert('Supabase Fehler: ' + res.error.message);
-        else fetchAllData();
-      } else {
-        db.notes.unshift({ id: Date.now(), title, content });
-        renderNotes();
-      }
+      await apiRequest('notes', 'POST', { title, content });
       closeModal('note-modal');
       document.getElementById('note-title').value = '';
       document.getElementById('note-content').value = '';
+      fetchAllData();
     }
 
     async function deleteNote(id) {
-      if (supabase) {
-        await supabase.from('notes').delete().eq('id', id);
-        fetchAllData();
-      } else {
-        db.notes = db.notes.filter(n => n.id !== id);
-        renderNotes();
-      }
+      await apiRequest(`notes?id=eq.${id}`, 'DELETE');
+      fetchAllData();
     }
 
     // AUFTRÄGE & ARCHIV
@@ -959,15 +853,10 @@
         else currentActiveOrder.status = 'In Arbeit';
       }
 
-      if (supabase) {
-        await supabase.from('orders').update({
-          items_json: currentActiveOrder.items,
-          status: currentActiveOrder.status
-        }).eq('id', currentActiveOrder.id);
-      } else {
-        renderOrders();
-        renderArchive();
-      }
+      await apiRequest(`orders?id=eq.${currentActiveOrder.id}`, 'PATCH', {
+        items_json: currentActiveOrder.items,
+        status: currentActiveOrder.status
+      });
 
       renderOdItems();
     }
@@ -999,51 +888,30 @@
       const oldStatus = currentActiveOrder.status;
 
       if (st === 'Erledigt' && oldStatus !== 'Erledigt') {
-        const cashObj = {
+        await apiRequest('cash_entries', 'POST', {
           date: new Date().toISOString().split('T')[0],
           description: `Bestellung (#${currentActiveOrder.orderNumber}) ${currentActiveOrder.customer}`,
           type: 'in',
           amount: currentActiveOrder.price
-        };
-        if (supabase) {
-          await supabase.from('cash_entries').insert([cashObj]);
-        } else {
-          db.cash.unshift({ id: Date.now(), ...cashObj, desc: cashObj.description });
-          renderTreasury();
-        }
+        });
       }
 
-      currentActiveOrder.deliveryMode = del;
-      currentActiveOrder.timeslot = ts;
-      currentActiveOrder.status = st;
-
-      if (supabase) {
-        await supabase.from('orders').update({
-          delivery_mode: del,
-          timeslot: ts,
-          status: st
-        }).eq('id', currentActiveOrder.id);
-        fetchAllData();
-      } else {
-        renderOrders();
-        renderArchive();
-      }
+      await apiRequest(`orders?id=eq.${currentActiveOrder.id}`, 'PATCH', {
+        delivery_mode: del,
+        timeslot: ts,
+        status: st
+      });
 
       closeModal('order-detail-modal');
+      fetchAllData();
     }
 
     async function deleteCurrentOrder() {
       if (!currentActiveOrder) return;
       if (confirm('Diesen Auftrag endgültig streichen?')) {
-        if (supabase) {
-          await supabase.from('orders').delete().eq('id', currentActiveOrder.id);
-          fetchAllData();
-        } else {
-          db.orders = db.orders.filter(o => o.id !== currentActiveOrder.id);
-          renderOrders();
-          renderArchive();
-        }
+        await apiRequest(`orders?id=eq.${currentActiveOrder.id}`, 'DELETE');
         closeModal('order-detail-modal');
+        fetchAllData();
       }
     }
 
@@ -1133,41 +1001,22 @@
 
       const payload = { name, category, yield_per_seed, cost, p_gewerbe, p_guenstig, p_normal, p_teuer };
 
-      if (supabase) {
-        let res;
-        if (id) {
-          res = await supabase.from('products').update(payload).eq('id', id);
-        } else {
-          res = await supabase.from('products').insert([payload]);
-        }
-        if (res.error) alert('Fehler beim Speichern in Supabase: ' + res.error.message);
-        else fetchAllData();
+      if (id) {
+        await apiRequest(`products?id=eq.${id}`, 'PATCH', payload);
       } else {
-        if (id) {
-          const item = db.products.find(x => x.id == id);
-          if (item) Object.assign(item, payload);
-        } else {
-          db.products.push({ id: Date.now(), ...payload });
-        }
-        renderProducts();
-        populatePosDropdowns();
+        await apiRequest('products', 'POST', payload);
       }
       closeModal('product-modal');
+      fetchAllData();
     }
 
     async function deleteCurrentProduct() {
       const id = document.getElementById('prod-id').value;
       if (!id) return;
       if (confirm('Dieses Produkt wirklich löschen?')) {
-        if (supabase) {
-          await supabase.from('products').delete().eq('id', id);
-          fetchAllData();
-        } else {
-          db.products = db.products.filter(p => p.id != id);
-          renderProducts();
-          populatePosDropdowns();
-        }
+        await apiRequest(`products?id=eq.${id}`, 'DELETE');
         closeModal('product-modal');
+        fetchAllData();
       }
     }
 
@@ -1244,33 +1093,19 @@
 
       if (!company || !contact) return alert('Bitte Firma und Kontaktperson angeben.');
 
-      const payload = { company, contact, location, telegram, default_tier };
-      if (supabase) {
-        const res = await supabase.from('customers').insert([payload]);
-        if (res.error) alert('Supabase Fehler: ' + res.error.message);
-        else fetchAllData();
-      } else {
-        db.customers.push({ id: Date.now(), ...payload });
-        renderCustomers();
-        populatePosDropdowns();
-      }
+      await apiRequest('customers', 'POST', { company, contact, location, telegram, default_tier });
       closeModal('customer-modal');
       document.getElementById('cust-company').value = '';
       document.getElementById('cust-contact').value = '';
       document.getElementById('cust-location').value = '';
       document.getElementById('cust-telegram').value = '';
+      fetchAllData();
     }
 
     async function deleteCustomer(id) {
       if (confirm('Diesen Kunden aus der Kartei entfernen?')) {
-        if (supabase) {
-          await supabase.from('customers').delete().eq('id', id);
-          fetchAllData();
-        } else {
-          db.customers = db.customers.filter(c => c.id !== id);
-          renderCustomers();
-          populatePosDropdowns();
-        }
+        await apiRequest(`customers?id=eq.${id}`, 'DELETE');
+        fetchAllData();
       }
     }
 
@@ -1382,20 +1217,12 @@
         status: 'Offen'
       };
 
-      if (supabase) {
-        const res = await supabase.from('orders').insert([payload]);
-        if (res.error) alert('Supabase Fehler: ' + res.error.message);
-        else fetchAllData();
-      } else {
-        db.orders.unshift({ id: Date.now(), orderNumber: nextNum, items: currentCart, staffName, price: total, status: 'Offen', ...payload });
-        renderOrders();
-        renderArchive();
-      }
-
+      await apiRequest('orders', 'POST', payload);
       currentCart = [];
       renderCart();
       document.getElementById('pos-timeslot').value = '';
       alert(`Auftrag #${nextNum} für ${cust.company} erfolgreich besiegelt!`);
+      fetchAllData();
     }
 
     // KASSENBUCH
@@ -1456,25 +1283,17 @@
       const desc = document.getElementById('cm-desc').value.trim();
       if (!desc || amount <= 0) return alert('Bitte Betrag und Verwendungszweck angeben.');
 
-      const payload = {
+      await apiRequest('cash_entries', 'POST', {
         date: new Date().toISOString().split('T')[0],
         description: desc,
         type: type,
         amount: amount
-      };
-
-      if (supabase) {
-        const res = await supabase.from('cash_entries').insert([payload]);
-        if (res.error) alert('Supabase Fehler: ' + res.error.message);
-        else fetchAllData();
-      } else {
-        db.cash.unshift({ id: Date.now(), desc, ...payload });
-        renderTreasury();
-      }
+      });
 
       closeModal('cash-modal');
       document.getElementById('cm-amount').value = '';
       document.getElementById('cm-desc').value = '';
+      fetchAllData();
     }
 
     async function editCashEntry(id) {
@@ -1485,31 +1304,17 @@
       const newAmt = prompt('Betrag anpassen ($):', entry.amount);
       if (newAmt === null) return;
 
-      const descVal = newDesc.trim() || entry.desc;
-      const amtVal = parseFloat(newAmt) || entry.amount;
-
-      if (supabase) {
-        await supabase.from('cash_entries').update({
-          description: descVal,
-          amount: amtVal
-        }).eq('id', id);
-        fetchAllData();
-      } else {
-        entry.desc = descVal;
-        entry.amount = amtVal;
-        renderTreasury();
-      }
+      await apiRequest(`cash_entries?id=eq.${id}`, 'PATCH', {
+        description: newDesc.trim() || entry.desc,
+        amount: parseFloat(newAmt) || entry.amount
+      });
+      fetchAllData();
     }
 
     async function deleteCashEntry(id) {
       if (confirm('Diese Buchung wirklich aus dem Kassenbuch löschen?')) {
-        if (supabase) {
-          await supabase.from('cash_entries').delete().eq('id', id);
-          fetchAllData();
-        } else {
-          db.cash = db.cash.filter(c => c.id !== id);
-          renderTreasury();
-        }
+        await apiRequest(`cash_entries?id=eq.${id}`, 'DELETE');
+        fetchAllData();
       }
     }
 
@@ -1543,33 +1348,19 @@
       const wage = document.getElementById('st-wage').value.trim() || 'Nach Absprache';
       if (!name || !role) return alert('Bitte Name und Rolle eintragen.');
 
-      const payload = { name, role, telegram, wage };
-      if (supabase) {
-        const res = await supabase.from('staff').insert([payload]);
-        if (res.error) alert('Supabase Fehler: ' + res.error.message);
-        else fetchAllData();
-      } else {
-        db.staff.push({ id: Date.now(), ...payload });
-        renderStaff();
-        populatePosDropdowns();
-      }
+      await apiRequest('staff', 'POST', { name, role, telegram, wage });
       closeModal('staff-modal');
       document.getElementById('st-name').value = '';
       document.getElementById('st-role').value = '';
       document.getElementById('st-telegram').value = '';
       document.getElementById('st-wage').value = '';
+      fetchAllData();
     }
 
     async function deleteStaff(id) {
       if (confirm('Mitarbeiter entlassen / löschen?')) {
-        if (supabase) {
-          await supabase.from('staff').delete().eq('id', id);
-          fetchAllData();
-        } else {
-          db.staff = db.staff.filter(s => s.id !== id);
-          renderStaff();
-          populatePosDropdowns();
-        }
+        await apiRequest(`staff?id=eq.${id}`, 'DELETE');
+        fetchAllData();
       }
     }
 
@@ -1600,26 +1391,15 @@
     async function addCategory() {
       const name = document.getElementById('new-cat-name').value.trim();
       if (!name) return alert('Name angeben.');
-      if (supabase) {
-        const res = await supabase.from('categories').insert([{ name }]);
-        if (res.error) alert('Supabase Fehler: ' + res.error.message);
-        else fetchAllData();
-      } else {
-        db.categories.push(name);
-        renderCategories();
-      }
+      await apiRequest('categories', 'POST', { name });
       document.getElementById('new-cat-name').value = '';
+      fetchAllData();
     }
 
     async function deleteCategory(name) {
       if (confirm(`Kategorie "${name}" wirklich löschen?`)) {
-        if (supabase) {
-          await supabase.from('categories').delete().eq('name', name);
-          fetchAllData();
-        } else {
-          db.categories = db.categories.filter(c => c !== name);
-          renderCategories();
-        }
+        await apiRequest(`categories?name=eq.${encodeURIComponent(name)}`, 'DELETE');
+        fetchAllData();
       }
     }
 
@@ -1637,6 +1417,7 @@
       renderStaff();
     }
 
+    // MODAL HELPER
     function openModal(id) { 
       const el = document.getElementById(id);
       if (el) el.style.display = 'flex';
@@ -1645,6 +1426,10 @@
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     }
+
+    // Start-Initialisierung & Auto-Refresh alle 5 Sekunden
+    fetchAllData();
+    setInterval(fetchAllData, 5000);
   </script>
 </body>
 </html>
