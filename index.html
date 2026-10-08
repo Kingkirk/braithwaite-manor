@@ -45,6 +45,8 @@
     .custom-scroll::-webkit-scrollbar { width: 6px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #bfa068; border-radius: 3px; }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center">
 
@@ -71,6 +73,10 @@
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="text-left w-full md:w-1/4">
           <div class="text-western-brass font-vintage text-sm font-bold">★ Gegr. 1899 ★</div>
+          <div id="db-status-badge" class="inline-flex items-center gap-1.5 text-[11px] font-title px-2 py-0.5 rounded bg-parchment-300/80 border border-leather-800/20 text-leather-900 mt-1">
+            <span id="db-status-dot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span id="db-status-text">Verbindung prüfen...</span>
+          </div>
           <button onclick="logoutGate()" class="text-[11px] text-leather-800/60 hover:text-leather-950 underline font-title tracking-wider mt-1 block">🔒 Hof abriegeln</button>
         </div>
 
@@ -598,6 +604,8 @@
     const SUPABASE_ANON = "sb_publishable_z3v_DSs_V4WJnwwZ4O-9RA_Gu1hDLCD";
 
     let supabase = null;
+    let isCloudConnected = false;
+
     let db = {
       categories: ["Ackerbau", "Brauerei", "Tabak"],
       products: [],
@@ -614,7 +622,20 @@
     let currentActiveOrder = null;
     let cashFilter = 'all';
 
-    // 1. ZUGRIFF & UNLOCK
+    function setDbStatus(connected, text) {
+      isCloudConnected = connected;
+      const dot = document.getElementById('db-status-dot');
+      const label = document.getElementById('db-status-text');
+      if (!dot || !label) return;
+      if (connected) {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-600";
+        label.innerText = text || "Supabase: Verbunden";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-red-600";
+        label.innerText = text || "Supabase: Getrennt";
+      }
+    }
+
     function directUnlock() {
       const input = document.getElementById('gate-pass');
       const val = (input ? input.value : "").trim();
@@ -661,13 +682,15 @@
         if (supabase) {
           fetchAllData();
           subscribeRealtime();
+        } else {
+          setDbStatus(false, "Supabase Skript fehlt");
         }
       } catch (e) {
-        console.warn("Supabase konnte nicht gestartet werden, läuft im Offline-Modus:", e);
+        setDbStatus(false, "Verbindungsfehler");
+        console.warn("Supabase Init Error:", e);
       }
     }
 
-    // SUPABASE DATEN HOLEN
     async function fetchAllData() {
       if (!supabase) return;
       try {
@@ -681,6 +704,14 @@
           supabase.from('notes').select('*').order('id', { ascending: false }),
           supabase.from('farm_meta').select('*')
         ]);
+
+        if (cats.error || prods.error || custs.error) {
+          console.error("Datenbank Berechtigungsfehler:", cats.error || prods.error);
+          setDbStatus(false, "Supabase: Rechte fehlen (SQL ausführen!)");
+          return;
+        }
+
+        setDbStatus(true, "Supabase: Verbunden");
 
         if (cats.data && cats.data.length > 0) db.categories = cats.data.map(c => c.name);
         if (prods.data) db.products = prods.data;
@@ -720,7 +751,8 @@
 
         renderAll();
       } catch (err) {
-        console.warn("Hinweis beim Sync:", err);
+        setDbStatus(false, "Verbindung getrennt");
+        console.warn("Sync Fehler:", err);
       }
     }
 
@@ -799,7 +831,9 @@
       if (!title || !content) return alert('Bitte Titel und Inhalt angeben.');
       
       if (supabase) {
-        await supabase.from('notes').insert([{ title, content }]);
+        const res = await supabase.from('notes').insert([{ title, content }]);
+        if (res.error) alert('Supabase Fehler: ' + res.error.message);
+        else fetchAllData();
       } else {
         db.notes.unshift({ id: Date.now(), title, content });
         renderNotes();
@@ -812,6 +846,7 @@
     async function deleteNote(id) {
       if (supabase) {
         await supabase.from('notes').delete().eq('id', id);
+        fetchAllData();
       } else {
         db.notes = db.notes.filter(n => n.id !== id);
         renderNotes();
@@ -988,6 +1023,7 @@
           timeslot: ts,
           status: st
         }).eq('id', currentActiveOrder.id);
+        fetchAllData();
       } else {
         renderOrders();
         renderArchive();
@@ -1001,6 +1037,7 @@
       if (confirm('Diesen Auftrag endgültig streichen?')) {
         if (supabase) {
           await supabase.from('orders').delete().eq('id', currentActiveOrder.id);
+          fetchAllData();
         } else {
           db.orders = db.orders.filter(o => o.id !== currentActiveOrder.id);
           renderOrders();
@@ -1097,11 +1134,14 @@
       const payload = { name, category, yield_per_seed, cost, p_gewerbe, p_guenstig, p_normal, p_teuer };
 
       if (supabase) {
+        let res;
         if (id) {
-          await supabase.from('products').update(payload).eq('id', id);
+          res = await supabase.from('products').update(payload).eq('id', id);
         } else {
-          await supabase.from('products').insert([payload]);
+          res = await supabase.from('products').insert([payload]);
         }
+        if (res.error) alert('Fehler beim Speichern in Supabase: ' + res.error.message);
+        else fetchAllData();
       } else {
         if (id) {
           const item = db.products.find(x => x.id == id);
@@ -1121,6 +1161,7 @@
       if (confirm('Dieses Produkt wirklich löschen?')) {
         if (supabase) {
           await supabase.from('products').delete().eq('id', id);
+          fetchAllData();
         } else {
           db.products = db.products.filter(p => p.id != id);
           renderProducts();
@@ -1205,7 +1246,9 @@
 
       const payload = { company, contact, location, telegram, default_tier };
       if (supabase) {
-        await supabase.from('customers').insert([payload]);
+        const res = await supabase.from('customers').insert([payload]);
+        if (res.error) alert('Supabase Fehler: ' + res.error.message);
+        else fetchAllData();
       } else {
         db.customers.push({ id: Date.now(), ...payload });
         renderCustomers();
@@ -1222,6 +1265,7 @@
       if (confirm('Diesen Kunden aus der Kartei entfernen?')) {
         if (supabase) {
           await supabase.from('customers').delete().eq('id', id);
+          fetchAllData();
         } else {
           db.customers = db.customers.filter(c => c.id !== id);
           renderCustomers();
@@ -1339,7 +1383,9 @@
       };
 
       if (supabase) {
-        await supabase.from('orders').insert([payload]);
+        const res = await supabase.from('orders').insert([payload]);
+        if (res.error) alert('Supabase Fehler: ' + res.error.message);
+        else fetchAllData();
       } else {
         db.orders.unshift({ id: Date.now(), orderNumber: nextNum, items: currentCart, staffName, price: total, status: 'Offen', ...payload });
         renderOrders();
@@ -1418,7 +1464,9 @@
       };
 
       if (supabase) {
-        await supabase.from('cash_entries').insert([payload]);
+        const res = await supabase.from('cash_entries').insert([payload]);
+        if (res.error) alert('Supabase Fehler: ' + res.error.message);
+        else fetchAllData();
       } else {
         db.cash.unshift({ id: Date.now(), desc, ...payload });
         renderTreasury();
@@ -1445,6 +1493,7 @@
           description: descVal,
           amount: amtVal
         }).eq('id', id);
+        fetchAllData();
       } else {
         entry.desc = descVal;
         entry.amount = amtVal;
@@ -1456,6 +1505,7 @@
       if (confirm('Diese Buchung wirklich aus dem Kassenbuch löschen?')) {
         if (supabase) {
           await supabase.from('cash_entries').delete().eq('id', id);
+          fetchAllData();
         } else {
           db.cash = db.cash.filter(c => c.id !== id);
           renderTreasury();
@@ -1495,7 +1545,9 @@
 
       const payload = { name, role, telegram, wage };
       if (supabase) {
-        await supabase.from('staff').insert([payload]);
+        const res = await supabase.from('staff').insert([payload]);
+        if (res.error) alert('Supabase Fehler: ' + res.error.message);
+        else fetchAllData();
       } else {
         db.staff.push({ id: Date.now(), ...payload });
         renderStaff();
@@ -1512,6 +1564,7 @@
       if (confirm('Mitarbeiter entlassen / löschen?')) {
         if (supabase) {
           await supabase.from('staff').delete().eq('id', id);
+          fetchAllData();
         } else {
           db.staff = db.staff.filter(s => s.id !== id);
           renderStaff();
@@ -1548,7 +1601,9 @@
       const name = document.getElementById('new-cat-name').value.trim();
       if (!name) return alert('Name angeben.');
       if (supabase) {
-        await supabase.from('categories').insert([{ name }]);
+        const res = await supabase.from('categories').insert([{ name }]);
+        if (res.error) alert('Supabase Fehler: ' + res.error.message);
+        else fetchAllData();
       } else {
         db.categories.push(name);
         renderCategories();
@@ -1560,6 +1615,7 @@
       if (confirm(`Kategorie "${name}" wirklich löschen?`)) {
         if (supabase) {
           await supabase.from('categories').delete().eq('name', name);
+          fetchAllData();
         } else {
           db.categories = db.categories.filter(c => c !== name);
           renderCategories();
@@ -1589,9 +1645,6 @@
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     }
-
-    // Bei Start prüfen
-    checkGate();
   </script>
 </body>
 </html>
