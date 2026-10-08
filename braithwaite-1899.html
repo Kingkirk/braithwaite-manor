@@ -1476,9 +1476,15 @@
       `;
       state.noteCategories.forEach(cat => {
         const isSel = state.currentNoteCategory === cat.id;
+        const hex = noteColorHex(cat.color);
+        // Gewählt: voll in Rubrikfarbe. Nicht gewählt: heller Farbton mit farbigem Rand und Punkt.
+        const style = isSel
+          ? `background:${hex};border-color:${hex};color:#fff;font-weight:700;box-shadow:0 0 0 2px ${hex}55`
+          : `background:${hex}1f;border-color:${hex};color:#26160e`;
         filterHtml += `
-          <button onclick="filterNoteCategory('${cat.id}')" class="px-2.5 py-0.5 rounded border ${isSel ? 'bg-leather-900 text-parchment-100 font-bold border-leather-900' : 'bg-parchment-100 text-leather-900 border-leather-800/20 hover:bg-parchment-200'}">
-            ${cat.name}
+          <button onclick="filterNoteCategory('${escapeHtml(cat.id)}')" class="px-2.5 py-0.5 rounded border inline-flex items-center gap-1.5 transition hover:brightness-95" style="${style}">
+            <span class="inline-block rounded-full shrink-0" style="width:8px;height:8px;background:${isSel ? '#fff' : hex}"></span>
+            ${escapeHtml(cat.name)}
           </button>
         `;
       });
