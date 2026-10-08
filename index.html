@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Braithwaite Manor | Gewerbe & Kassenbuch</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=IM+Fell+English:ital@0;1&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (window.tailwind) {
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              parchment: { 50: '#fdfbf7', 100: '#f7f2e7', 200: '#efe5cf', 300: '#e3d2b0', 400: '#d4bb8c' },
+              leather: { 800: '#382216', 900: '#26160e' },
+              western: { brass: '#c29b38', red: '#842217', green: '#2d5a27' }
+            },
+            fontFamily: {
+              title: ['Cinzel', 'serif'],
+              vintage: ['"IM Fell English"', 'serif'],
+              body: ['Spectral', 'serif']
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #190e09;
+      color: #2b2118;
+      font-family: 'Spectral', Georgia, serif;
+    }
+    .parchment-sheet {
+      background: #f7f2e7;
+      background-image: repeating-linear-gradient(transparent, transparent 31px, rgba(191,160,104,0.15) 32px);
+      box-shadow: 0 0 0 1px #a4824e, 0 0 0 6px #382216, 0 12px 35px rgba(0,0,0,0.85);
+    }
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #bfa068; border-radius: 3px; }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center">
+
+  <!-- ================= PASSWORT-TOR ================= -->
+  <div id="gate-container" class="w-full max-w-md parchment-sheet rounded-lg border-2 border-leather-800 p-8 shadow-2xl text-center space-y-5" style="display: block;">
+    <div class="text-western-brass font-vintage text-base font-bold">★ Braithwaite Manor ★</div>
+    <h2 class="font-title text-3xl font-bold text-leather-900 tracking-wider">Geschlossenes Kontorbuch</h2>
+    <p class="text-xs font-vintage text-leather-800/80">Bitte autorisiere dich mit dem Hof-Passwort, um Einsicht in die Bücher zu erhalten.</p>
+    
+    <div class="space-y-3 pt-2">
+      <input type="password" id="gate-pass" placeholder="Hof-Passwort..." onkeydown="if(event.key==='Enter') directUnlock()" class="w-full bg-parchment-50 border border-leather-800/40 p-2.5 text-center text-sm font-semibold rounded focus:outline-none tracking-widest">
+      <button type="button" onclick="directUnlock()" class="w-full bg-leather-900 hover:bg-leather-800 text-parchment-100 py-3 rounded font-title text-xs tracking-widest uppercase font-bold shadow-md cursor-pointer transition">
+        Kontorbuch aufschlagen
+      </button>
+      <div id="gate-error" class="text-xs text-red-700 font-bold" style="display: none;">Ungültiges Hof-Passwort! Zugang verwehrt.</div>
+    </div>
+  </div>
+
+  <!-- ================= HAUPT-APP ================= -->
+  <div id="app-container" class="w-full max-w-6xl parchment-sheet rounded-lg border border-leather-800 flex-col min-h-[850px] shadow-2xl" style="display: none;">
+    
+    <!-- Buchkopf -->
+    <header class="border-b-2 border-leather-800/40 bg-parchment-200/60 px-6 py-6 relative">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="text-left w-full md:w-1/4">
+          <div class="text-western-brass font-vintage text-sm font-bold">★ Gegr. 1899 ★</div>
+          <button onclick="logoutGate()" class="text-[11px] text-leather-800/60 hover:text-leather-950 underline font-title tracking-wider mt-1 block">🔒 Hof abriegeln</button>
+        </div>
+
+        <div class="text-center w-full md:w-1/2">
+          <h1 class="font-title text-3xl md:text-5xl font-bold tracking-wider text-leather-900 uppercase drop-shadow-sm">
+            Braithwaite Manor
+          </h1>
+          <p class="font-vintage text-base md:text-lg text-leather-800/80 italic mt-0.5">
+            Gewerbe & Kassenbuch
+          </p>
+        </div>
+
+        <div class="text-right w-full md:w-1/4 bg-parchment-100/60 p-2.5 rounded border border-leather-800/15">
+          <span class="text-[10px] uppercase tracking-widest text-leather-800/70 font-semibold block">Aktueller Kassenbestand</span>
+          <span id="header-balance" class="text-2xl font-title font-bold text-western-green tracking-wide">$ 0.00</span>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex justify-center flex-wrap gap-2 md:gap-4 mt-6 border-t border-leather-800/15 pt-3">
+        <button onclick="switchTab('orders')" id="tab-orders" class="px-4 py-2 font-title text-xs md:text-sm tracking-widest uppercase transition-all border-b-2 border-leather-900 font-bold text-leather-900">
+          📜 Auftragsbuch
+        </button>
+        <button onclick="switchTab('archive')" id="tab-archive" class="px-4 py-2 font-title text-xs md:text-sm tracking-widest uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
+          📦 Bestellarchiv
+        </button>
+        <button onclick="switchTab('inventory')" id="tab-inventory" class="px-4 py-2 font-title text-xs md:text-sm tracking-widest uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
+          🌾 Produkte
+        </button>
+        <button onclick="switchTab('customers')" id="tab-customers" class="px-4 py-2 font-title text-xs md:text-sm tracking-widest uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
+          👥 Kunden
+        </button>
+        <button onclick="switchTab('treasury')" id="tab-treasury" class="px-4 py-2 font-title text-xs md:text-sm tracking-widest uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
+          💰 Kasse & Verkauf
+        </button>
+        <button onclick="switchTab('staff')" id="tab-staff" class="px-4 py-2 font-title text-xs md:text-sm tracking-widest uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
+          👥 Mitarbeiter
+        </button>
+      </nav>
+    </header>
+
+    <!-- Inhaltsbereich -->
+    <main class="p-6 md:p-8 flex-1">
+
+      <!-- ================= TAB 1: AUFTRAGSBUCH ================= -->
+      <section id="view-orders" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 border border-leather-800/20 bg-parchment-100/70 p-4 rounded-lg shadow-sm">
+          <div class="flex flex-col justify-center items-center text-center border-b md:border-b-0 md:border-r border-leather-800/20 pb-3 md:pb-0 md:pr-4">
+            <span class="text-xs uppercase font-title tracking-wider text-leather-900 font-bold mb-2">Mit Kutsche unterwegs?</span>
+            <button id="coach-btn" onclick="toggleCoach()" class="w-full py-4 px-6 rounded-lg font-title text-2xl tracking-wider uppercase font-extrabold text-white shadow-lg transition-all bg-emerald-700 hover:bg-emerald-800">
+              Nein
+            </button>
+            <span id="coach-label" class="text-[11px] font-vintage text-leather-800/70 mt-2">Kutsche steht einsatzbereit am Hof.</span>
+          </div>
+
+          <div class="md:col-span-2 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-xs uppercase font-title tracking-wider text-leather-900 font-bold">📋 Hof-Notiztafel</span>
+              <button onclick="openModal('note-modal')" class="text-xs font-title text-western-brass hover:text-leather-950 font-bold underline">+ Notiz anpinnen</button>
+            </div>
+            <div id="notes-board" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto custom-scroll p-1"></div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-leather-800/20 pb-3">
+          <div>
+            <h2 class="font-title text-2xl font-bold text-leather-900">Offene Aufträge & Touren</h2>
+            <p class="text-xs text-leather-800/70">Laufende Bestellungen zur Auslieferung oder Abholung</p>
+          </div>
+          <button onclick="switchTab('treasury')" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+            + Neue Bestellung aufnehmen
+          </button>
+        </div>
+
+        <div id="orders-list" class="space-y-3"></div>
+      </section>
+
+      <!-- ================= TAB 2: BESTELLARCHIV ================= -->
+      <section id="view-archive" class="space-y-5" style="display: none;">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-leather-800/20 pb-3">
+          <div>
+            <h2 class="font-title text-2xl font-bold text-leather-900">📦 Vollständiges Bestellarchiv</h2>
+            <p class="text-xs text-leather-800/70">Chronologische Historie aller eingegangenen Bestellungen</p>
+          </div>
+          <div class="w-full sm:w-64">
+            <input type="text" id="archive-search" placeholder="Auftrag oder Kunde suchen..." oninput="renderArchive()" class="w-full bg-parchment-50 border border-leather-800/30 p-1.5 text-xs rounded focus:outline-none">
+          </div>
+        </div>
+        <div id="archive-list" class="space-y-3"></div>
+      </section>
+
+      <!-- ================= TAB 3: PRODUKTE ================= -->
+      <section id="view-inventory" class="space-y-5" style="display: none;">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-leather-800/20 pb-3">
+          <div>
+            <h2 class="font-title text-2xl font-bold text-leather-900">Produkte & Ertragskalkulation</h2>
+            <p class="text-sm text-leather-800/70">Ertrag je Samen, Saatgutpreis (EK) und die 4 Verkaufspreisstufen</p>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="openModal('category-modal')" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3.5 py-2 rounded font-title text-xs tracking-wider uppercase font-semibold shadow">
+              🏷️ Kategorien verwalten
+            </button>
+            <button onclick="openNewProductModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+              + Neues Produkt anlegen
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-3 items-center justify-between bg-parchment-100/70 p-3 rounded border border-leather-800/20">
+          <div id="category-filter-buttons" class="flex gap-2 flex-wrap"></div>
+          <div class="w-full md:w-64">
+            <input type="text" id="product-search" placeholder="Produkt suchen..." oninput="renderProducts()" class="w-full bg-parchment-50 border border-leather-800/30 p-1.5 text-xs rounded focus:outline-none">
+          </div>
+        </div>
+
+        <div id="products-list" class="space-y-3"></div>
+      </section>
+
+      <!-- ================= TAB 4: KUNDEN ================= -->
+      <section id="view-customers" class="space-y-5" style="display: none;">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-leather-800/20 pb-3">
+          <div>
+            <h2 class="font-title text-2xl font-bold text-leather-900">👥 Kunden- & Partnerkartei</h2>
+            <p class="text-xs text-leather-800/70">Alle registrierten Saloons, Händler und Stammkunden</p>
+          </div>
+          <button onclick="openModal('customer-modal')" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+            + Neuen Kunden anlegen
+          </button>
+        </div>
+        <div id="customers-full-list" class="space-y-3"></div>
+      </section>
+
+      <!-- ================= TAB 5: KASSE & VERKAUF ================= -->
+      <section id="view-treasury" class="space-y-6" style="display: none;">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="border border-leather-800/20 bg-parchment-100/80 p-4 rounded text-center">
+            <span class="text-xs uppercase font-title tracking-wider text-leather-800/70">Gesamteinnahmen</span>
+            <div id="total-income" class="text-2xl font-bold text-western-green font-title mt-1">$ 0.00</div>
+          </div>
+          <div class="border border-leather-800/20 bg-parchment-100/80 p-4 rounded text-center">
+            <span class="text-xs uppercase font-title tracking-wider text-leather-800/70">Gesamtausgaben</span>
+            <div id="total-expense" class="text-2xl font-bold text-western-red font-title mt-1">$ 0.00</div>
+          </div>
+          <div class="border-2 border-western-brass/50 bg-parchment-200/50 p-4 rounded text-center">
+            <span class="text-xs uppercase font-title tracking-wider text-leather-800/70">Aktueller Barbestand</span>
+            <div id="net-balance" class="text-2xl font-bold text-leather-900 font-title mt-1">$ 0.00</div>
+          </div>
+        </div>
+
+        <!-- THEKE -->
+        <div class="border-2 border-leather-800/40 bg-parchment-100/95 p-5 md:p-6 rounded-lg shadow-md space-y-5">
+          <div class="border-b border-leather-800/20 pb-3">
+            <h3 class="font-title text-xl font-bold text-leather-900">🌾 Kontor-Verkaufstheke & Auftragsannahme</h3>
+            <p class="text-xs text-leather-800/70">Bestellungen verbindlich aufnehmen & Saatgut berechnen</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div>
+              <label class="block font-title uppercase tracking-wider text-leather-900 font-bold mb-1">Aufnehmender Mitarbeiter</label>
+              <select id="pos-staff" class="w-full h-9 bg-parchment-50 border border-leather-800/30 px-2 rounded focus:outline-none font-semibold"></select>
+            </div>
+            <div>
+              <label class="block font-title uppercase tracking-wider text-leather-900 font-bold mb-1">Kunde / Stammkunde</label>
+              <select id="pos-customer" onchange="onPosCustomerSelect()" class="w-full h-9 bg-parchment-50 border border-leather-800/30 px-2 rounded focus:outline-none font-semibold"></select>
+            </div>
+            <div>
+              <label class="block font-title uppercase tracking-wider text-leather-900 font-bold mb-1">Lieferung / Abholung</label>
+              <select id="pos-delivery-mode" class="w-full h-9 bg-parchment-50 border border-leather-800/30 px-2 rounded focus:outline-none">
+                <option value="Selbstabholung am Hof">Kunde holt selbst ab</option>
+                <option value="Lieferung mit Kutsche">Lieferung mit Kutsche</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-title uppercase tracking-wider text-leather-900 font-bold mb-1">Lieferfenster / Termin</label>
+              <input type="text" id="pos-timeslot" placeholder="z. B. Heute 20:00 Uhr" class="w-full h-9 bg-parchment-50 border border-leather-800/30 px-2 rounded focus:outline-none">
+            </div>
+          </div>
+
+          <div class="border border-leather-800/20 bg-parchment-50/80 p-4 rounded-md space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+              <div class="sm:col-span-5">
+                <label class="block text-[11px] font-title uppercase text-leather-800 mb-1">Produkt</label>
+                <select id="pos-item-select" class="w-full h-9 bg-white border border-leather-800/30 px-2 text-xs rounded focus:outline-none font-semibold"></select>
+              </div>
+              <div class="sm:col-span-4">
+                <label class="block text-[11px] font-title uppercase text-leather-800 mb-1">Preisstufe</label>
+                <select id="pos-tier-select" class="w-full h-9 bg-white border border-leather-800/30 px-2 text-xs rounded focus:outline-none font-semibold">
+                  <option value="pGewerbe">Gewerbepreis</option>
+                  <option value="pGuenstig">Günstiger Preis</option>
+                  <option value="pNormal" selected>Normaler Preis</option>
+                  <option value="pTeuer">Teurer Preis</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[11px] font-title uppercase text-leather-800 mb-1">Menge</label>
+                <input type="number" min="1" id="pos-item-amount" value="10" class="w-full h-9 bg-white border border-leather-800/30 px-2 text-xs rounded focus:outline-none text-center font-bold">
+              </div>
+              <div class="sm:col-span-1">
+                <button type="button" onclick="addPosItemToCart()" class="w-full h-9 bg-leather-900 hover:bg-leather-800 text-parchment-100 rounded font-title text-xs font-bold uppercase shadow">
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-4 border-t border-leather-800/15 pt-3">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-leather-800/20 text-leather-800/80 font-title uppercase">
+                    <th class="py-1">Produkt</th>
+                    <th class="py-1">Menge</th>
+                    <th class="py-1">Preisstufe</th>
+                    <th class="py-1 text-right">Summe</th>
+                    <th class="py-1 text-right w-12"></th>
+                  </tr>
+                </thead>
+                <tbody id="pos-cart-body" class="divide-y divide-leather-800/10">
+                  <tr><td colspan="5" class="py-3 text-center text-leather-800/50 italic">Noch keine Posten hinzugefügt.</td></tr>
+                </tbody>
+              </table>
+
+              <div class="flex flex-col sm:flex-row justify-between items-center mt-4 pt-3 border-t border-leather-800/20 gap-3">
+                <div class="text-sm font-title text-leather-900">
+                  Gesamtpreis: <span id="pos-cart-total" class="text-2xl font-bold text-western-green ml-2">$ 0.00</span>
+                </div>
+                <button onclick="commitOrder()" class="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-700 text-white px-6 py-2.5 rounded font-title text-xs uppercase tracking-wider font-bold shadow-lg transition">
+                  ✓ Bestellung verbindlich aufnehmen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kassenbuch-Historie -->
+        <div class="space-y-4 pt-4 border-t border-leather-800/20">
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+            <h3 class="font-title text-xl font-bold text-leather-900">Historisches Kassenbuch</h3>
+            <div class="flex gap-2">
+              <button onclick="filterCash('all')" id="cash-filter-all" class="px-2.5 py-1 text-xs font-title uppercase rounded bg-leather-900 text-parchment-100 font-bold">Alle</button>
+              <button onclick="filterCash('in')" id="cash-filter-in" class="px-2.5 py-1 text-xs font-title uppercase rounded border border-leather-800/30 bg-parchment-50 text-leather-900">🟢 Einnahmen</button>
+              <button onclick="filterCash('out')" id="cash-filter-out" class="px-2.5 py-1 text-xs font-title uppercase rounded border border-leather-800/30 bg-parchment-50 text-leather-900">🔴 Ausgaben</button>
+              <button onclick="openModal('cash-modal')" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-3 py-1 rounded font-title text-xs tracking-wider uppercase shadow font-bold ml-2">
+                + Manuelle Buchung
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b-2 border-leather-800/30 text-xs font-title tracking-wider text-leather-900 uppercase">
+                  <th class="py-2 px-3">Datum</th>
+                  <th class="py-2 px-3">Verwendungszweck</th>
+                  <th class="py-2 px-3">Art</th>
+                  <th class="py-2 px-3 text-right">Betrag</th>
+                  <th class="py-2 px-3 text-right w-20">Aktionen</th>
+                </tr>
+              </thead>
+              <tbody id="cash-table-body" class="divide-y divide-leather-800/10 text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 6: MITARBEITER ================= -->
+      <section id="view-staff" class="space-y-6" style="display: none;">
+        <div class="flex justify-between items-center border-b border-leather-800/20 pb-3">
+          <div>
+            <h2 class="font-title text-2xl font-bold text-leather-900">👥 Hof-Mitarbeiter</h2>
+            <p class="text-xs text-leather-800/70">Verwalter, Knechte und Kutscher von Braithwaite Manor</p>
+          </div>
+          <button onclick="openModal('staff-modal')" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+            + Mitarbeiter aufnehmen
+          </button>
+        </div>
+        <div id="staff-full-list" class="space-y-3"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Modal: Auftrag Detail -->
+  <div id="order-detail-modal" class="fixed inset-0 bg-black/75 items-center justify-center p-4 z-50" style="display: none;">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-2xl w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+      <div class="flex justify-between items-start border-b border-leather-800/20 pb-3">
+        <div>
+          <span id="od-number" class="text-xs font-title text-western-brass font-bold block">#1</span>
+          <h3 id="od-customer" class="font-title text-2xl font-bold text-leather-900">-</h3>
+          <p id="od-meta" class="text-xs font-vintage text-leather-800/80 mt-0.5">-</p>
+        </div>
+        <button onclick="closeModal('order-detail-modal')" class="text-lg font-bold text-leather-900 hover:text-western-red">✕</button>
+      </div>
+
+      <div class="flex gap-2 border-b border-leather-800/15 pb-2">
+        <button id="od-tab-items-btn" onclick="switchOdTab('items')" class="px-3 py-1 text-xs font-title uppercase font-bold border-b-2 border-leather-900 text-leather-900">🌾 Artikel</button>
+        <button id="od-tab-edit-btn" onclick="switchOdTab('edit')" class="px-3 py-1 text-xs font-title uppercase text-leather-800/60 hover:text-leather-900">✏️ Bearbeiten</button>
+      </div>
+
+      <div id="od-view-items" class="space-y-3">
+        <div id="od-items-checklist" class="space-y-2"></div>
+      </div>
+
+      <div id="od-view-edit" class="space-y-4" style="display: none;">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <label class="block font-title uppercase text-leather-900 font-bold mb-1">Lieferart</label>
+            <select id="od-edit-delivery" class="w-full h-9 bg-white border border-leather-800/30 px-2 rounded">
+              <option value="Selbstabholung am Hof">Selbstabholung am Hof</option>
+              <option value="Lieferung mit Kutsche">Lieferung mit Kutsche</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-title uppercase text-leather-900 font-bold mb-1">Lieferfenster</label>
+            <input type="text" id="od-edit-timeslot" class="w-full h-9 bg-white border border-leather-800/30 px-2 rounded">
+          </div>
+          <div>
+            <label class="block font-title uppercase text-leather-900 font-bold mb-1">Status</label>
+            <select id="od-edit-status" class="w-full h-9 bg-white border border-leather-800/30 px-2 rounded font-bold">
+              <option value="Offen">Offen</option>
+              <option value="In Arbeit">In Arbeit</option>
+              <option value="Abholbereit">Abholbereit</option>
+              <option value="Erledigt">Erledigt (Gebucht)</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex justify-between items-center pt-2">
+          <button onclick="deleteCurrentOrder()" class="text-xs text-western-red hover:underline font-bold">Auftrag streichen</button>
+          <button onclick="saveOrderEdits()" class="bg-leather-900 text-parchment-100 px-4 py-2 rounded font-title text-xs uppercase font-bold">Änderungen speichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Kunden-Historie -->
+  <div id="customer-history-modal" class="fixed inset-0 bg-black/75 items-center justify-center p-4 z-50" style="display: none;">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-2xl w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+      <div class="flex justify-between items-start border-b border-leather-800/20 pb-3">
+        <div>
+          <h3 id="ch-title" class="font-title text-2xl font-bold text-leather-900">-</h3>
+          <p id="ch-meta" class="text-xs font-vintage text-leather-800/80">-</p>
+        </div>
+        <button onclick="closeModal('customer-history-modal')" class="text-lg font-bold text-leather-900 hover:text-western-red">✕</button>
+      </div>
+      <div id="ch-orders-list" class="space-y-3"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Neuer Kunde -->
+  <div id="customer-modal" class="fixed inset-0 bg-black/70 items-center justify-center p-4 z-50" style="display: none;">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-md w-full shadow-2xl space-y-4">
+      <h3 class="font-title text-xl font-bold text-leather-900">Neuen Kunden registrieren</h3>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Firma / Saloon</label>
+        <input type="text" id="cust-company" placeholder="z. B. Smith Saloon" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Kontaktperson (Ingame)</label>
+        <input type="text" id="cust-contact" placeholder="z. B. Bill Smith" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Ort</label>
+        <input type="text" id="cust-location" placeholder="z. B. Valentine" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Telegramm-Nr.</label>
+        <input type="text" id="cust-telegram" placeholder="z. B. #VAL-12" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Standard-Preisstufe</label>
+        <select id="cust-tier" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+          <option value="pGewerbe">Gewerbekunde</option>
+          <option value="pGuenstig">Stammkunde (Günstig)</option>
+          <option value="pNormal" selected>Normaler Kunde</option>
+          <option value="pTeuer">Teurer Preis</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('customer-modal')" class="px-4 py-2 text-xs uppercase font-title">Abbrechen</button>
+        <button onclick="saveNewCustomer()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Sichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Neues Produkt -->
+  <div id="product-modal" class="fixed inset-0 bg-black/70 items-center justify-center p-4 z-50" style="display: none;">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+      <h3 id="product-modal-title" class="font-title text-xl font-bold text-leather-900">Produkt anlegen</h3>
+      <input type="hidden" id="prod-id">
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <label class="block font-title uppercase text-leather-900 mb-1">Produktname</label>
+          <input type="text" id="prod-name" placeholder="z. B. Brauhopfen" class="w-full bg-parchment-50 border border-leather-800/30 p-2 rounded">
+        </div>
+        <div>
+          <label class="block font-title uppercase text-leather-900 mb-1">Kategorie</label>
+          <select id="prod-category" class="w-full bg-parchment-50 border border-leather-800/30 p-2 rounded"></select>
+        </div>
+        <div class="col-span-2 bg-parchment-200/50 p-2.5 rounded border border-leather-800/20">
+          <label class="block font-title uppercase text-leather-900 font-bold mb-1">Ertrag je Samen (Feste Zahl)</label>
+          <input type="number" min="1" id="prod-yield" value="8" class="w-full bg-white border border-leather-800/30 p-2 rounded font-bold">
+        </div>
+        <div class="col-span-2">
+          <label class="block font-title uppercase text-leather-900 mb-1">Saatgutpreis (EK je Samen)</label>
+          <input type="number" step="0.05" id="prod-cost" placeholder="0.00" class="w-full bg-parchment-50 border border-leather-800/30 p-2 rounded">
+        </div>
+        <div>
+          <label class="block text-leather-900 mb-1">Gewerbepreis ($)</label>
+          <input type="number" step="0.05" id="prod-p-gewerbe" placeholder="0.00" class="w-full bg-parchment-50 border border-leather-800/30 p-2 rounded">
+        </div>
+        <div>
+          <label class="block text-leather-900 mb-1">Günstiger Preis ($)</label>
+          <input type="number" step="0.05" id="prod-p-guenstig" placeholder="0.00" class="w-full bg-parchment-50 border border-leather-800/30 p-2 rounded">
+        </div>
+        <div>
+          <label class="block text-leather-900 mb-1">Normaler Preis ($)</label>
+          <input type="number" step="0.05" id="prod-p-normal" placeholder="0.00" class="w-full bg-parchment-50 border border-leather-800/30 p-2 rounded">
+        </div>
+        <div>
+          <label class="block text-leather-900 mb-1">Teurer Preis ($)</label>
+          <input type="number" step="0.05" id="prod-p-teuer" placeholder="0.00" class="w-full bg-parchment-50 border border-leather-800/30 p-2 rounded">
+        </div>
+      </div>
+      <div class="flex justify-between items-center pt-2">
+        <button id="prod-delete-btn" onclick="deleteCurrentProduct()" class="text-xs text-western-red hover:underline" style="display: none;">Löschen</button>
+        <div class="flex gap-2 ml-auto">
+          <button onclick="closeModal('product-modal')" class="px-4 py-2 text-xs uppercase font-title">Abbrechen</button>
+          <button onclick="saveProduct()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Speichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Notiz -->
+  <div id="note-modal" class="fixed inset-0 bg-black/70 items-center justify-center p-4 z-50" style="display: none;">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-md w-full shadow-2xl space-y-4">
+      <h3 class="font-title text-xl font-bold text-leather-900">Notiz anpinnen</h3>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Titel / Betreff</label>
+        <input type="text" id="note-title" placeholder="z. B. Kutsche reparieren" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Notizinhalt</label>
+        <textarea id="note-content" rows="3" placeholder="Einzelheiten..." class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded"></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('note-modal')" class="px-4 py-2 text-xs uppercase font-title">Abbrechen</button>
+        <button onclick="saveNote()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Anpinnen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Kategorien -->
+  <div id="category-modal" class="fixed inset-0 bg-black/70 items-center justify-center p-4 z-50" style="display: none;">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-md w-full shadow-2xl space-y-4">
+      <h3 class="font-title text-xl font-bold text-leather-900">Kategorien verwalten</h3>
+      <div class="flex gap-2">
+        <input type="text" id="new-cat-name" placeholder="z. B. Destillerie" class="flex-1 bg-parchment-50 border border-leather-800/30 p-2 text-xs rounded">
+        <button onclick="addCategory()" class="bg-leather-900 text-parchment-100 px-3 py-2 rounded font-title text-xs font-bold uppercase">+ Anlegen</button>
+      </div>
+      <div id="cat-modal-list" class="space-y-1 max-h-48 overflow-y-auto custom-scroll"></div>
+      <div class="flex justify-end pt-2">
+        <button onclick="closeModal('category-modal')" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Fertig</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mitarbeiter -->
+  <div id="staff-modal" class="fixed inset-0 bg-black/70 items-center justify-center p-4 z-50" style="display: none;">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-md w-full shadow-2xl space-y-4">
+      <h3 class="font-title text-xl font-bold text-leather-900">Mitarbeiter aufnehmen</h3>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Name (Ingame)</label>
+        <input type="text" id="st-name" placeholder="z. B. John Miller" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Rolle</label>
+        <input type="text" id="st-role" placeholder="z. B. Kutscher & Hofarbeit" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Telegramm-Nr.</label>
+        <input type="text" id="st-telegram" placeholder="z. B. #554-12" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Lohnvereinbarung</label>
+        <input type="text" id="st-wage" placeholder="z. B. $ 5.00 / Tag" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('staff-modal')" class="px-4 py-2 text-xs uppercase font-title">Abbrechen</button>
+        <button onclick="saveStaff()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Aufnehmen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Kasse Manuell -->
+  <div id="cash-modal" class="fixed inset-0 bg-black/70 items-center justify-center p-4 z-50" style="display: none;">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-md w-full shadow-2xl space-y-4">
+      <h3 class="font-title text-xl font-bold text-leather-900">Manuelle Buchung</h3>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Art</label>
+        <select id="cm-type" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+          <option value="in">Einnahme (+)</option>
+          <option value="out">Ausgabe (-)</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Betrag ($)</label>
+        <input type="number" step="0.5" id="cm-amount" placeholder="10.00" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div>
+        <label class="block text-xs uppercase font-title text-leather-900 mb-1">Verwendungszweck</label>
+        <input type="text" id="cm-desc" placeholder="z. B. Saatgut-Kauf" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded">
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('cash-modal')" class="px-4 py-2 text-xs uppercase font-title">Abbrechen</button>
+        <button onclick="saveCashEntry()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Buchen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LOGIK ================= -->
+  <script>
+    const HOF_PASS = "Gold";
+    const SUPABASE_URL = "https://gfurkudezjewwsnpyboo.supabase.co";
+    const SUPABASE_ANON = "sb_publishable_z3v_DSs_V4WJnwwZ4O-9RA_Gu1hDLCD";
+
+    let supabase = null;
+    let db = {
+      categories: ["Ackerbau", "Brauerei", "Tabak"],
+      products: [],
+      customers: [],
+      staff: [],
+      orders: [],
+      cash: [],
+      notes: [],
+      coachAway: false
+    };
+
+    let activeCategory = 'alle';
+    let currentCart = [];
+    let currentActiveOrder = null;
+    let cashFilter = 'all';
+
+    // 1. ZUGRIFF & UNLOCK
+    function directUnlock() {
+      const input = document.getElementById('gate-pass');
+      const val = (input ? input.value : "").trim();
+
+      if (val.toLowerCase() === HOF_PASS.toLowerCase()) {
+        try { sessionStorage.setItem('bm_auth', 'true'); } catch(e){}
+        
+        document.getElementById('gate-error').style.display = 'none';
+        document.getElementById('gate-container').style.display = 'none';
+        
+        const app = document.getElementById('app-container');
+        app.style.display = 'flex';
+        
+        renderAll();
+        initSupabaseAndSync();
+      } else {
+        document.getElementById('gate-error').style.display = 'block';
+      }
+    }
+
+    function checkGate() {
+      let isAuth = false;
+      try { isAuth = (sessionStorage.getItem('bm_auth') === 'true'); } catch(e){}
+      
+      if (isAuth) {
+        document.getElementById('gate-container').style.display = 'none';
+        const app = document.getElementById('app-container');
+        app.style.display = 'flex';
+        renderAll();
+        initSupabaseAndSync();
+      }
+    }
+
+    function logoutGate() {
+      try { sessionStorage.removeItem('bm_auth'); } catch(e){}
+      location.reload();
+    }
+
+    function initSupabaseAndSync() {
+      try {
+        if (!supabase && window.supabase && typeof window.supabase.createClient === 'function') {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+        }
+        if (supabase) {
+          fetchAllData();
+          subscribeRealtime();
+        }
+      } catch (e) {
+        console.warn("Supabase konnte nicht gestartet werden, läuft im Offline-Modus:", e);
+      }
+    }
+
+    // SUPABASE DATEN HOLEN
+    async function fetchAllData() {
+      if (!supabase) return;
+      try {
+        const [cats, prods, custs, st, ords, csh, nts, meta] = await Promise.all([
+          supabase.from('categories').select('*').order('name'),
+          supabase.from('products').select('*').order('name'),
+          supabase.from('customers').select('*').order('company'),
+          supabase.from('staff').select('*').order('name'),
+          supabase.from('orders').select('*').order('order_number', { ascending: false }),
+          supabase.from('cash_entries').select('*').order('id', { ascending: false }),
+          supabase.from('notes').select('*').order('id', { ascending: false }),
+          supabase.from('farm_meta').select('*')
+        ]);
+
+        if (cats.data && cats.data.length > 0) db.categories = cats.data.map(c => c.name);
+        if (prods.data) db.products = prods.data;
+        if (custs.data) db.customers = custs.data;
+        if (st.data) db.staff = st.data;
+        if (ords.data) {
+          db.orders = ords.data.map(o => ({
+            id: o.id,
+            orderNumber: o.order_number,
+            customer: o.customer,
+            contact: o.contact,
+            location: o.location,
+            telegram: o.telegram,
+            items: o.items_json || [],
+            deliveryMode: o.delivery_mode,
+            timeslot: o.timeslot,
+            staffName: o.staff_name,
+            price: Number(o.price || 0),
+            status: o.status
+          }));
+        }
+        if (csh.data) {
+          db.cash = csh.data.map(c => ({
+            id: c.id,
+            date: c.date,
+            desc: c.description,
+            type: c.type,
+            amount: Number(c.amount || 0)
+          }));
+        }
+        if (nts.data) db.notes = nts.data;
+
+        if (meta.data) {
+          const coachRow = meta.data.find(m => m.key === 'coach_away');
+          if (coachRow) db.coachAway = (coachRow.value === 'true');
+        }
+
+        renderAll();
+      } catch (err) {
+        console.warn("Hinweis beim Sync:", err);
+      }
+    }
+
+    function subscribeRealtime() {
+      if (!supabase) return;
+      try {
+        supabase.channel('farm_realtime')
+          .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+            fetchAllData();
+          })
+          .subscribe();
+      } catch(e){}
+    }
+
+    // REITER
+    function switchTab(tab) {
+      ['orders', 'archive', 'inventory', 'customers', 'treasury', 'staff'].forEach(t => {
+        const sec = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`tab-${t}`);
+        if (sec) sec.style.display = 'none';
+        if (btn) btn.className = "px-4 py-2 font-title text-xs md:text-sm tracking-widest uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900";
+      });
+      const activeSec = document.getElementById(`view-${tab}`);
+      const activeBtn = document.getElementById(`tab-${tab}`);
+      if (activeSec) activeSec.style.display = 'block';
+      if (activeBtn) activeBtn.className = "px-4 py-2 font-title text-xs md:text-sm tracking-widest uppercase transition-all border-b-2 border-leather-900 font-bold text-leather-900";
+    }
+
+    // KUTSCHE & NOTIZEN
+    function renderCoach() {
+      const btn = document.getElementById('coach-btn');
+      const lbl = document.getElementById('coach-label');
+      if (!btn || !lbl) return;
+      if (db.coachAway) {
+        btn.innerText = "Ja";
+        btn.className = "w-full py-4 px-6 rounded-lg font-title text-2xl tracking-wider uppercase font-extrabold text-white shadow-lg transition-all bg-red-700 hover:bg-red-800 animate-pulse";
+        lbl.innerText = "Achtung: Kutsche ist auf Tour / unterwegs!";
+        lbl.className = "text-[11px] font-vintage text-red-800 font-bold mt-2";
+      } else {
+        btn.innerText = "Nein";
+        btn.className = "w-full py-4 px-6 rounded-lg font-title text-2xl tracking-wider uppercase font-extrabold text-white shadow-lg transition-all bg-emerald-700 hover:bg-emerald-800";
+        lbl.innerText = "Kutsche steht einsatzbereit am Hof.";
+        lbl.className = "text-[11px] font-vintage text-leather-800/70 mt-2";
+      }
+    }
+
+    async function toggleCoach() {
+      db.coachAway = !db.coachAway;
+      renderCoach();
+      if (supabase) {
+        await supabase.from('farm_meta').upsert({ key: 'coach_away', value: String(db.coachAway) });
+      }
+    }
+
+    function renderNotes() {
+      const container = document.getElementById('notes-board');
+      if (!container) return;
+      if (db.notes.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-4 text-xs font-vintage text-leather-800/50 italic">Keine Notizen angepinnt.</div>`;
+        return;
+      }
+      container.innerHTML = db.notes.map(n => `
+        <div class="border border-leather-800/20 bg-parchment-50 p-2.5 rounded text-xs flex justify-between items-start shadow-sm">
+          <div>
+            <strong class="font-title text-leather-900 block">${n.title}</strong>
+            <p class="font-vintage text-leather-800/80 mt-0.5 leading-snug">${n.content}</p>
+          </div>
+          <button onclick="deleteNote(${n.id})" class="text-[10px] text-western-red hover:underline ml-2">✕</button>
+        </div>
+      `).join('');
+    }
+
+    async function saveNote() {
+      const title = document.getElementById('note-title').value.trim();
+      const content = document.getElementById('note-content').value.trim();
+      if (!title || !content) return alert('Bitte Titel und Inhalt angeben.');
+      
+      if (supabase) {
+        await supabase.from('notes').insert([{ title, content }]);
+      } else {
+        db.notes.unshift({ id: Date.now(), title, content });
+        renderNotes();
+      }
+      closeModal('note-modal');
+      document.getElementById('note-title').value = '';
+      document.getElementById('note-content').value = '';
+    }
+
+    async function deleteNote(id) {
+      if (supabase) {
+        await supabase.from('notes').delete().eq('id', id);
+      } else {
+        db.notes = db.notes.filter(n => n.id !== id);
+        renderNotes();
+      }
+    }
+
+    // AUFTRÄGE & ARCHIV
+    function renderOrders() {
+      const container = document.getElementById('orders-list');
+      if (!container) return;
+      const openOrders = db.orders.filter(o => o.status !== 'Erledigt');
+      if (openOrders.length === 0) {
+        container.innerHTML = `<div class="text-center py-12 text-leather-800/60 font-vintage text-lg">Keine offenen Aufträge vorhanden.</div>`;
+        return;
+      }
+      container.innerHTML = openOrders.map(o => createOrderCard(o)).join('');
+    }
+
+    function renderArchive() {
+      const container = document.getElementById('archive-list');
+      if (!container) return;
+      const q = (document.getElementById('archive-search')?.value || '').toLowerCase();
+      const filtered = db.orders.filter(o => o.customer.toLowerCase().includes(q) || String(o.orderNumber).includes(q));
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-12 text-leather-800/60 font-vintage text-lg">Keine archivierten Aufträge gefunden.</div>`;
+        return;
+      }
+      container.innerHTML = filtered.map(o => createOrderCard(o)).join('');
+    }
+
+    function createOrderCard(o) {
+      const summary = o.items.map(i => `${i.amount}x ${i.name}`).join(', ');
+      return `
+        <div onclick="openOrderDetail(${o.id})" class="border border-leather-800/25 bg-parchment-50/90 p-4 rounded shadow-sm hover:shadow-md transition cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span class="font-title font-bold text-western-brass">#${o.orderNumber}</span>
+              <h4 class="font-title text-base font-bold text-leather-900">${o.customer}</h4>
+              <span class="text-[10px] bg-parchment-200 px-2 py-0.5 rounded text-leather-800/80 font-vintage">${o.location || 'Ohne Ort'}</span>
+            </div>
+            <div class="font-vintage text-xs text-leather-800/80 mt-1">${summary || 'Keine Posten'}</div>
+            <div class="text-[11px] text-leather-800/60 font-vintage mt-0.5">Erstellt von: <strong>${o.staffName}</strong> • Lieferart: ${o.deliveryMode}</div>
+          </div>
+          <div class="flex items-center justify-between md:justify-end gap-4">
+            <span class="text-lg font-bold font-title text-western-green">$ ${o.price.toFixed(2)}</span>
+            <span class="px-2.5 py-1 text-xs rounded font-title uppercase font-bold border border-leather-800/20 ${o.status === 'Erledigt' ? 'bg-emerald-100 text-emerald-900' : o.status === 'Abholbereit' ? 'bg-amber-100 text-amber-900' : 'bg-parchment-200 text-leather-900'}">${o.status}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function openOrderDetail(id) {
+      currentActiveOrder = db.orders.find(o => o.id === id);
+      if (!currentActiveOrder) return;
+      document.getElementById('od-number').innerText = `#${currentActiveOrder.orderNumber}`;
+      document.getElementById('od-customer').innerText = currentActiveOrder.customer;
+      document.getElementById('od-meta').innerText = `${currentActiveOrder.contact} (${currentActiveOrder.location}) • Telegramm: ${currentActiveOrder.telegram}`;
+      
+      document.getElementById('od-edit-delivery').value = currentActiveOrder.deliveryMode;
+      document.getElementById('od-edit-timeslot').value = currentActiveOrder.timeslot || '';
+      document.getElementById('od-edit-status').value = currentActiveOrder.status;
+
+      renderOdItems();
+      switchOdTab('items');
+      openModal('order-detail-modal');
+    }
+
+    function renderOdItems() {
+      const container = document.getElementById('od-items-checklist');
+      if (!container) return;
+      if (!currentActiveOrder.items || currentActiveOrder.items.length === 0) {
+        container.innerHTML = `<div class="text-center py-4 text-xs italic">Keine Posten vorhanden.</div>`;
+        return;
+      }
+
+      container.innerHTML = currentActiveOrder.items.map((item, idx) => {
+        const prod = db.products.find(p => p.id === item.productId || p.name === item.name);
+        const y = prod ? prod.yield_per_seed : (item.yieldPerSeed || 1);
+        const seedsNeeded = Math.ceil(item.amount / y);
+
+        return `
+          <div class="flex items-center justify-between p-2.5 bg-parchment-50 border border-leather-800/15 rounded text-xs">
+            <div class="flex items-center gap-3">
+              <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleItemCheck(${idx})" class="w-4 h-4 accent-leather-900">
+              <span class="font-bold text-leather-900">${item.amount}x</span>
+              <span class="font-title font-semibold text-leather-900">${item.name}</span>
+              <span class="text-[10px] text-leather-800/60 uppercase">(${item.tierName})</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="bg-parchment-200/80 px-2 py-0.5 rounded text-[11px] font-vintage text-leather-900">🌱 ${seedsNeeded} Samen nötig</span>
+              <span class="font-bold font-title text-leather-900">$ ${(item.amount * item.unitPrice).toFixed(2)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function toggleItemCheck(idx) {
+      if (!currentActiveOrder) return;
+      currentActiveOrder.items[idx].checked = !currentActiveOrder.items[idx].checked;
+      
+      const total = currentActiveOrder.items.length;
+      const checkedCount = currentActiveOrder.items.filter(i => i.checked).length;
+
+      if (total === 1) {
+        currentActiveOrder.status = checkedCount === 1 ? 'Abholbereit' : 'Offen';
+      } else {
+        if (checkedCount === 0) currentActiveOrder.status = 'Offen';
+        else if (checkedCount === total) currentActiveOrder.status = 'Abholbereit';
+        else currentActiveOrder.status = 'In Arbeit';
+      }
+
+      if (supabase) {
+        await supabase.from('orders').update({
+          items_json: currentActiveOrder.items,
+          status: currentActiveOrder.status
+        }).eq('id', currentActiveOrder.id);
+      } else {
+        renderOrders();
+        renderArchive();
+      }
+
+      renderOdItems();
+    }
+
+    function switchOdTab(tab) {
+      const vItems = document.getElementById('od-view-items');
+      const vEdit = document.getElementById('od-view-edit');
+      const btnItems = document.getElementById('od-tab-items-btn');
+      const btnEdit = document.getElementById('od-tab-edit-btn');
+      
+      if (tab === 'items') {
+        if (vItems) vItems.style.display = 'block';
+        if (vEdit) vEdit.style.display = 'none';
+        btnItems.className = "px-3 py-1 text-xs font-title uppercase font-bold border-b-2 border-leather-900 text-leather-900";
+        btnEdit.className = "px-3 py-1 text-xs font-title uppercase text-leather-800/60 hover:text-leather-900";
+      } else {
+        if (vItems) vItems.style.display = 'none';
+        if (vEdit) vEdit.style.display = 'block';
+        btnEdit.className = "px-3 py-1 text-xs font-title uppercase font-bold border-b-2 border-leather-900 text-leather-900";
+        btnItems.className = "px-3 py-1 text-xs font-title uppercase text-leather-800/60 hover:text-leather-900";
+      }
+    }
+
+    async function saveOrderEdits() {
+      if (!currentActiveOrder) return;
+      const del = document.getElementById('od-edit-delivery').value;
+      const ts = document.getElementById('od-edit-timeslot').value.trim();
+      const st = document.getElementById('od-edit-status').value;
+      const oldStatus = currentActiveOrder.status;
+
+      if (st === 'Erledigt' && oldStatus !== 'Erledigt') {
+        const cashObj = {
+          date: new Date().toISOString().split('T')[0],
+          description: `Bestellung (#${currentActiveOrder.orderNumber}) ${currentActiveOrder.customer}`,
+          type: 'in',
+          amount: currentActiveOrder.price
+        };
+        if (supabase) {
+          await supabase.from('cash_entries').insert([cashObj]);
+        } else {
+          db.cash.unshift({ id: Date.now(), ...cashObj, desc: cashObj.description });
+          renderTreasury();
+        }
+      }
+
+      currentActiveOrder.deliveryMode = del;
+      currentActiveOrder.timeslot = ts;
+      currentActiveOrder.status = st;
+
+      if (supabase) {
+        await supabase.from('orders').update({
+          delivery_mode: del,
+          timeslot: ts,
+          status: st
+        }).eq('id', currentActiveOrder.id);
+      } else {
+        renderOrders();
+        renderArchive();
+      }
+
+      closeModal('order-detail-modal');
+    }
+
+    async function deleteCurrentOrder() {
+      if (!currentActiveOrder) return;
+      if (confirm('Diesen Auftrag endgültig streichen?')) {
+        if (supabase) {
+          await supabase.from('orders').delete().eq('id', currentActiveOrder.id);
+        } else {
+          db.orders = db.orders.filter(o => o.id !== currentActiveOrder.id);
+          renderOrders();
+          renderArchive();
+        }
+        closeModal('order-detail-modal');
+      }
+    }
+
+    // PRODUKTE
+    function renderProducts() {
+      const container = document.getElementById('products-list');
+      if (!container) return;
+      const q = (document.getElementById('product-search')?.value || '').toLowerCase();
+      
+      const filtered = db.products.filter(p => {
+        const matchesCat = (activeCategory === 'alle' || p.category === activeCategory);
+        const matchesQ = p.name.toLowerCase().includes(q);
+        return matchesCat && matchesQ;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-leather-800/60 font-vintage text-base">Keine Produkte in dieser Auswahl.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(p => `
+        <div class="border border-leather-800/25 bg-parchment-50/80 p-3.5 rounded shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="md:w-1/4">
+            <span class="text-[10px] uppercase font-title text-leather-800/60 font-bold block">${p.category}</span>
+            <h4 class="font-title text-base font-bold text-leather-900">${p.name}</h4>
+            <div class="text-xs font-vintage text-leather-800/80">Saatgut-EK: <strong>$ ${Number(p.cost).toFixed(2)}</strong> / Samen</div>
+          </div>
+          <div class="md:w-5/12 bg-parchment-200/50 p-2 rounded grid grid-cols-4 gap-1 text-center text-xs">
+            <div><span class="text-[9px] uppercase font-title block text-leather-800/60">Gewerbe</span><strong>$ ${Number(p.p_gewerbe).toFixed(2)}</strong></div>
+            <div><span class="text-[9px] uppercase font-title block text-leather-800/60">Günstig</span><strong class="text-emerald-800">$ ${Number(p.p_guenstig).toFixed(2)}</strong></div>
+            <div><span class="text-[9px] uppercase font-title block text-leather-800/60">Normal</span><strong>$ ${Number(p.p_normal).toFixed(2)}</strong></div>
+            <div><span class="text-[9px] uppercase font-title block text-leather-800/60">Teuer</span><strong class="text-red-800">$ ${Number(p.p_teuer).toFixed(2)}</strong></div>
+          </div>
+          <div class="md:w-1/5 text-right font-title text-sm">
+            1 🌱 = <strong class="text-emerald-800">${p.yield_per_seed}</strong> Ertrag
+          </div>
+          <div>
+            <button onclick="openEditProduct(${p.id})" class="text-xs text-western-brass hover:underline font-bold">✏️ Edit</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openNewProductModal() {
+      document.getElementById('product-modal-title').innerText = "Neues Produkt anlegen";
+      document.getElementById('prod-id').value = '';
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-yield').value = '8';
+      document.getElementById('prod-cost').value = '';
+      document.getElementById('prod-p-gewerbe').value = '';
+      document.getElementById('prod-p-guenstig').value = '';
+      document.getElementById('prod-p-normal').value = '';
+      document.getElementById('prod-p-teuer').value = '';
+      document.getElementById('prod-delete-btn').style.display = 'none';
+      openModal('product-modal');
+    }
+
+    function openEditProduct(id) {
+      const p = db.products.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('product-modal-title').innerText = "Produkt bearbeiten";
+      document.getElementById('prod-id').value = p.id;
+      document.getElementById('prod-name').value = p.name;
+      document.getElementById('prod-category').value = p.category;
+      document.getElementById('prod-yield').value = p.yield_per_seed;
+      document.getElementById('prod-cost').value = p.cost;
+      document.getElementById('prod-p-gewerbe').value = p.p_gewerbe;
+      document.getElementById('prod-p-guenstig').value = p.p_guenstig;
+      document.getElementById('prod-p-normal').value = p.p_normal;
+      document.getElementById('prod-p-teuer').value = p.p_teuer;
+      document.getElementById('prod-delete-btn').style.display = 'block';
+      openModal('product-modal');
+    }
+
+    async function saveProduct() {
+      const id = document.getElementById('prod-id').value;
+      const name = document.getElementById('prod-name').value.trim();
+      const category = document.getElementById('prod-category').value;
+      const yield_per_seed = parseInt(document.getElementById('prod-yield').value) || 1;
+      const cost = parseFloat(document.getElementById('prod-cost').value) || 0;
+      const p_gewerbe = parseFloat(document.getElementById('prod-p-gewerbe').value) || 0;
+      const p_guenstig = parseFloat(document.getElementById('prod-p-guenstig').value) || 0;
+      const p_normal = parseFloat(document.getElementById('prod-p-normal').value) || 0;
+      const p_teuer = parseFloat(document.getElementById('prod-p-teuer').value) || 0;
+
+      if (!name) return alert('Bitte Produktname angeben.');
+
+      const payload = { name, category, yield_per_seed, cost, p_gewerbe, p_guenstig, p_normal, p_teuer };
+
+      if (supabase) {
+        if (id) {
+          await supabase.from('products').update(payload).eq('id', id);
+        } else {
+          await supabase.from('products').insert([payload]);
+        }
+      } else {
+        if (id) {
+          const item = db.products.find(x => x.id == id);
+          if (item) Object.assign(item, payload);
+        } else {
+          db.products.push({ id: Date.now(), ...payload });
+        }
+        renderProducts();
+        populatePosDropdowns();
+      }
+      closeModal('product-modal');
+    }
+
+    async function deleteCurrentProduct() {
+      const id = document.getElementById('prod-id').value;
+      if (!id) return;
+      if (confirm('Dieses Produkt wirklich löschen?')) {
+        if (supabase) {
+          await supabase.from('products').delete().eq('id', id);
+        } else {
+          db.products = db.products.filter(p => p.id != id);
+          renderProducts();
+          populatePosDropdowns();
+        }
+        closeModal('product-modal');
+      }
+    }
+
+    // KUNDEN
+    function renderCustomers() {
+      const container = document.getElementById('customers-full-list');
+      if (!container) return;
+      if (db.customers.length === 0) {
+        container.innerHTML = `<div class="text-center py-12 text-leather-800/60 font-vintage text-lg">Noch keine Kunden angelegt.</div>`;
+        return;
+      }
+
+      container.innerHTML = db.customers.map(c => {
+        const custOrders = db.orders.filter(o => o.customer === c.company);
+        const orderCount = custOrders.length;
+        const totalSpent = custOrders.reduce((sum, o) => sum + o.price, 0);
+
+        return `
+          <div onclick="openCustomerHistory('${c.company}')" class="border border-leather-800/25 bg-parchment-50/90 p-4 rounded shadow-sm hover:shadow-md transition cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="font-title text-base font-bold text-leather-900">${c.company}</h4>
+                <span class="text-[11px] bg-parchment-200 px-2 py-0.5 rounded font-vintage">${c.contact} (${c.location})</span>
+              </div>
+              <div class="text-xs font-vintage text-leather-800/70 mt-1">Telegramm: <strong class="text-western-brass">${c.telegram}</strong> • Tarif: ${c.default_tier}</div>
+            </div>
+            <div class="flex items-center justify-between md:justify-end gap-6 text-right">
+              <div>
+                <span class="text-[10px] uppercase font-title text-leather-800/60 block">Bestellungen</span>
+                <strong class="font-title text-sm text-leather-900">${orderCount} Aufträge</strong>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase font-title text-leather-800/60 block">Gesamtumsatz</span>
+                <strong class="font-title text-base text-western-green">$ ${totalSpent.toFixed(2)}</strong>
+              </div>
+              <button onclick="event.stopPropagation(); deleteCustomer(${c.id})" class="text-xs text-western-red hover:underline">🗑️</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openCustomerHistory(companyName) {
+      const c = db.customers.find(x => x.company === companyName);
+      if (!c) return;
+      document.getElementById('ch-title').innerText = c.company;
+      document.getElementById('ch-meta').innerText = `Kontakt: ${c.contact} (${c.location}) • 📞 ${c.telegram}`;
+
+      const custOrders = db.orders.filter(o => o.customer === c.company);
+      const container = document.getElementById('ch-orders-list');
+      if (custOrders.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-xs italic">Bislang noch keine Bestellungen hinterlegt.</div>`;
+      } else {
+        container.innerHTML = custOrders.map(o => `
+          <div class="border border-leather-800/15 bg-parchment-50 p-3 rounded text-xs space-y-1">
+            <div class="flex justify-between font-bold">
+              <span>#${o.orderNumber} (${o.status})</span>
+              <span class="text-western-green">$ ${o.price.toFixed(2)}</span>
+            </div>
+            <div class="text-leather-800/80 font-vintage">${o.items.map(i => `${i.amount}x ${i.name} ($${(i.amount * i.unitPrice).toFixed(2)})`).join(', ')}</div>
+            <div class="text-[10px] text-leather-800/60">Bearbeiter: ${o.staffName} • ${o.deliveryMode}</div>
+          </div>
+        `).join('');
+      }
+      openModal('customer-history-modal');
+    }
+
+    async function saveNewCustomer() {
+      const company = document.getElementById('cust-company').value.trim();
+      const contact = document.getElementById('cust-contact').value.trim();
+      const location = document.getElementById('cust-location').value.trim() || 'Unbekannt';
+      const telegram = document.getElementById('cust-telegram').value.trim() || 'Keine';
+      const default_tier = document.getElementById('cust-tier').value;
+
+      if (!company || !contact) return alert('Bitte Firma und Kontaktperson angeben.');
+
+      const payload = { company, contact, location, telegram, default_tier };
+      if (supabase) {
+        await supabase.from('customers').insert([payload]);
+      } else {
+        db.customers.push({ id: Date.now(), ...payload });
+        renderCustomers();
+        populatePosDropdowns();
+      }
+      closeModal('customer-modal');
+      document.getElementById('cust-company').value = '';
+      document.getElementById('cust-contact').value = '';
+      document.getElementById('cust-location').value = '';
+      document.getElementById('cust-telegram').value = '';
+    }
+
+    async function deleteCustomer(id) {
+      if (confirm('Diesen Kunden aus der Kartei entfernen?')) {
+        if (supabase) {
+          await supabase.from('customers').delete().eq('id', id);
+        } else {
+          db.customers = db.customers.filter(c => c.id !== id);
+          renderCustomers();
+          populatePosDropdowns();
+        }
+      }
+    }
+
+    // THEKE & KASSE
+    function populatePosDropdowns() {
+      const staffSel = document.getElementById('pos-staff');
+      const custSel = document.getElementById('pos-customer');
+      const itemSel = document.getElementById('pos-item-select');
+      if (!staffSel || !custSel || !itemSel) return;
+
+      staffSel.innerHTML = db.staff.map(s => `<option value="${s.name}">${s.name} (${s.role})</option>`).join('');
+      custSel.innerHTML = db.customers.map(c => `<option value="${c.company}">${c.company} (${c.contact})</option>`).join('');
+      onPosCustomerSelect();
+
+      itemSel.innerHTML = db.products.map(p => `
+        <option value="${p.id}">${p.name} [1 🌱 = ${p.yield_per_seed} Ertrag]</option>
+      `).join('');
+    }
+
+    function onPosCustomerSelect() {
+      const custSel = document.getElementById('pos-customer');
+      if (!custSel) return;
+      const val = custSel.value;
+      const c = db.customers.find(x => x.company === val);
+      if (c && c.default_tier) {
+        document.getElementById('pos-tier-select').value = c.default_tier;
+      }
+    }
+
+    function addPosItemToCart() {
+      const pId = parseInt(document.getElementById('pos-item-select').value);
+      const tier = document.getElementById('pos-tier-select').value;
+      const amount = parseInt(document.getElementById('pos-item-amount').value) || 0;
+      const p = db.products.find(x => x.id === pId);
+      if (!p || amount <= 0) return alert('Ungültige Auswahl oder Menge.');
+
+      const tierCol = tier === 'pGewerbe' ? 'p_gewerbe' : tier === 'pGuenstig' ? 'p_guenstig' : tier === 'pNormal' ? 'p_normal' : 'p_teuer';
+      const unitPrice = Number(p[tierCol] || 0);
+
+      currentCart.push({
+        id: Date.now() + Math.random(),
+        productId: p.id,
+        name: p.name,
+        amount: amount,
+        tierName: tier.replace('p', ''),
+        unitPrice: unitPrice,
+        yieldPerSeed: p.yield_per_seed,
+        checked: false
+      });
+
+      renderCart();
+    }
+
+    function renderCart() {
+      const tbody = document.getElementById('pos-cart-body');
+      if (!tbody) return;
+      let total = 0;
+      if (currentCart.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-3 text-center text-leather-800/50 italic">Noch keine Posten hinzugefügt.</td></tr>`;
+        document.getElementById('pos-cart-total').innerText = "$ 0.00";
+        return;
+      }
+
+      tbody.innerHTML = currentCart.map((c, idx) => {
+        const sub = c.amount * c.unitPrice;
+        total += sub;
+        return `
+          <tr class="hover:bg-leather-800/5">
+            <td class="py-2 font-bold text-leather-900">${c.name}</td>
+            <td class="py-2 font-bold">${c.amount}</td>
+            <td class="py-2">${c.tierName} ($ ${c.unitPrice.toFixed(2)})</td>
+            <td class="py-2 text-right font-bold text-leather-900">$ ${sub.toFixed(2)}</td>
+            <td class="py-2 text-right"><button onclick="currentCart.splice(${idx},1); renderCart();" class="text-western-red font-bold">✕</button></td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('pos-cart-total').innerText = `$ ${total.toFixed(2)}`;
+    }
+
+    async function commitOrder() {
+      if (currentCart.length === 0) return alert('Der Warenkorb ist leer.');
+      const custCompany = document.getElementById('pos-customer').value;
+      const cust = db.customers.find(c => c.company === custCompany);
+      if (!cust) return alert('Bitte zuerst Kunden anlegen oder auswählen.');
+
+      const staffName = document.getElementById('pos-staff').value || 'Kontor';
+      const del = document.getElementById('pos-delivery-mode').value;
+      const ts = document.getElementById('pos-timeslot').value.trim() || 'Zeitnah';
+
+      let total = currentCart.reduce((sum, c) => sum + (c.amount * c.unitPrice), 0);
+
+      if (!confirm(`Bestellung für "${cust.company}" über $ ${total.toFixed(2)} verbindlich anlegen?`)) {
+        return;
+      }
+
+      const nextNum = db.orders.length > 0 ? Math.max(...db.orders.map(o => o.orderNumber || 0)) + 1 : 1;
+      const payload = {
+        order_number: nextNum,
+        customer: cust.company,
+        contact: cust.contact,
+        location: cust.location,
+        telegram: cust.telegram,
+        items_json: currentCart,
+        delivery_mode: del,
+        timeslot: ts,
+        staff_name: staffName,
+        price: total,
+        status: 'Offen'
+      };
+
+      if (supabase) {
+        await supabase.from('orders').insert([payload]);
+      } else {
+        db.orders.unshift({ id: Date.now(), orderNumber: nextNum, items: currentCart, staffName, price: total, status: 'Offen', ...payload });
+        renderOrders();
+        renderArchive();
+      }
+
+      currentCart = [];
+      renderCart();
+      document.getElementById('pos-timeslot').value = '';
+      alert(`Auftrag #${nextNum} für ${cust.company} erfolgreich besiegelt!`);
+    }
+
+    // KASSENBUCH
+    function renderTreasury() {
+      let income = 0;
+      let expense = 0;
+      const tbody = document.getElementById('cash-table-body');
+      if (!tbody) return;
+
+      const filtered = db.cash.filter(c => {
+        if (cashFilter === 'in') return c.type === 'in';
+        if (cashFilter === 'out') return c.type === 'out';
+        return true;
+      });
+
+      tbody.innerHTML = filtered.map(c => {
+        return `
+          <tr class="hover:bg-leather-800/5 transition">
+            <td class="py-2 px-3 text-xs text-leather-800/70">${c.date}</td>
+            <td class="py-2 px-3 text-leather-900 font-semibold">${c.desc}</td>
+            <td class="py-2 px-3 text-xs uppercase font-title">${c.type === 'in' ? 'Einnahme' : 'Ausgabe'}</td>
+            <td class="py-2 px-3 text-right font-bold ${c.type === 'in' ? 'text-western-green' : 'text-western-red'}">
+              ${c.type === 'in' ? '+' : '-'} $ ${c.amount.toFixed(2)}
+            </td>
+            <td class="py-2 px-3 text-right space-x-1">
+              <button onclick="editCashEntry(${c.id})" class="text-xs text-western-brass hover:underline">✏️</button>
+              <button onclick="deleteCashEntry(${c.id})" class="text-xs text-western-red hover:underline">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      db.cash.forEach(c => {
+        if (c.type === 'in') income += c.amount; else expense += c.amount;
+      });
+
+      const balance = income - expense;
+      document.getElementById('total-income').innerText = `$ ${income.toFixed(2)}`;
+      document.getElementById('total-expense').innerText = `$ ${expense.toFixed(2)}`;
+      document.getElementById('net-balance').innerText = `$ ${balance.toFixed(2)}`;
+      document.getElementById('header-balance').innerText = `$ ${balance.toFixed(2)}`;
+    }
+
+    function filterCash(f) {
+      cashFilter = f;
+      ['all', 'in', 'out'].forEach(x => {
+        const btn = document.getElementById(`cash-filter-${x}`);
+        if (!btn) return;
+        if (x === f) btn.className = "px-2.5 py-1 text-xs font-title uppercase rounded bg-leather-900 text-parchment-100 font-bold";
+        else btn.className = "px-2.5 py-1 text-xs font-title uppercase rounded border border-leather-800/30 bg-parchment-50 text-leather-900";
+      });
+      renderTreasury();
+    }
+
+    async function saveCashEntry() {
+      const type = document.getElementById('cm-type').value;
+      const amount = parseFloat(document.getElementById('cm-amount').value) || 0;
+      const desc = document.getElementById('cm-desc').value.trim();
+      if (!desc || amount <= 0) return alert('Bitte Betrag und Verwendungszweck angeben.');
+
+      const payload = {
+        date: new Date().toISOString().split('T')[0],
+        description: desc,
+        type: type,
+        amount: amount
+      };
+
+      if (supabase) {
+        await supabase.from('cash_entries').insert([payload]);
+      } else {
+        db.cash.unshift({ id: Date.now(), desc, ...payload });
+        renderTreasury();
+      }
+
+      closeModal('cash-modal');
+      document.getElementById('cm-amount').value = '';
+      document.getElementById('cm-desc').value = '';
+    }
+
+    async function editCashEntry(id) {
+      const entry = db.cash.find(c => c.id === id);
+      if (!entry) return;
+      const newDesc = prompt('Verwendungszweck anpassen:', entry.desc);
+      if (newDesc === null) return;
+      const newAmt = prompt('Betrag anpassen ($):', entry.amount);
+      if (newAmt === null) return;
+
+      const descVal = newDesc.trim() || entry.desc;
+      const amtVal = parseFloat(newAmt) || entry.amount;
+
+      if (supabase) {
+        await supabase.from('cash_entries').update({
+          description: descVal,
+          amount: amtVal
+        }).eq('id', id);
+      } else {
+        entry.desc = descVal;
+        entry.amount = amtVal;
+        renderTreasury();
+      }
+    }
+
+    async function deleteCashEntry(id) {
+      if (confirm('Diese Buchung wirklich aus dem Kassenbuch löschen?')) {
+        if (supabase) {
+          await supabase.from('cash_entries').delete().eq('id', id);
+        } else {
+          db.cash = db.cash.filter(c => c.id !== id);
+          renderTreasury();
+        }
+      }
+    }
+
+    // MITARBEITER
+    function renderStaff() {
+      const container = document.getElementById('staff-full-list');
+      if (!container) return;
+      if (db.staff.length === 0) {
+        container.innerHTML = `<div class="text-center py-12 text-leather-800/60 font-vintage text-lg">Noch keine Mitarbeiter hinterlegt.</div>`;
+        return;
+      }
+
+      container.innerHTML = db.staff.map(s => `
+        <div class="border border-leather-800/25 bg-parchment-50/90 p-4 rounded shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <h4 class="font-title text-base font-bold text-leather-900">${s.name}</h4>
+            <div class="text-xs font-vintage text-leather-800/80">${s.role} • Telegramm: <strong>${s.telegram}</strong></div>
+          </div>
+          <div class="flex items-center justify-between md:justify-end gap-6">
+            <span class="text-xs font-title font-bold text-western-brass">${s.wage}</span>
+            <button onclick="deleteStaff(${s.id})" class="text-xs text-western-red hover:underline">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function saveStaff() {
+      const name = document.getElementById('st-name').value.trim();
+      const role = document.getElementById('st-role').value.trim();
+      const telegram = document.getElementById('st-telegram').value.trim() || 'Keine';
+      const wage = document.getElementById('st-wage').value.trim() || 'Nach Absprache';
+      if (!name || !role) return alert('Bitte Name und Rolle eintragen.');
+
+      const payload = { name, role, telegram, wage };
+      if (supabase) {
+        await supabase.from('staff').insert([payload]);
+      } else {
+        db.staff.push({ id: Date.now(), ...payload });
+        renderStaff();
+        populatePosDropdowns();
+      }
+      closeModal('staff-modal');
+      document.getElementById('st-name').value = '';
+      document.getElementById('st-role').value = '';
+      document.getElementById('st-telegram').value = '';
+      document.getElementById('st-wage').value = '';
+    }
+
+    async function deleteStaff(id) {
+      if (confirm('Mitarbeiter entlassen / löschen?')) {
+        if (supabase) {
+          await supabase.from('staff').delete().eq('id', id);
+        } else {
+          db.staff = db.staff.filter(s => s.id !== id);
+          renderStaff();
+          populatePosDropdowns();
+        }
+      }
+    }
+
+    // KATEGORIEN
+    function renderCategories() {
+      const filterCont = document.getElementById('category-filter-buttons');
+      if (!filterCont) return;
+      let html = `<button onclick="activeCategory='alle'; renderCategories(); renderProducts();" class="px-3 py-1 text-xs font-title uppercase rounded border ${activeCategory==='alle' ? 'border-leather-900 bg-leather-900 text-parchment-100 font-bold' : 'border-leather-800/30 bg-parchment-50 text-leather-800'}">Alle</button>`;
+      db.categories.forEach(c => {
+        html += `<button onclick="activeCategory='${c}'; renderCategories(); renderProducts();" class="px-3 py-1 text-xs font-title uppercase rounded border ${activeCategory===c ? 'border-leather-900 bg-leather-900 text-parchment-100 font-bold' : 'border-leather-800/30 bg-parchment-50 text-leather-800'}">${c}</button>`;
+      });
+      filterCont.innerHTML = html;
+
+      const pCat = document.getElementById('prod-category');
+      if (pCat) pCat.innerHTML = db.categories.map(c => `<option value="${c}">${c}</option>`).join('');
+
+      const catList = document.getElementById('cat-modal-list');
+      if (catList) {
+        catList.innerHTML = db.categories.map(c => `
+          <div class="flex justify-between items-center p-2 bg-white rounded border border-leather-800/10 text-xs font-semibold">
+            <span>${c}</span>
+            <button onclick="deleteCategory('${c}')" class="text-western-red hover:underline">Löschen</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    async function addCategory() {
+      const name = document.getElementById('new-cat-name').value.trim();
+      if (!name) return alert('Name angeben.');
+      if (supabase) {
+        await supabase.from('categories').insert([{ name }]);
+      } else {
+        db.categories.push(name);
+        renderCategories();
+      }
+      document.getElementById('new-cat-name').value = '';
+    }
+
+    async function deleteCategory(name) {
+      if (confirm(`Kategorie "${name}" wirklich löschen?`)) {
+        if (supabase) {
+          await supabase.from('categories').delete().eq('name', name);
+        } else {
+          db.categories = db.categories.filter(c => c !== name);
+          renderCategories();
+        }
+      }
+    }
+
+    // ALLES RENDERN
+    function renderAll() {
+      renderCoach();
+      renderNotes();
+      renderOrders();
+      renderArchive();
+      renderCategories();
+      renderProducts();
+      renderCustomers();
+      populatePosDropdowns();
+      renderTreasury();
+      renderStaff();
+    }
+
+    function openModal(id) { 
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'flex';
+    }
+    function closeModal(id) { 
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    }
+
+    // Bei Start prüfen
+    checkGate();
+  </script>
+</body>
+</html>
