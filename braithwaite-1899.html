@@ -1134,6 +1134,48 @@
       openModal('western-alert-modal');
     }
 
+    // WINDOWS NOTIFICATIONS API
+    async function requestNotificationPermission() {
+      if (!('Notification' in window)) {
+        console.log('Browser unterstützt keine Benachrichtigungen');
+        return false;
+      }
+
+      if (Notification.permission === 'granted') {
+        return true;
+      }
+
+      if (Notification.permission !== 'denied') {
+        try {
+          const permission = await Notification.requestPermission();
+          return permission === 'granted';
+        } catch (error) {
+          console.warn('Fehler beim Anfordern der Benachrichtigungsberechtigung:', error);
+          return false;
+        }
+      }
+
+      return false;
+    }
+
+    function sendNotification(title, options = {}) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') {
+        console.log('Benachrichtigungen nicht verfügbar oder nicht genehmigt');
+        return;
+      }
+
+      try {
+        new Notification(title, {
+          icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect fill="%238B7355" width="64" height="64"/%3E%3Ctext x="32" y="40" font-size="32" fill="%23D4A574" text-anchor="middle" font-weight="bold"%3E⚜%3C/text%3E%3C/svg%3E',
+          tag: options.tag || 'braithwaite-notification',
+          badge: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Crect fill="%238B7355" width="32" height="32"/%3E%3C/svg%3E',
+          ...options
+        });
+      } catch (error) {
+        console.warn('Fehler beim Senden der Benachrichtigung:', error);
+      }
+    }
+
     // ZUSTAND: Alle Daten kommen aus der Supabase-Datenbank. Lokal gemerkt werden nur die Filter-Einstellungen.
     const UI_PREF_KEYS = ['currentCategory', 'currentArchiveStatus', 'currentActiveOrdersStatus', 'currentCashType', 'currentNoteCategory'];
     const DEFAULT_NOTE_CATEGORIES = [
@@ -1438,6 +1480,11 @@
         showAuth('pending', `Angemeldet als „${me.name || 'Discord-Nutzer'}". Dein Konto ist noch nicht freigegeben. Die Leitung wurde benachrichtigt – sobald sie dich einem Mitarbeiter zugeordnet hat, kommst du hier automatisch weiter.`);
         setDbStatus('busy', 'Wartet auf Freigabe');
         return;
+      }
+
+      // Benachrichtigungsberechtigung anfordern
+      if (firstLoad) {
+        requestNotificationPermission().catch(err => console.warn('Benachrichtigungen:', err));
       }
 
       // 2) Daten holen
@@ -2752,6 +2799,9 @@
 
       recalcEditingOrderTotal();
 
+      // Status-Änderung tracken für Benachrichtigungen
+      const oldStatus = original.status;
+
       editingOrderClone.deliveryMode = document.getElementById('detail-order-mode-select').value;
       editingOrderClone.timeslot = document.getElementById('detail-order-timeslot-input').value.trim() || 'Zeitnah nach Absprache';
       editingOrderClone.staffName = document.getElementById('detail-order-staff-select').value;
@@ -2767,6 +2817,15 @@
       Object.assign(original, editingOrderClone);
       saveState();
 
+      // Benachrichtigung wenn Status sich geändert hat
+      if (oldStatus !== newStatus) {
+        const staffDisplayName = me.staffName || me.name || 'System';
+        sendNotification(`📋 Status geändert: Bestellung #${original.orderNumber}`, {
+          body: `Alter Status: ${oldStatus}\nNeuer Status: ${newStatus}\nKunde: ${original.customer}\nVon: ${staffDisplayName}`,
+          tag: `order-status-${original.id}`,
+          requireInteraction: false
+        });
+      }
 
       closeModal('order-detail-modal');
     }
@@ -3233,6 +3292,13 @@
 
       saveState();
 
+      // Benachrichtigung für neue Bestellung
+      const staffDisplayName = me.staffName || me.name || 'System';
+      sendNotification(`📦 Neue Bestellung #${orderNumber}`, {
+        body: `Kunde: ${cust.company}\nBetrag: $ ${totalOrderPrice.toFixed(2)}\nVon: ${staffDisplayName}`,
+        tag: `order-${orderNumber}`,
+        requireInteraction: true
+      });
 
       switchTab('orders');
     }
