@@ -83,12 +83,34 @@
       background: #bfa068;
       border-radius: 3px;
     }
+
+    /* Rollen: Schaltflächen ausblenden, die die Rolle nicht nutzen darf (die eigentliche Sperre sitzt in der Datenbank) */
+    body[data-role="mitarbeiter"] [data-perm="lead"],
+    body[data-role="lesen"] [data-perm="lead"],
+    body[data-role="lesen"] [data-perm="write"] { display: none !important; }
   </style>
 
   <!-- Supabase Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="font-body min-h-screen p-2 md:p-6 flex flex-col items-center">
+  <!-- ANMELDUNG: liegt über der App, bis ein freigegebenes Discord-Konto angemeldet ist -->
+  <div id="auth-screen" class="fixed inset-0 z-[1000] flex items-center justify-center p-4" style="background: radial-gradient(circle at 50% 35%, #4a2e1d 0%, #190e09 75%);">
+    <div class="bg-parchment-100 border-2 border-western-brass p-7 rounded-lg max-w-md w-full shadow-2xl text-center space-y-4">
+      <div class="mx-auto flex items-center justify-center rounded-2xl border-2 border-western-brass font-title font-black text-3xl" style="width:76px;height:76px;background:#26160e;color:#d4af37;">BM</div>
+      <div>
+        <h1 class="font-title text-2xl font-bold text-leather-900">Braithwaite Manor</h1>
+        <p class="font-vintage text-sm text-leather-800/80 italic">Gewerbe &amp; Kassenbuch</p>
+      </div>
+      <p id="auth-msg" class="font-vintage text-base text-leather-900/90 leading-relaxed">Anmeldung wird geprüft …</p>
+      <div class="flex flex-col gap-2 pt-2 border-t border-leather-800/15">
+        <button id="auth-login-btn" onclick="loginWithDiscord()" class="hidden w-full px-5 py-3 rounded text-sm uppercase font-title font-bold shadow-lg text-white" style="background:#5865F2;">Mit Discord anmelden</button>
+        <button id="auth-retry-btn" onclick="retryAccess()" class="hidden w-full px-5 py-2.5 bg-leather-900 hover:bg-leather-800 text-parchment-100 rounded text-xs uppercase font-title font-bold shadow">Erneut prüfen</button>
+        <button id="auth-logout-btn" onclick="logout()" class="hidden w-full px-5 py-2 text-xs uppercase font-title text-leather-800/80 hover:underline">Abmelden / anderes Konto</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Anzeige: Verbindung zur Datenbank -->
   <div id="db-status" class="fixed bottom-2 right-2 z-40 px-3 py-1 rounded-full border text-[11px] font-title tracking-wider shadow-lg bg-leather-900 border-western-brass text-parchment-100">Lade Daten aus der Datenbank …</div>
 
@@ -106,6 +128,11 @@
           <div id="db-status-badge" class="inline-flex items-center gap-1.5 text-[10px] font-title px-2 py-0.5 rounded bg-parchment-300/80 border border-leather-800/20 text-leather-900">
             <span id="db-status-dot" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
             <span id="db-status-text">Verbinde …</span>
+          </div>
+          <div id="user-badge" class="hidden items-center gap-1.5 text-[10px] font-title px-2 py-0.5 rounded bg-parchment-300/80 border border-leather-800/20 text-leather-900">
+            <span>👤</span>
+            <span id="user-badge-text">-</span>
+            <button onclick="logout()" class="ml-1 underline text-western-red hover:text-leather-950">Abmelden</button>
           </div>
         </div>
 
@@ -187,10 +214,10 @@
                 <p class="text-xs text-leather-800/70 font-vintage">Farbcodierte Notizen, Auftragsabsprachen und Telegramme</p>
               </div>
               <div class="flex items-center gap-2">
-                <button onclick="openModal('note-category-modal')" class="text-xs bg-parchment-200 hover:bg-parchment-300 border border-leather-800/30 px-2.5 py-1.5 rounded font-title uppercase font-semibold text-leather-900">
+                <button data-perm="write" onclick="openModal('note-category-modal')" class="text-xs bg-parchment-200 hover:bg-parchment-300 border border-leather-800/30 px-2.5 py-1.5 rounded font-title uppercase font-semibold text-leather-900">
                   🏷️ Rubriken
                 </button>
-                <button onclick="openNewNoteModal()" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-3.5 py-1.5 rounded font-title uppercase font-bold shadow">
+                <button data-perm="write" onclick="openNewNoteModal()" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-3.5 py-1.5 rounded font-title uppercase font-bold shadow">
                   + Neue Notiz anpinnen
                 </button>
               </div>
@@ -236,10 +263,10 @@
             <p class="text-sm text-leather-800/70">1 🌱 = [Ertrag] Ertrag, Saatgutpreis (EK) und die 4 Verkaufspreisstufen</p>
           </div>
           <div class="flex gap-2 flex-wrap">
-            <button onclick="openModal('category-modal')" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3.5 py-2 rounded font-title text-xs tracking-wider uppercase font-semibold shadow">
+            <button data-perm="lead" onclick="openModal('category-modal')" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3.5 py-2 rounded font-title text-xs tracking-wider uppercase font-semibold shadow">
               🏷️ Kategorien verwalten
             </button>
-            <button onclick="openNewItemModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+            <button data-perm="lead" onclick="openNewItemModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
               + Neues Produkt anlegen
             </button>
           </div>
@@ -281,7 +308,7 @@
               <h3 class="font-title text-xl font-bold text-leather-900">🌾 Kontor-Verkaufstheke & Auftragsannahme</h3>
               <p class="text-xs text-leather-800/70">Bestellungen werden zunächst als „Offen“ registriert und erst bei Abschluss („Erledigt“) in die Kasse verbucht</p>
             </div>
-            <button onclick="openNewCustomerModal()" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3 py-1.5 rounded font-title text-xs tracking-wider uppercase font-semibold">
+            <button data-perm="write" onclick="openNewCustomerModal()" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3 py-1.5 rounded font-title text-xs tracking-wider uppercase font-semibold">
               + Neuer Kunde anlegen
             </button>
           </div>
@@ -355,7 +382,7 @@
               </div>
 
               <div class="sm:col-span-1">
-                <button type="button" onclick="addPosItemToCart()" class="w-full bg-leather-900 hover:bg-leather-800 text-parchment-100 p-2 rounded font-title text-xs font-bold uppercase shadow">
+                <button type="button" data-perm="write" onclick="addPosItemToCart()" class="w-full bg-leather-900 hover:bg-leather-800 text-parchment-100 p-2 rounded font-title text-xs font-bold uppercase shadow">
                   +
                 </button>
               </div>
@@ -382,7 +409,7 @@
                 <div class="text-sm font-title text-leather-900">
                   Gesamtpreis: <span id="pos-cart-total" class="text-2xl font-bold text-western-green ml-2">$ 0.00</span>
                 </div>
-                <button onclick="commitOrder()" class="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-700 text-white px-6 py-2.5 rounded font-title text-xs uppercase tracking-wider font-bold shadow-lg transition">
+                <button data-perm="write" onclick="commitOrder()" class="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-700 text-white px-6 py-2.5 rounded font-title text-xs uppercase tracking-wider font-bold shadow-lg transition">
                   ✓ Bestellung verbindlich aufnehmen
                 </button>
               </div>
@@ -399,7 +426,7 @@
             <p class="text-xs text-leather-800/70">Buchungen können über ✏️ bearbeitet oder 🗑️ storniert werden</p>
           </div>
           <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="openNewCashModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+            <button data-perm="lead" onclick="openNewCashModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
               + Manuelle Buchung erfassen
             </button>
           </div>
@@ -449,7 +476,7 @@
             <h2 class="font-title text-2xl font-bold text-leather-900">Kunden- & Firmenkartei</h2>
             <p class="text-sm text-leather-800/70">Klicke auf eine Karte, um alle bisherigen Bestellungen und Positionen dieses Kunden einzusehen</p>
           </div>
-          <button onclick="openNewCustomerModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+          <button data-perm="write" onclick="openNewCustomerModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
             + Neuen Kunden anlegen
           </button>
         </div>
@@ -517,7 +544,7 @@
             <h2 class="font-title text-2xl font-bold text-leather-900">Mitarbeiterliste</h2>
             <p class="text-sm text-leather-800/70">Hofknechte, Verwalter & Thekenkräfte mit Rollen, Lohnvereinbarungen und Telegramm-Kontakten</p>
           </div>
-          <button onclick="openNewStaffModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+          <button data-perm="lead" onclick="openNewStaffModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
             + Mitarbeiter aufnehmen
           </button>
         </div>
@@ -530,6 +557,8 @@
             <input type="text" id="staff-search-input" placeholder="Mitarbeiter oder Rolle suchen..." oninput="renderStaff()" class="w-full bg-parchment-50 border border-leather-800/30 p-1.5 text-xs rounded focus:outline-none placeholder-leather-800/40">
           </div>
         </div>
+
+        <div id="access-requests-panel" data-perm="lead" class="hidden border-2 border-western-brass/60 bg-parchment-100 p-3 rounded space-y-2"></div>
 
         <div id="staff-list-container" class="space-y-3"></div>
       </section>
@@ -729,7 +758,7 @@
               <input type="number" min="1" id="edit-add-amount-input" value="5" class="w-full bg-white border border-leather-800/30 p-1.5 rounded text-center font-bold focus:outline-none">
             </div>
             <div class="sm:col-span-2">
-              <button type="button" onclick="addPostenToEditingOrder()" class="w-full bg-leather-900 hover:bg-leather-800 text-parchment-100 p-1.5 rounded font-title text-xs font-bold uppercase shadow">
+              <button type="button" data-perm="write" onclick="addPostenToEditingOrder()" class="w-full bg-leather-900 hover:bg-leather-800 text-parchment-100 p-1.5 rounded font-title text-xs font-bold uppercase shadow">
                 + Anfügen
               </button>
             </div>
@@ -758,8 +787,8 @@
       </div>
 
       <div class="flex justify-between items-center pt-2 border-t border-leather-800/20">
-        <button id="detail-order-delete-btn" class="text-xs text-western-red hover:underline font-title uppercase">Bestellung stornieren / löschen</button>
-        <button onclick="saveDetailOrderChanges()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
+        <button id="detail-order-delete-btn" data-perm="lead" class="text-xs text-western-red hover:underline font-title uppercase">Bestellung stornieren / löschen</button>
+        <button data-perm="write" onclick="saveDetailOrderChanges()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
           ✓ Änderungen speichern & besiegeln
         </button>
       </div>
@@ -784,10 +813,10 @@
         <textarea id="note-content-input" rows="4" placeholder="Hier Einzelheiten eintragen..." class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded focus:outline-none custom-scroll resize-none font-vintage text-leather-950"></textarea>
       </div>
       <div class="flex justify-between items-center pt-2 border-t border-leather-800/20">
-        <button id="note-delete-btn" onclick="deleteCurrentNote()" class="text-xs text-western-red hover:underline font-title uppercase hidden">Löschen</button>
+        <button id="note-delete-btn" data-perm="write" onclick="deleteCurrentNote()" class="text-xs text-western-red hover:underline font-title uppercase hidden">Löschen</button>
         <div class="flex gap-2 ml-auto">
           <button onclick="closeModal('note-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-          <button onclick="saveNote()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Anpinnen</button>
+          <button data-perm="write" onclick="saveNote()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Anpinnen</button>
         </div>
       </div>
     </div>
@@ -810,7 +839,7 @@
             <option value="blue">Preußischblau</option>
             <option value="brown">Lederbraun</option>
           </select>
-          <button onclick="addNoteCategory()" class="bg-leather-900 text-parchment-100 px-3 py-1.5 rounded font-title text-xs font-bold uppercase hover:bg-leather-800">+ Anlegen</button>
+          <button data-perm="write" onclick="addNoteCategory()" class="bg-leather-900 text-parchment-100 px-3 py-1.5 rounded font-title text-xs font-bold uppercase hover:bg-leather-800">+ Anlegen</button>
         </div>
       </div>
 
@@ -828,7 +857,7 @@
       <h3 class="font-title text-xl font-bold text-leather-900">Kategorien für Produkte verwalten</h3>
       <div class="flex gap-2">
         <input type="text" id="new-category-name" placeholder="z. B. Kräuter & Wurzeln" class="flex-1 bg-parchment-50 border border-leather-800/30 p-2 text-xs rounded focus:outline-none">
-        <button onclick="addCategory()" class="bg-leather-900 text-parchment-100 px-3 py-2 rounded font-title text-xs font-bold uppercase hover:bg-leather-800">+ Anlegen</button>
+        <button data-perm="lead" onclick="addCategory()" class="bg-leather-900 text-parchment-100 px-3 py-2 rounded font-title text-xs font-bold uppercase hover:bg-leather-800">+ Anlegen</button>
       </div>
       <div class="border border-leather-800/20 bg-parchment-50 p-2 rounded max-h-56 overflow-y-auto custom-scroll space-y-1.5" id="category-modal-list"></div>
       <div class="flex justify-end pt-2">
@@ -869,7 +898,7 @@
       </div>
       <div class="flex justify-end gap-3 pt-3">
         <button onclick="closeModal('customer-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-        <button onclick="saveCustomer()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">In Kartei sichern</button>
+        <button data-perm="write" onclick="saveCustomer()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">In Kartei sichern</button>
       </div>
     </div>
   </div>
@@ -925,10 +954,10 @@
       </div>
 
       <div class="flex justify-between items-center pt-3 border-t border-leather-800/20">
-        <button id="item-delete-btn" onclick="deleteCurrentItem()" class="px-3 py-1.5 text-xs uppercase font-title text-western-red hover:underline hidden">Löschen</button>
+        <button id="item-delete-btn" data-perm="lead" onclick="deleteCurrentItem()" class="px-3 py-1.5 text-xs uppercase font-title text-western-red hover:underline hidden">Löschen</button>
         <div class="flex gap-2 ml-auto">
           <button onclick="closeModal('item-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-          <button onclick="saveItem()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Produkt speichern</button>
+          <button data-perm="lead" onclick="saveItem()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Produkt speichern</button>
         </div>
       </div>
     </div>
@@ -960,7 +989,7 @@
       </div>
       <div class="flex justify-end gap-3 pt-3">
         <button onclick="closeModal('cash-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-        <button onclick="saveCashEntry()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Verbuchen</button>
+        <button data-perm="lead" onclick="saveCashEntry()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Verbuchen</button>
       </div>
     </div>
   </div>
@@ -986,11 +1015,27 @@
         <label class="block text-xs uppercase font-title tracking-wider text-leather-900 mb-1">Lohnvereinbarung</label>
         <input type="text" id="staff-wage" placeholder="z. B. $ 4.50 pro Tag oder 20% Provision" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded focus:outline-none">
       </div>
+      <div class="border border-western-brass/50 bg-parchment-50 rounded p-3 space-y-2">
+        <span class="block text-xs uppercase font-title font-bold tracking-wider text-leather-900">Zugang zur App (Discord)</span>
+        <div>
+          <label class="block text-[11px] uppercase font-title tracking-wider text-leather-900 mb-1">Verknüpftes Discord-Konto</label>
+          <select id="staff-discord-select" class="w-full bg-white border border-leather-800/30 p-2 text-sm rounded focus:outline-none"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] uppercase font-title tracking-wider text-leather-900 mb-1">Zugriffsrolle</label>
+          <select id="staff-access-role" class="w-full bg-white border border-leather-800/30 p-2 text-sm rounded focus:outline-none">
+            <option value="mitarbeiter">Mitarbeiter – Bestellungen, Kutsche, Notizen, Kunden</option>
+            <option value="leitung">Leitung – darf alles</option>
+            <option value="lesen">Nur lesen</option>
+          </select>
+        </div>
+        <p class="text-[11px] text-leather-800/70 font-vintage">Ohne verknüpftes Discord-Konto hat der Mitarbeiter keinen Zugang. Neue Konten erscheinen hier, sobald sich jemand einmal mit Discord angemeldet hat.</p>
+      </div>
       <div class="flex justify-between items-center pt-3 border-t border-leather-800/20">
-        <button id="staff-delete-btn" onclick="deleteCurrentStaff()" class="text-xs text-western-red hover:underline font-title uppercase hidden">Mitarbeiter entlassen</button>
+        <button id="staff-delete-btn" data-perm="lead" onclick="deleteCurrentStaff()" class="text-xs text-western-red hover:underline font-title uppercase hidden">Mitarbeiter entlassen</button>
         <div class="flex gap-2 ml-auto">
           <button onclick="closeModal('staff-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-          <button onclick="saveStaff()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Speichern</button>
+          <button data-perm="lead" onclick="saveStaff()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Speichern</button>
         </div>
       </div>
     </div>
@@ -1017,7 +1062,7 @@
           return fetch(url, opts);
         };
         db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-          auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
           global: { fetch: plainFetch }
         });
       }
@@ -1171,8 +1216,8 @@
       {
         table: 'staff', stateKey: 'staff',
         query: q => q.order('name'),
-        fromRow: s => ({ id: s.id, name: s.name, role: s.role, wage: s.wage, telegram: s.telegram }),
-        toRow: x => ({ name: x.name, role: x.role, wage: x.wage, telegram: x.telegram })
+        fromRow: s => ({ id: s.id, name: s.name, role: s.role, wage: s.wage, telegram: s.telegram, discordId: s.discord_id || null, discordName: s.discord_name || null, accessRole: s.access_role || null }),
+        toRow: x => ({ name: x.name, role: x.role, wage: x.wage, telegram: x.telegram, discord_id: x.discordId || null, discord_name: x.discordId ? (x.discordName || null) : null, access_role: x.discordId ? (x.accessRole || null) : null })
       },
       {
         table: 'orders', stateKey: 'orders',
@@ -1272,11 +1317,12 @@
     }
 
     async function pushChangesToSupabase() {
-      if (!db || !dbLoaded) return;
+      if (!db || !dbLoaded || !signedIn || !me.role) return;
       const errors = [];
       let idsChanged = false;
       let didWrite = false;
       const run = async (label, request) => {
+        if (!request) return null; // keine Berechtigung für diese Tabelle
         didWrite = true;
         const res = await request;
         if (res && res.error) {
@@ -1289,7 +1335,7 @@
       // Produkt-Kategorien (Abgleich über den Namen)
       for (const name of state.categories) {
         if (!dbCategoryNames.has(name)) {
-          if (await run('categories', db.from('categories').insert([{ name }]))) dbCategoryNames.add(name);
+          if (await run('categories', canDb('categories', 'insert') && db.from('categories').insert([{ name }]))) dbCategoryNames.add(name);
         }
       }
 
@@ -1301,7 +1347,7 @@
           const json = JSON.stringify(row);
           const key = String(item.id);
           if (!snap.has(key)) {
-            const res = await run(def.table, db.from(def.table).insert([def.sendId ? { id: item.id, ...row } : row]).select());
+            const res = await run(def.table, canDb(def.table, 'insert') && db.from(def.table).insert([def.sendId ? { id: item.id, ...row } : row]).select());
             if (res) {
               const newId = (res.data && res.data[0] && res.data[0].id !== undefined) ? res.data[0].id : item.id;
               if (newId !== item.id) {
@@ -1312,13 +1358,13 @@
               snap.set(String(item.id), json);
             }
           } else if (snap.get(key) !== json) {
-            if (await run(def.table, db.from(def.table).update(row).eq('id', item.id))) snap.set(key, json);
+            if (await run(def.table, canDb(def.table, 'update') && db.from(def.table).update(row).eq('id', item.id))) snap.set(key, json);
           }
         }
         const liveIds = new Set(state[def.stateKey].map(x => String(x.id)));
         for (const key of Array.from(snap.keys())) {
           if (!liveIds.has(key)) {
-            if (await run(def.table, db.from(def.table).delete().eq('id', key))) snap.delete(key);
+            if (await run(def.table, canDb(def.table, 'delete') && db.from(def.table).delete().eq('id', key))) snap.delete(key);
           }
         }
       }
@@ -1326,13 +1372,13 @@
       // Entfernte Kategorien erst löschen, nachdem die Produkte umgehängt sind
       for (const name of Array.from(dbCategoryNames)) {
         if (!state.categories.includes(name)) {
-          if (await run('categories', db.from('categories').delete().eq('name', name))) dbCategoryNames.delete(name);
+          if (await run('categories', canDb('categories', 'delete') && db.from('categories').delete().eq('name', name))) dbCategoryNames.delete(name);
         }
       }
 
       if (dbCoachAway !== state.coachAway) {
         const wanted = state.coachAway;
-        if (await run('farm_meta', db.from('farm_meta').upsert({ key: 'coach_away', value: String(wanted) }))) dbCoachAway = wanted;
+        if (await run('farm_meta', canDb('farm_meta', 'update') && db.from('farm_meta').upsert({ key: 'coach_away', value: String(wanted) }))) dbCoachAway = wanted;
       }
 
       if (idsChanged) renderAll();
@@ -1342,31 +1388,68 @@
       } else if (didWrite) {
         setDbStatus('ok', '● Datenbank: gespeichert');
       }
+      // Nach dem Speichern den Stand der Datenbank holen (z. B. automatische Kassenbuchung)
+      if (didWrite) queueLoad();
     }
 
     async function loadFromSupabase() {
-      if (!db) {
-        setDbStatus('error', '⚠ Keine Verbindung zur Datenbank – es werden keine Daten geladen oder gespeichert');
+      if (!db || !signedIn) return;
+      const firstLoad = !dbLoaded;
+      const fail = (text) => {
+        setDbStatus('error', '⚠ ' + text);
+        if (firstLoad) showAuth('error', text);
+      };
+
+      // 1) Wer bin ich, und was darf ich?
+      let access;
+      try {
+        access = await db.rpc('bm_my_access');
+      } catch(err) {
+        fail('Datenbank nicht erreichbar – ' + (err.message || err));
         return;
       }
+      if (access.error) {
+        const msg = access.error.message || String(access.error);
+        fail(/bm_my_access/.test(msg) || access.error.code === 'PGRST202'
+          ? 'Die Datenbank ist noch nicht für die Anmeldung eingerichtet (SQL-Skript „1_zugriffsschutz_einrichten" ausführen).'
+          : 'Datenbank-Fehler – ' + msg);
+        return;
+      }
+      const info = access.data || {};
+      me = { role: info.role || null, discordId: info.discord_id || null, name: info.name || null, staffName: info.staff_name || null };
+      applyRole();
+
+      if (!me.discordId) {
+        showAuth('login', 'Dieses Konto ist nicht mit Discord verknüpft. Bitte mit Discord anmelden.');
+        return;
+      }
+      if (!me.role) {
+        clearLocalData();
+        showAuth('pending', `Angemeldet als „${me.name || 'Discord-Nutzer'}". Dein Konto ist noch nicht freigegeben. Die Leitung wurde benachrichtigt – sobald sie dich einem Mitarbeiter zugeordnet hat, kommst du hier automatisch weiter.`);
+        setDbStatus('busy', 'Wartet auf Freigabe');
+        return;
+      }
+
+      // 2) Daten holen
       const versionAtStart = localVersion;
-      if (!dbLoaded) setDbStatus('busy', 'Lade Daten aus der Datenbank …');
+      if (firstLoad) setDbStatus('busy', 'Lade Daten aus der Datenbank …');
 
       let results;
       try {
         results = await Promise.all([
           db.from('categories').select('*').order('name'),
           db.from('farm_meta').select('*'),
+          db.from('access_requests').select('*').order('requested_at'),
           ...DB_TABLES.map(def => def.query(db.from(def.table).select('*')))
         ]);
       } catch(err) {
-        setDbStatus('error', '⚠ Datenbank nicht erreichbar – ' + (err.message || err));
+        fail('Datenbank nicht erreichbar – ' + (err.message || err));
         return;
       }
 
       const failed = results.find(r => r.error);
       if (failed) {
-        setDbStatus('error', '⚠ Datenbank-Fehler – ' + (failed.error.message || failed.error));
+        fail('Datenbank-Fehler – ' + (failed.error.message || failed.error));
         return;
       }
 
@@ -1376,8 +1459,8 @@
         return;
       }
 
-      const [cats, meta, ...tableResults] = results;
-      const json = JSON.stringify(results.map(r => r.data));
+      const [cats, meta, requests, ...tableResults] = results;
+      const json = JSON.stringify([me, results.map(r => r.data)]);
       const changed = (json !== lastLoadedJson);
       lastLoadedJson = json;
 
@@ -1387,6 +1470,8 @@
           state[def.stateKey] = items;
           dbSnapshot[def.table] = new Map(items.map(x => [String(x.id), JSON.stringify(def.toRow(x))]));
         });
+
+        accessRequests = (requests.data || []).map(r => ({ discordId: r.discord_id, discordName: r.discord_name || 'Discord-Nutzer' }));
 
         dbCategoryNames = new Set((cats.data || []).map(c => c.name));
         state.categories = Array.from(dbCategoryNames);
@@ -1410,6 +1495,12 @@
 
       dbLoaded = true;
       if (changed) renderAll();
+      if (firstLoad && me.staffName) {
+        // Angemeldeten Mitarbeiter als Bearbeiter neuer Bestellungen vorauswählen
+        const staffSel = document.getElementById('pos-staff');
+        if (staffSel && Array.from(staffSel.options).some(o => o.value === me.staffName)) staffSel.value = me.staffName;
+      }
+      hideAuth();
       setDbStatus('ok', '● Datenbank: verbunden');
     }
 
@@ -1419,9 +1510,231 @@
 
     // Regelmäßig den aktuellen Stand holen (z. B. wenn jemand anderes die Kutsche losschickt)
     function refreshFromDatabase() {
-      if (document.hidden || anyModalOpen()) return;
+      if (!signedIn || document.hidden || anyModalOpen()) return;
       queuePush(); // noch nicht gespeicherte Änderungen erneut versuchen
       queueLoad();
+    }
+
+    // ANMELDUNG & ROLLEN
+    let me = { role: null, discordId: null, name: null, staffName: null };
+    let signedIn = false;
+    let accessRequests = [];   // Discord-Konten, die auf Freigabe warten (nur für die Leitung sichtbar)
+
+    const ROLE_LABELS = { leitung: 'Leitung', mitarbeiter: 'Mitarbeiter', lesen: 'Nur lesen' };
+
+    // Wer darf in welcher Tabelle was? L = nur Leitung, W = Leitung + Mitarbeiter (identisch zu den Regeln in der Datenbank)
+    const DB_RULES = {
+      orders:          { insert: 'W', update: 'W', delete: 'L' },
+      farm_meta:       { insert: 'W', update: 'W', delete: 'L' },
+      notes:           { insert: 'W', update: 'W', delete: 'W' },
+      note_categories: { insert: 'W', update: 'W', delete: 'W' },
+      customers:       { insert: 'W', update: 'W', delete: 'L' },
+      products:        { insert: 'L', update: 'L', delete: 'L' },
+      categories:      { insert: 'L', update: 'L', delete: 'L' },
+      cash_entries:    { insert: 'L', update: 'L', delete: 'L' },
+      staff:           { insert: 'L', update: 'L', delete: 'L' }
+    };
+
+    function hasLevel(level) {
+      if (me.role === 'leitung') return true;
+      return level === 'W' && me.role === 'mitarbeiter';
+    }
+
+    function canDb(table, op) {
+      const rule = DB_RULES[table];
+      return !!rule && hasLevel(rule[op]);
+    }
+
+    function applyRole() {
+      document.body.setAttribute('data-role', me.role || 'keine');
+      const badge = document.getElementById('user-badge');
+      if (!badge) return;
+      if (me.role) {
+        document.getElementById('user-badge-text').innerText = `${me.name || 'Discord-Nutzer'} · ${ROLE_LABELS[me.role] || me.role}`;
+        badge.classList.remove('hidden');
+        badge.classList.add('inline-flex');
+      } else {
+        badge.classList.add('hidden');
+        badge.classList.remove('inline-flex');
+      }
+    }
+
+    function showAuth(mode, text) {
+      const screen = document.getElementById('auth-screen');
+      screen.classList.remove('hidden');
+      screen.classList.add('flex');
+      document.getElementById('auth-msg').innerText = text || '';
+      const show = (id, on) => document.getElementById(id).classList.toggle('hidden', !on);
+      show('auth-login-btn', mode === 'login');
+      show('auth-retry-btn', mode === 'pending' || mode === 'error');
+      show('auth-logout-btn', (mode === 'pending' || mode === 'error') && signedIn);
+    }
+
+    function hideAuth() {
+      const screen = document.getElementById('auth-screen');
+      screen.classList.add('hidden');
+      screen.classList.remove('flex');
+    }
+
+    function clearLocalData() {
+      ['notes', 'categories', 'customers', 'orders', 'inventory', 'cash', 'staff'].forEach(k => state[k] = []);
+      accessRequests = [];
+      dbLoaded = false;
+      lastLoadedJson = "";
+      renderAll();
+    }
+
+    async function startApp() {
+      if (!db) {
+        showAuth('error', 'Die Verbindung zur Datenbank konnte nicht aufgebaut werden. Bitte die Seite neu laden.');
+        setDbStatus('error', '⚠ Keine Verbindung zur Datenbank');
+        return;
+      }
+      showAuth('loading', 'Anmeldung wird geprüft …');
+
+      let session = null;
+      try {
+        const res = await db.auth.getSession();
+        session = res && res.data ? res.data.session : null;
+      } catch(e) {
+        console.warn("Anmeldung:", e);
+      }
+
+      if (!session) {
+        // Fehlermeldung von Discord/Supabase aus der Adresse lesen, falls vorhanden
+        const fromUrl = new URLSearchParams(location.hash.replace(/^#/, '')).get('error_description')
+                     || new URLSearchParams(location.search).get('error_description');
+        let text = 'Bitte melde dich mit deinem Discord-Konto an.';
+        if (fromUrl) text = 'Anmeldung fehlgeschlagen: ' + fromUrl;
+        else if (!/^https?:$/.test(location.protocol)) text = 'Die Anmeldung funktioniert nur über die Webadresse der App, nicht mit einer lokal geöffneten Datei.';
+        setDbStatus('busy', 'Nicht angemeldet');
+        showAuth('login', text);
+        return;
+      }
+
+      signedIn = true;
+      // Anmelde-Daten aus der Adresszeile entfernen
+      if (location.hash.includes('access_token') || location.search.includes('code=')) {
+        try { history.replaceState(null, '', location.pathname); } catch(e) {}
+      }
+      await queueLoad();
+    }
+
+    async function loginWithDiscord() {
+      if (!db) return;
+      document.getElementById('auth-msg').innerText = 'Weiterleitung zu Discord …';
+      const res = await db.auth.signInWithOAuth({
+        provider: 'discord',
+        options: { redirectTo: location.origin + location.pathname }
+      });
+      if (res && res.error) showAuth('login', 'Anmeldung fehlgeschlagen: ' + (res.error.message || res.error));
+    }
+
+    async function retryAccess() {
+      document.getElementById('auth-msg').innerText = 'Wird geprüft …';
+      if (!signedIn) { await startApp(); return; }
+      await queueLoad();
+    }
+
+    async function logout() {
+      try { if (db) await db.auth.signOut(); } catch(e) { console.warn("Abmelden:", e); }
+      signedIn = false;
+      me = { role: null, discordId: null, name: null, staffName: null };
+      applyRole();
+      clearLocalData();
+      setDbStatus('busy', 'Nicht angemeldet');
+      showAuth('login', 'Du bist abgemeldet. Bitte melde dich mit deinem Discord-Konto an.');
+    }
+
+    // FREIGABEN (nur Leitung): wartende Discord-Konten einem Mitarbeiter zuordnen
+    function renderAccessRequests() {
+      const panel = document.getElementById('access-requests-panel');
+      if (!panel) return;
+      if (me.role !== 'leitung' || accessRequests.length === 0) {
+        panel.classList.add('hidden');
+        panel.innerHTML = '';
+        return;
+      }
+      const freeStaff = state.staff.filter(s => !s.discordId);
+      panel.classList.remove('hidden');
+      panel.innerHTML = `
+        <div class="font-title text-sm font-bold text-leather-900 uppercase tracking-wider">Wartende Discord-Anmeldungen (${accessRequests.length})</div>
+        ${accessRequests.map((r, i) => `
+          <div class="flex flex-col md:flex-row md:items-center gap-2 bg-white p-2 rounded border border-leather-800/15 text-xs">
+            <div class="md:w-4/12 min-w-0">
+              <div class="font-title font-bold text-leather-900 break-words">${escapeHtml(r.discordName)}</div>
+              <div class="font-mono text-[10px] text-leather-800/60">Discord-ID ${escapeHtml(r.discordId)}</div>
+            </div>
+            <select id="req-staff-${i}" class="md:w-3/12 bg-parchment-50 border border-leather-800/30 p-1.5 rounded focus:outline-none">
+              ${freeStaff.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('')}
+              <option value="__new__">+ Als neuen Mitarbeiter anlegen</option>
+            </select>
+            <select id="req-role-${i}" class="md:w-2/12 bg-parchment-50 border border-leather-800/30 p-1.5 rounded focus:outline-none">
+              <option value="mitarbeiter">Mitarbeiter</option>
+              <option value="leitung">Leitung</option>
+              <option value="lesen">Nur lesen</option>
+            </select>
+            <div class="md:w-3/12 flex items-center justify-end gap-3">
+              <button onclick="approveAccessRequest(${i})" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded font-title uppercase font-bold">Freigeben</button>
+              <button onclick="rejectAccessRequest(${i})" class="text-western-red hover:underline font-title uppercase">Ablehnen</button>
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function removeAccessRequest(discordId) {
+      accessRequests = accessRequests.filter(r => r.discordId !== discordId);
+      dbQueue = dbQueue
+        .then(() => db.from('access_requests').delete().eq('discord_id', discordId))
+        .then(res => { if (res && res.error) setDbStatus('error', '⚠ Anfrage nicht entfernt – ' + (res.error.message || res.error)); })
+        .catch(e => console.warn("Supabase Anfrage:", e));
+    }
+
+    function approveAccessRequest(index) {
+      const req = accessRequests[index];
+      if (!req) return;
+      const staffVal = document.getElementById(`req-staff-${index}`).value;
+      const role = document.getElementById(`req-role-${index}`).value;
+
+      let staff;
+      if (staffVal === '__new__') {
+        staff = { id: Date.now(), name: req.discordName, role: 'Mitarbeiter', telegram: '', wage: 'Nach Absprache' };
+        state.staff.push(staff);
+      } else {
+        staff = state.staff.find(s => String(s.id) === staffVal);
+      }
+      if (!staff) return;
+
+      staff.discordId = req.discordId;
+      staff.discordName = req.discordName;
+      staff.accessRole = role;
+      saveState();                       // schreibt die Verknüpfung
+      removeAccessRequest(req.discordId); // danach die Anfrage entfernen
+      renderAccessRequests();
+    }
+
+    async function rejectAccessRequest(index) {
+      const req = accessRequests[index];
+      if (!req) return;
+      const confirmed = await westernConfirm(`Möchtest du die Anmeldung von "${req.discordName}" ablehnen? Meldet sich das Konto erneut an, erscheint es wieder in dieser Liste.`, "Anmeldung ablehnen");
+      if (!confirmed) return;
+      removeAccessRequest(req.discordId);
+      renderAccessRequests();
+    }
+
+    function fillStaffAccessFields(staff) {
+      const sel = document.getElementById('staff-discord-select');
+      let html = `<option value="">— nicht verknüpft (kein Zugang) —</option>`;
+      if (staff && staff.discordId) {
+        html += `<option value="${escapeHtml(staff.discordId)}" data-name="${escapeHtml(staff.discordName || '')}">${escapeHtml(staff.discordName || 'Discord-Konto')} (${escapeHtml(staff.discordId)})</option>`;
+      }
+      accessRequests.forEach(r => {
+        html += `<option value="${escapeHtml(r.discordId)}" data-name="${escapeHtml(r.discordName)}">Wartet: ${escapeHtml(r.discordName)} (${escapeHtml(r.discordId)})</option>`;
+      });
+      sel.innerHTML = html;
+      sel.value = (staff && staff.discordId) ? staff.discordId : "";
+      document.getElementById('staff-access-role').value = (staff && staff.accessRole) ? staff.accessRole : 'mitarbeiter';
     }
 
     function switchTab(tab) {
@@ -1553,8 +1866,8 @@
             <select onchange="changeNoteCategoryColor(${index}, this.value)" title="Farbe ändern" class="bg-parchment-50 border border-leather-800/30 p-1 text-[11px] rounded focus:outline-none">
               ${NOTE_COLORS.map(col => `<option value="${col.id}" ${col.id === (c.color || 'gold') ? 'selected' : ''}>${col.label}</option>`).join('')}
             </select>
-            <button onclick="renameNoteCategory(${index})" class="text-western-brass hover:underline">Umbenennen</button>
-            <button onclick="deleteNoteCategory(${index})" class="text-western-red hover:underline">Löschen</button>
+            <button data-perm="write" onclick="renameNoteCategory(${index})" class="text-western-brass hover:underline">Umbenennen</button>
+            <button data-perm="write" onclick="deleteNoteCategory(${index})" class="text-western-red hover:underline">Löschen</button>
           </div>
         </div>
       `).join('');
@@ -1730,8 +2043,8 @@
         <div class="flex justify-between items-center bg-white p-2 rounded border border-leather-800/10 text-xs">
           <span class="font-title font-semibold text-leather-900">${c}</span>
           <div class="space-x-2">
-            <button onclick="renameCategory(${index})" class="text-western-brass hover:underline">Umbenennen</button>
-            <button onclick="deleteCategory(${index})" class="text-western-red hover:underline">Löschen</button>
+            <button data-perm="lead" onclick="renameCategory(${index})" class="text-western-brass hover:underline">Umbenennen</button>
+            <button data-perm="lead" onclick="deleteCategory(${index})" class="text-western-red hover:underline">Löschen</button>
           </div>
         </div>
       `).join('');
@@ -2274,7 +2587,7 @@
 
           <div class="flex items-center justify-between sm:justify-end gap-2 sm:w-2/12">
             <span class="font-title font-bold text-western-green text-sm">$ ${(item.amount * (item.unitPrice || 0)).toFixed(2)}</span>
-            <button type="button" onclick="removeCloneItem(${index})" title="Posten entfernen" class="text-western-red font-bold hover:underline px-1">✕</button>
+            <button type="button" data-perm="write" onclick="removeCloneItem(${index})" title="Posten entfernen" class="text-western-red font-bold hover:underline px-1">✕</button>
           </div>
         </div>
       `).join('');
@@ -2363,18 +2676,8 @@
 
       if (newStatus === 'Erledigt') {
         editingOrderClone.itemsList.forEach(i => i.checked = true);
-        if (!original.bookedToCash) {
-          const cashEntry = {
-            id: Date.now() + 1,
-            date: new Date().toISOString().split('T')[0],
-            desc: `Bestellung (#${original.orderNumber || 1}) ${original.customer}`,
-            type: "in",
-            amount: editingOrderClone.price
-          };
-          state.cash.push(cashEntry);
-          editingOrderClone.bookedToCash = true;
-
-        }
+        // Die Einnahme bucht die Datenbank automatisch, sobald die Bestellung auf „Erledigt" steht
+        editingOrderClone.bookedToCash = true;
       }
 
       Object.assign(original, editingOrderClone);
@@ -2436,7 +2739,7 @@
           </div>
 
           <div class="text-right md:w-auto">
-            <button onclick="openEditItemModal(${item.id})" class="text-xs text-western-brass hover:text-leather-950 underline font-semibold font-title">✏️ Edit</button>
+            <button data-perm="lead" onclick="openEditItemModal(${item.id})" class="text-xs text-western-brass hover:text-leather-950 underline font-semibold font-title">✏️ Edit</button>
           </div>
         </div>
       `).join('');
@@ -2506,10 +2809,10 @@
                 <button onclick="openCustomerHistoryModal(${c.id})" class="text-xs bg-western-brass/20 hover:bg-western-brass/30 text-leather-900 px-2.5 py-1 rounded border border-western-brass/40 font-title uppercase font-bold" title="Historie öffnen">
                   📜 Historie
                 </button>
-                <button onclick="openEditCustomerModal(${c.id})" class="text-xs bg-parchment-200 hover:bg-parchment-300 text-leather-900 px-2.5 py-1 rounded border border-leather-800/30 font-title uppercase font-semibold">
+                <button data-perm="write" onclick="openEditCustomerModal(${c.id})" class="text-xs bg-parchment-200 hover:bg-parchment-300 text-leather-900 px-2.5 py-1 rounded border border-leather-800/30 font-title uppercase font-semibold">
                   ✏️ Edit
                 </button>
-                <button onclick="deleteCustomer(${c.id})" class="text-xs text-western-red hover:underline font-title uppercase">
+                <button data-perm="lead" onclick="deleteCustomer(${c.id})" class="text-xs text-western-red hover:underline font-title uppercase">
                   🗑️ Löschen
                 </button>
               </div>
@@ -2768,7 +3071,7 @@
             <td class="py-2">${c.tierName} ($ ${c.unitPrice.toFixed(2)})</td>
             <td class="py-2 text-right font-bold text-leather-900">$ ${c.totalPrice.toFixed(2)}</td>
             <td class="py-2 text-right">
-              <button onclick="removeCartItem(${c.id})" class="text-western-red font-bold hover:underline">✕</button>
+              <button data-perm="write" onclick="removeCartItem(${c.id})" class="text-western-red font-bold hover:underline">✕</button>
             </td>
           </tr>
         `;
@@ -2910,8 +3213,8 @@
               ${c.type === 'in' ? '+' : '-'} $ ${Number(c.amount).toFixed(2)}
             </td>
             <td class="py-2.5 px-3 text-right space-x-2">
-              <button onclick="openEditCashModal(${c.id})" class="text-xs text-western-brass hover:text-leather-900 underline font-semibold font-title">✏️</button>
-              <button onclick="deleteCashEntry(${c.id})" class="text-xs text-western-red hover:underline font-title">🗑️</button>
+              <button data-perm="lead" onclick="openEditCashModal(${c.id})" class="text-xs text-western-brass hover:text-leather-900 underline font-semibold font-title">✏️</button>
+              <button data-perm="lead" onclick="deleteCashEntry(${c.id})" class="text-xs text-western-red hover:underline font-title">🗑️</button>
             </td>
           </tr>
         `).join('');
@@ -3047,6 +3350,9 @@
             <div class="font-vintage text-sm text-leather-800/80 mt-0.5">
               Rolle: <strong class="text-leather-950">${s.role}</strong>
             </div>
+            <div class="mt-1 text-[10px] font-title uppercase tracking-wider ${s.discordId ? 'text-emerald-800' : 'text-leather-800/50'}">
+              ${s.discordId ? `🔑 Zugang: ${ROLE_LABELS[s.accessRole] || 'ohne Rolle'} · Discord: ${escapeHtml(s.discordName || s.discordId)}` : 'Kein Zugang zur App'}
+            </div>
           </div>
 
           <div class="md:w-3/12 flex flex-col justify-center">
@@ -3063,10 +3369,10 @@
             </div>
 
             <div class="flex items-center gap-2">
-              <button onclick="openEditStaffModal(${s.id})" class="text-xs bg-parchment-200 hover:bg-parchment-300 text-leather-900 px-3 py-1.5 rounded border border-leather-800/30 font-title uppercase font-semibold">
+              <button data-perm="lead" onclick="openEditStaffModal(${s.id})" class="text-xs bg-parchment-200 hover:bg-parchment-300 text-leather-900 px-3 py-1.5 rounded border border-leather-800/30 font-title uppercase font-semibold">
                 ✏️ Edit
               </button>
-              <button onclick="deleteStaffDirect(${s.id})" class="text-xs text-western-red hover:underline font-title uppercase px-1">
+              <button data-perm="lead" onclick="deleteStaffDirect(${s.id})" class="text-xs text-western-red hover:underline font-title uppercase px-1">
                 🗑️ Löschen
               </button>
             </div>
@@ -3083,6 +3389,7 @@
       document.getElementById('staff-telegram').value = "";
       document.getElementById('staff-wage').value = "";
       document.getElementById('staff-delete-btn').classList.add('hidden');
+      fillStaffAccessFields(null);
       openModal('staff-modal');
     }
 
@@ -3096,6 +3403,7 @@
       document.getElementById('staff-telegram').value = s.telegram || "";
       document.getElementById('staff-wage').value = s.wage || "";
       document.getElementById('staff-delete-btn').classList.remove('hidden');
+      fillStaffAccessFields(s);
       openModal('staff-modal');
     }
 
@@ -3111,27 +3419,39 @@
         return;
       }
 
+      const discordSel = document.getElementById('staff-discord-select');
+      const discordId = discordSel.value || null;
+      const discordOpt = discordSel.options[discordSel.selectedIndex];
+      const discordName = discordId ? (discordOpt.getAttribute('data-name') || null) : null;
+      const accessRole = discordId ? document.getElementById('staff-access-role').value : null;
+
+      let target;
       if(id) {
-        const s = state.staff.find(x => x.id == id);
-        if(s) {
-          s.name = name;
-          s.role = role;
-          s.telegram = telegram;
-          s.wage = wage || "Nach Absprache";
+        target = state.staff.find(x => x.id == id);
+        if(target) {
+          target.name = name;
+          target.role = role;
+          target.telegram = telegram;
+          target.wage = wage || "Nach Absprache";
         }
       } else {
-        state.staff.push({
-          id: Date.now(),
-          name,
-          role,
-          telegram,
-          wage: wage || "Nach Absprache"
-        });
+        target = { id: Date.now(), name, role, telegram, wage: wage || "Nach Absprache" };
+        state.staff.push(target);
+      }
+      if(target) {
+        target.discordId = discordId;
+        target.discordName = discordName;
+        target.accessRole = accessRole;
       }
 
       closeModal('staff-modal');
       saveState();
       populatePosDropdowns();
+      // War das Konto eine wartende Anmeldung, ist sie damit erledigt
+      if (discordId && accessRequests.some(r => r.discordId === discordId)) {
+        removeAccessRequest(discordId);
+        renderAccessRequests();
+      }
 
     }
 
@@ -3255,7 +3575,7 @@
     function renderAll() {
       const steps = [
         renderCoach, renderNotes, renderCategoryButtons, renderOrders, renderArchiveOrders,
-        renderInventory, renderCustomerList, renderTreasury, renderStaff, populatePosDropdowns, renderCart
+        renderInventory, renderCustomerList, renderTreasury, renderStaff, renderAccessRequests, populatePosDropdowns, renderCart
       ];
 
       // Auswahl im Kassenbereich über das Neuzeichnen hinweg merken
@@ -3321,10 +3641,34 @@
       }
     })();
 
+    // RECHTE: Aktionen nur ausführen, wenn die Rolle sie erlaubt (zusätzlich zur Sperre in der Datenbank)
+    (function guardActions() {
+      const LEAD = ['saveItem', 'deleteCurrentItem', 'addCategory', 'renameCategory', 'deleteCategory',
+                    'saveCashEntry', 'deleteCashEntry', 'saveStaff', 'deleteCurrentStaff', 'deleteStaffDirect',
+                    'deleteCustomer', 'deleteOrder', 'approveAccessRequest', 'rejectAccessRequest'];
+      const WRITE = ['toggleCoach', 'saveNote', 'deleteCurrentNote', 'addNoteCategory', 'deleteNoteCategory',
+                     'changeNoteCategoryColor', 'renameNoteCategory', 'saveCustomer', 'commitOrder',
+                     'toggleItemCheckedInClone', 'saveDetailOrderChanges'];
+      const wrap = (names, level) => names.forEach(name => {
+        const original = window[name];
+        if (typeof original !== 'function') return;
+        window[name] = function(...args) {
+          if (!hasLevel(level)) {
+            westernAlert('Für diese Aktion fehlt dir die Berechtigung.', 'Kein Zugriff');
+            if (name === 'toggleItemCheckedInClone') { try { renderModalViews(); } catch(e) {} }
+            return;
+          }
+          return original.apply(this, args);
+        };
+      });
+      wrap(LEAD, 'L');
+      wrap(WRITE, 'W');
+    })();
+
     // START
     renderAll();
     switchTab('orders');
-    queueLoad();
+    startApp();
     setInterval(refreshFromDatabase, 15000);
     window.addEventListener('focus', refreshFromDatabase);
     document.addEventListener('visibilitychange', refreshFromDatabase);
