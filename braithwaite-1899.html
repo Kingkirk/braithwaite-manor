@@ -177,36 +177,38 @@
       <!-- TAB 1: AUFTRAGSBUCH -->
       <section id="view-orders" class="space-y-6">
         
-        <!-- Hofdepeschen & Notiztafel -->
-        <div class="border-2 border-leather-800/30 bg-parchment-100/80 p-5 rounded-lg shadow-sm space-y-4">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
-            <div>
-              <h3 class="font-title text-lg font-bold text-leather-900 flex items-center gap-2">
-                <span>📜 Hofdepeschen & Notiztafel</span>
-              </h3>
-              <p class="text-xs text-leather-800/70 font-vintage italic">Nachrichten & Notizen des Hofpersonals</p>
-            </div>
+        <!-- Hofdepeschen & Notiztafel — Buchstil -->
+        <div class="border-2 border-leather-800/30 bg-parchment-50 rounded-lg shadow-sm overflow-hidden">
+          <!-- Titel -->
+          <div class="bg-parchment-200/80 px-5 py-3 border-b border-leather-800/20">
+            <h3 class="font-title text-lg font-bold text-leather-900 flex items-center gap-2">
+              <span>📜 Hofdepeschen & Notiztafel</span>
+            </h3>
+            <p class="text-xs text-leather-800/70 font-vintage italic">Nachrichten & Notizen des Hofpersonals</p>
           </div>
 
-          <!-- Neue Notiz Eingabe -->
-          <div class="bg-parchment-200/60 border border-leather-800/20 rounded-lg p-3 space-y-2">
-            <textarea id="note-new-input" placeholder="Deine Nachricht an den Hof..." class="w-full h-20 bg-parchment-50 border border-leather-800/15 rounded p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-western-brass/40 resize-none" style="font-family: 'Dancing Script', cursive; font-size: 16px;"></textarea>
-            <div class="flex items-center gap-2">
-              <select id="note-new-color" class="text-xs bg-parchment-50 border border-leather-800/30 p-1.5 rounded font-title font-semibold focus:outline-none">
-                <option value="gold">✒️ Gold</option>
-                <option value="red">✒️ Rot</option>
-                <option value="green">✒️ Grün</option>
-                <option value="blue">✒️ Blau</option>
-                <option value="brown">✒️ Braun</option>
-              </select>
-              <button data-perm="notes" onclick="saveNewNote()" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-4 py-1.5 rounded font-title uppercase font-bold shadow transition tracking-wider">
-                + Neue Notiz
-              </button>
+          <!-- Das Buch: Notizen + Eingabe in einem Feld -->
+          <div class="p-5 max-h-[500px] overflow-y-auto custom-scroll" id="notes-book">
+            <!-- Bestehende Notizen erscheinen hier fortlaufend -->
+            <div id="notes-grid"></div>
+
+            <!-- Neue Notiz Eingabebereich (immer unten im Buch) -->
+            <div id="note-input-area" class="mt-4 pt-3 border-t border-leather-800/15">
+              <textarea id="note-new-input" placeholder="— Neue Nachricht an den Hof verfassen..." rows="3" class="w-full bg-transparent border-none p-0 focus:outline-none resize-none leading-relaxed" style="font-family: 'Dancing Script', cursive; font-size: 1.15rem; color: #d97706;"></textarea>
+              <div class="flex items-center gap-2 mt-2">
+                <select id="note-new-color" onchange="document.getElementById('note-new-input').style.color = noteColorHex(this.value)" class="text-xs bg-parchment-100 border border-leather-800/25 p-1.5 rounded font-title font-semibold focus:outline-none">
+                  <option value="gold">✒️ Gold</option>
+                  <option value="red">✒️ Rot</option>
+                  <option value="green">✒️ Grün</option>
+                  <option value="blue">✒️ Blau</option>
+                  <option value="brown">✒️ Braun</option>
+                </select>
+                <button data-perm="notes" onclick="saveNewNote()" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-4 py-1.5 rounded font-title uppercase font-bold shadow transition tracking-wider">
+                  + Neue Notiz
+                </button>
+              </div>
             </div>
           </div>
-
-          <!-- Notizen-Liste -->
-          <div id="notes-grid" class="space-y-3 max-h-[400px] overflow-y-auto custom-scroll"></div>
         </div>
 
         <!-- Auftragsbuch Listenbereich -->
@@ -778,34 +780,7 @@
     </div>
   </div>
 
-  <!-- Modal: Notiz bearbeiten -->
-  <div id="note-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
-    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-md w-full shadow-2xl space-y-4">
-      <h3 id="note-modal-title" class="font-title text-xl font-bold text-leather-900">Notiz bearbeiten</h3>
-      <input type="hidden" id="note-edit-id">
-      <div>
-        <label class="block text-xs uppercase font-title tracking-wider text-leather-900 mb-1">Notiztext</label>
-        <textarea id="note-content-input" rows="4" placeholder="Nachricht bearbeiten..." class="w-full bg-parchment-50 border border-leather-800/30 p-2.5 rounded focus:outline-none custom-scroll resize-none" style="font-family: 'Dancing Script', cursive; font-size: 16px;"></textarea>
-      </div>
-      <div>
-        <label class="block text-xs uppercase font-title tracking-wider text-leather-900 mb-1">Tintenfarbe</label>
-        <select id="note-edit-color" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded font-title font-semibold focus:outline-none">
-          <option value="gold">✒️ Gold</option>
-          <option value="red">✒️ Rot</option>
-          <option value="green">✒️ Grün</option>
-          <option value="blue">✒️ Blau</option>
-          <option value="brown">✒️ Braun</option>
-        </select>
-      </div>
-      <div class="flex justify-between items-center pt-2 border-t border-leather-800/20">
-        <button id="note-delete-btn" data-perm="notes" onclick="deleteCurrentNote()" class="text-xs text-western-red hover:underline font-title uppercase hidden">Löschen</button>
-        <div class="flex gap-2 ml-auto">
-          <button onclick="closeModal('note-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-          <button data-perm="notes" onclick="saveNote()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold tracking-wider">Speichern</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Notiz-Modal entfernt: Bearbeitung erfolgt inline im Buchfeld -->
 
   <!-- Modal: Notiz-Rubriken & Farben -->
   <div id="note-category-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
@@ -1947,35 +1922,79 @@
       brown: { badge: 'bg-parchment-200 text-leather-950 border-leather-800/30', card: 'border-l-4 border-leather-800 bg-parchment-100/60' }
     };
 
+    // Aktuell bearbeitete Notiz-ID (für Inline-Edit)
+    let editingNoteId = null;
+
     function renderNotes() {
       const grid = document.getElementById('notes-grid');
       const notes = state.notes || [];
 
       if (notes.length === 0) {
-        grid.innerHTML = `<div class="text-center py-6 text-leather-800/50 font-vintage text-sm italic">Noch keine Depeschen auf der Tafel. Verfasse die erste Nachricht!</div>`;
+        grid.innerHTML = `<p class="text-leather-800/40 font-vintage text-sm italic text-center py-4">Noch keine Einträge im Buch.</p>`;
         return;
       }
 
-      grid.innerHTML = notes.map(n => {
+      grid.innerHTML = notes.map((n, idx) => {
         const colorHex = noteColorHex(n.color || 'gold');
-        const dateStr = n.date ? new Date(n.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleDateString('de-DE');
+        const dateStr = n.date ? new Date(n.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
         const authorName = n.author || 'Unbekannt';
+        const isEditing = editingNoteId === n.id;
 
-        return `
-          <div class="bg-parchment-50/90 rounded border-l-4 p-3.5 shadow-sm hover:shadow transition border border-leather-800/10" style="border-left-color: ${colorHex}">
-            <p class="leading-relaxed mb-2" style="color: ${colorHex}; font-family: 'Dancing Script', cursive; font-size: 1.2rem;">${escapeHtml(n.text)}</p>
-            <div class="flex items-center justify-between border-t border-leather-800/10 pt-2 mt-1">
-              <span class="text-[10px] text-leather-800/60 font-title uppercase tracking-wider">
-                ✒️ ${escapeHtml(authorName)} · ${dateStr}
-              </span>
-              <div class="flex items-center gap-2">
-                <button data-perm="notes" onclick="openEditNoteModal(${n.id})" class="text-[11px] text-western-brass hover:underline font-title uppercase">✏️</button>
-                <button data-perm="notes" onclick="deleteNote(${n.id})" class="text-[11px] text-western-red hover:underline font-title uppercase">🗑️</button>
+        if (isEditing) {
+          // Inline-Bearbeitung: Textarea statt Text
+          return `
+            <div class="note-entry" style="margin-bottom: 1.2rem;">
+              <textarea id="note-edit-inline-${n.id}" rows="3" class="w-full bg-parchment-100 border border-western-brass/40 rounded p-2 focus:outline-none focus:ring-2 focus:ring-western-brass/30 resize-none leading-relaxed" style="font-family: 'Dancing Script', cursive; font-size: 1.15rem; color: ${colorHex};">${escapeHtml(n.text)}</textarea>
+              <div class="flex items-center gap-2 mt-1">
+                <select id="note-edit-color-${n.id}" class="text-xs bg-parchment-100 border border-leather-800/25 p-1 rounded font-title font-semibold focus:outline-none">
+                  ${NOTE_COLORS.map(c => `<option value="${c.id}" ${c.id === (n.color || 'gold') ? 'selected' : ''}>✒️ ${c.label.split(' / ')[0]}</option>`).join('')}
+                </select>
+                <button onclick="saveInlineEdit(${n.id})" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-3 py-1 rounded font-title uppercase font-bold">Speichern</button>
+                <button onclick="cancelInlineEdit()" class="text-xs text-leather-800/60 hover:text-leather-900 font-title uppercase">Abbrechen</button>
               </div>
+            </div>`;
+        }
+
+        // Normale Darstellung: wie ein Bucheintrag
+        return `
+          <div class="note-entry group" style="margin-bottom: 1.2rem;" data-note-id="${n.id}">
+            <p class="leading-relaxed" style="color: ${colorHex}; font-family: 'Dancing Script', cursive; font-size: 1.15rem;">— ${escapeHtml(n.text)}</p>
+            <p class="leading-relaxed" style="color: ${colorHex}; font-family: 'Dancing Script', cursive; font-size: 1rem; opacity: 0.85; margin-top: 2px;">gez. ${escapeHtml(authorName)}, ${dateStr}</p>
+            <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-3 mt-1">
+              <button data-perm="notes" onclick="startInlineEdit(${n.id})" class="text-[11px] text-western-brass hover:underline font-title uppercase tracking-wider">✏️ Bearbeiten</button>
+              <button data-perm="notes" onclick="deleteNote(${n.id})" class="text-[11px] text-western-red hover:underline font-title uppercase tracking-wider">🗑️ Löschen</button>
             </div>
-          </div>
-        `;
+          </div>`;
       }).join('');
+    }
+
+    function startInlineEdit(id) {
+      if (!can('notes')) { westernAlert('Keine Berechtigung.'); return; }
+      editingNoteId = id;
+      renderNotes();
+      const ta = document.getElementById('note-edit-inline-' + id);
+      if (ta) { ta.focus(); ta.selectionStart = ta.value.length; }
+    }
+
+    function cancelInlineEdit() {
+      editingNoteId = null;
+      renderNotes();
+    }
+
+    function saveInlineEdit(id) {
+      const ta = document.getElementById('note-edit-inline-' + id);
+      const colorSel = document.getElementById('note-edit-color-' + id);
+      if (!ta) return;
+      const text = ta.value.trim();
+      if (!text) { westernAlert('Bitte einen Text eingeben!'); return; }
+      const note = state.notes.find(n => n.id === id);
+      if (note) {
+        note.text = text;
+        note.color = colorSel ? colorSel.value : note.color;
+      }
+      editingNoteId = null;
+      renderNotes();
+      saveState();
     }
 
     const NOTE_COLORS = [
