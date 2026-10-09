@@ -84,11 +84,9 @@
       border-radius: 3px;
     }
 
-    /* Rollen: Schaltflächen ausblenden, die die Rolle nicht nutzen darf (die eigentliche Sperre sitzt in der Datenbank) */
-    body[data-role="mitarbeiter"] [data-perm="lead"],
-    body[data-role="lesen"] [data-perm="lead"],
-    body[data-role="lesen"] [data-perm="write"] { display: none !important; }
+    /* Rechte: welche Schaltflächen ausgeblendet werden, legt applyRole() im Skript fest */
   </style>
+  <style id="perm-style"></style>
 
   <!-- Supabase Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -147,7 +145,7 @@
         </div>
 
         <!-- Rechts: Kassenstand Plakette -->
-        <div class="bg-parchment-100/90 border-2 border-leather-800/30 rounded-lg px-4 py-2 text-center md:text-right shadow-sm min-w-[190px]">
+        <div data-perm="cash_view" class="bg-parchment-100/90 border-2 border-leather-800/30 rounded-lg px-4 py-2 text-center md:text-right shadow-sm min-w-[190px]">
           <span class="text-[10px] md:text-xs uppercase tracking-widest text-leather-800/80 font-bold block">
             Aktueller Kassenbestand
           </span>
@@ -214,10 +212,10 @@
                 <p class="text-xs text-leather-800/70 font-vintage">Farbcodierte Notizen, Auftragsabsprachen und Telegramme</p>
               </div>
               <div class="flex items-center gap-2">
-                <button data-perm="write" onclick="openModal('note-category-modal')" class="text-xs bg-parchment-200 hover:bg-parchment-300 border border-leather-800/30 px-2.5 py-1.5 rounded font-title uppercase font-semibold text-leather-900">
+                <button data-perm="notes" onclick="openModal('note-category-modal')" class="text-xs bg-parchment-200 hover:bg-parchment-300 border border-leather-800/30 px-2.5 py-1.5 rounded font-title uppercase font-semibold text-leather-900">
                   🏷️ Rubriken
                 </button>
-                <button data-perm="write" onclick="openNewNoteModal()" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-3.5 py-1.5 rounded font-title uppercase font-bold shadow">
+                <button data-perm="notes" onclick="openNewNoteModal()" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-3.5 py-1.5 rounded font-title uppercase font-bold shadow">
                   + Neue Notiz anpinnen
                 </button>
               </div>
@@ -263,10 +261,10 @@
             <p class="text-sm text-leather-800/70">1 🌱 = [Ertrag] Ertrag, Saatgutpreis (EK) und die 4 Verkaufspreisstufen</p>
           </div>
           <div class="flex gap-2 flex-wrap">
-            <button data-perm="lead" onclick="openModal('category-modal')" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3.5 py-2 rounded font-title text-xs tracking-wider uppercase font-semibold shadow">
+            <button data-perm="products" onclick="openModal('category-modal')" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3.5 py-2 rounded font-title text-xs tracking-wider uppercase font-semibold shadow">
               🏷️ Kategorien verwalten
             </button>
-            <button data-perm="lead" onclick="openNewItemModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+            <button data-perm="products" onclick="openNewItemModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
               + Neues Produkt anlegen
             </button>
           </div>
@@ -286,7 +284,7 @@
       <section id="view-treasury" class="hidden space-y-6">
         
         <!-- Salden-Übersicht -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div data-perm="cash_view" class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="border border-leather-800/20 bg-parchment-100/80 p-4 rounded text-center">
             <span class="text-xs uppercase font-title tracking-wider text-leather-800/70">Gesamteinnahmen</span>
             <div id="total-income" class="text-2xl font-bold text-western-green font-title mt-1">$ 0.00</div>
@@ -308,7 +306,7 @@
               <h3 class="font-title text-xl font-bold text-leather-900">🌾 Kontor-Verkaufstheke & Auftragsannahme</h3>
               <p class="text-xs text-leather-800/70">Bestellungen werden zunächst als „Offen“ registriert und erst bei Abschluss („Erledigt“) in die Kasse verbucht</p>
             </div>
-            <button data-perm="write" onclick="openNewCustomerModal()" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3 py-1.5 rounded font-title text-xs tracking-wider uppercase font-semibold">
+            <button data-perm="customers_edit" onclick="openNewCustomerModal()" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3 py-1.5 rounded font-title text-xs tracking-wider uppercase font-semibold">
               + Neuer Kunde anlegen
             </button>
           </div>
@@ -382,7 +380,7 @@
               </div>
 
               <div class="sm:col-span-1">
-                <button type="button" data-perm="write" onclick="addPosItemToCart()" class="w-full bg-leather-900 hover:bg-leather-800 text-parchment-100 p-2 rounded font-title text-xs font-bold uppercase shadow">
+                <button type="button" data-perm="orders_edit" onclick="addPosItemToCart()" class="w-full bg-leather-900 hover:bg-leather-800 text-parchment-100 p-2 rounded font-title text-xs font-bold uppercase shadow">
                   +
                 </button>
               </div>
@@ -409,7 +407,7 @@
                 <div class="text-sm font-title text-leather-900">
                   Gesamtpreis: <span id="pos-cart-total" class="text-2xl font-bold text-western-green ml-2">$ 0.00</span>
                 </div>
-                <button data-perm="write" onclick="commitOrder()" class="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-700 text-white px-6 py-2.5 rounded font-title text-xs uppercase tracking-wider font-bold shadow-lg transition">
+                <button data-perm="orders_edit" onclick="commitOrder()" class="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-700 text-white px-6 py-2.5 rounded font-title text-xs uppercase tracking-wider font-bold shadow-lg transition">
                   ✓ Bestellung verbindlich aufnehmen
                 </button>
               </div>
@@ -419,6 +417,7 @@
 
         </div>
 
+        <div data-perm="cash_view" class="space-y-6">
         <!-- Historisches Kassenbuch mit Filterleiste -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-leather-800/20 pb-3 pt-4">
           <div>
@@ -426,7 +425,7 @@
             <p class="text-xs text-leather-800/70">Buchungen können über ✏️ bearbeitet oder 🗑️ storniert werden</p>
           </div>
           <div class="flex items-center gap-2 flex-wrap">
-            <button data-perm="lead" onclick="openNewCashModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+            <button data-perm="cash_edit" onclick="openNewCashModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
               + Manuelle Buchung erfassen
             </button>
           </div>
@@ -466,6 +465,7 @@
         </div>
 
         <div id="cash-pagination" class="flex justify-between items-center pt-2 border-t border-leather-800/20 text-xs"></div>
+        </div>
 
       </section>
 
@@ -476,7 +476,7 @@
             <h2 class="font-title text-2xl font-bold text-leather-900">Kunden- & Firmenkartei</h2>
             <p class="text-sm text-leather-800/70">Klicke auf eine Karte, um alle bisherigen Bestellungen und Positionen dieses Kunden einzusehen</p>
           </div>
-          <button data-perm="write" onclick="openNewCustomerModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+          <button data-perm="customers_edit" onclick="openNewCustomerModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
             + Neuen Kunden anlegen
           </button>
         </div>
@@ -544,7 +544,7 @@
             <h2 class="font-title text-2xl font-bold text-leather-900">Mitarbeiterliste</h2>
             <p class="text-sm text-leather-800/70">Hofknechte, Verwalter & Thekenkräfte mit Rollen, Lohnvereinbarungen und Telegramm-Kontakten</p>
           </div>
-          <button data-perm="lead" onclick="openNewStaffModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+          <button data-perm="staff_manage" onclick="openNewStaffModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
             + Mitarbeiter aufnehmen
           </button>
         </div>
@@ -558,7 +558,7 @@
           </div>
         </div>
 
-        <div id="access-requests-panel" data-perm="lead" class="hidden border-2 border-western-brass/60 bg-parchment-100 p-3 rounded space-y-2"></div>
+        <div id="access-requests-panel" data-perm="staff_manage" class="hidden border-2 border-western-brass/60 bg-parchment-100 p-3 rounded space-y-2"></div>
 
         <div id="staff-list-container" class="space-y-3"></div>
       </section>
@@ -758,7 +758,7 @@
               <input type="number" min="1" id="edit-add-amount-input" value="5" class="w-full bg-white border border-leather-800/30 p-1.5 rounded text-center font-bold focus:outline-none">
             </div>
             <div class="sm:col-span-2">
-              <button type="button" data-perm="write" onclick="addPostenToEditingOrder()" class="w-full bg-leather-900 hover:bg-leather-800 text-parchment-100 p-1.5 rounded font-title text-xs font-bold uppercase shadow">
+              <button type="button" data-perm="orders_edit" onclick="addPostenToEditingOrder()" class="w-full bg-leather-900 hover:bg-leather-800 text-parchment-100 p-1.5 rounded font-title text-xs font-bold uppercase shadow">
                 + Anfügen
               </button>
             </div>
@@ -787,8 +787,8 @@
       </div>
 
       <div class="flex justify-between items-center pt-2 border-t border-leather-800/20">
-        <button id="detail-order-delete-btn" data-perm="lead" class="text-xs text-western-red hover:underline font-title uppercase">Bestellung stornieren / löschen</button>
-        <button data-perm="write" onclick="saveDetailOrderChanges()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
+        <button id="detail-order-delete-btn" data-perm="orders_delete" class="text-xs text-western-red hover:underline font-title uppercase">Bestellung stornieren / löschen</button>
+        <button data-perm="orders_edit" onclick="saveDetailOrderChanges()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
           ✓ Änderungen speichern & besiegeln
         </button>
       </div>
@@ -813,10 +813,10 @@
         <textarea id="note-content-input" rows="4" placeholder="Hier Einzelheiten eintragen..." class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded focus:outline-none custom-scroll resize-none font-vintage text-leather-950"></textarea>
       </div>
       <div class="flex justify-between items-center pt-2 border-t border-leather-800/20">
-        <button id="note-delete-btn" data-perm="write" onclick="deleteCurrentNote()" class="text-xs text-western-red hover:underline font-title uppercase hidden">Löschen</button>
+        <button id="note-delete-btn" data-perm="notes" onclick="deleteCurrentNote()" class="text-xs text-western-red hover:underline font-title uppercase hidden">Löschen</button>
         <div class="flex gap-2 ml-auto">
           <button onclick="closeModal('note-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-          <button data-perm="write" onclick="saveNote()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Anpinnen</button>
+          <button data-perm="notes" onclick="saveNote()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Anpinnen</button>
         </div>
       </div>
     </div>
@@ -839,7 +839,7 @@
             <option value="blue">Preußischblau</option>
             <option value="brown">Lederbraun</option>
           </select>
-          <button data-perm="write" onclick="addNoteCategory()" class="bg-leather-900 text-parchment-100 px-3 py-1.5 rounded font-title text-xs font-bold uppercase hover:bg-leather-800">+ Anlegen</button>
+          <button data-perm="notes" onclick="addNoteCategory()" class="bg-leather-900 text-parchment-100 px-3 py-1.5 rounded font-title text-xs font-bold uppercase hover:bg-leather-800">+ Anlegen</button>
         </div>
       </div>
 
@@ -857,7 +857,7 @@
       <h3 class="font-title text-xl font-bold text-leather-900">Kategorien für Produkte verwalten</h3>
       <div class="flex gap-2">
         <input type="text" id="new-category-name" placeholder="z. B. Kräuter & Wurzeln" class="flex-1 bg-parchment-50 border border-leather-800/30 p-2 text-xs rounded focus:outline-none">
-        <button data-perm="lead" onclick="addCategory()" class="bg-leather-900 text-parchment-100 px-3 py-2 rounded font-title text-xs font-bold uppercase hover:bg-leather-800">+ Anlegen</button>
+        <button data-perm="products" onclick="addCategory()" class="bg-leather-900 text-parchment-100 px-3 py-2 rounded font-title text-xs font-bold uppercase hover:bg-leather-800">+ Anlegen</button>
       </div>
       <div class="border border-leather-800/20 bg-parchment-50 p-2 rounded max-h-56 overflow-y-auto custom-scroll space-y-1.5" id="category-modal-list"></div>
       <div class="flex justify-end pt-2">
@@ -898,7 +898,7 @@
       </div>
       <div class="flex justify-end gap-3 pt-3">
         <button onclick="closeModal('customer-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-        <button data-perm="write" onclick="saveCustomer()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">In Kartei sichern</button>
+        <button data-perm="customers_edit" onclick="saveCustomer()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">In Kartei sichern</button>
       </div>
     </div>
   </div>
@@ -954,10 +954,10 @@
       </div>
 
       <div class="flex justify-between items-center pt-3 border-t border-leather-800/20">
-        <button id="item-delete-btn" data-perm="lead" onclick="deleteCurrentItem()" class="px-3 py-1.5 text-xs uppercase font-title text-western-red hover:underline hidden">Löschen</button>
+        <button id="item-delete-btn" data-perm="products" onclick="deleteCurrentItem()" class="px-3 py-1.5 text-xs uppercase font-title text-western-red hover:underline hidden">Löschen</button>
         <div class="flex gap-2 ml-auto">
           <button onclick="closeModal('item-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-          <button data-perm="lead" onclick="saveItem()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Produkt speichern</button>
+          <button data-perm="products" onclick="saveItem()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Produkt speichern</button>
         </div>
       </div>
     </div>
@@ -989,14 +989,14 @@
       </div>
       <div class="flex justify-end gap-3 pt-3">
         <button onclick="closeModal('cash-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-        <button data-perm="lead" onclick="saveCashEntry()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Verbuchen</button>
+        <button data-perm="cash_edit" onclick="saveCashEntry()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Verbuchen</button>
       </div>
     </div>
   </div>
 
   <!-- Modal: Mitarbeiter aufnehmen / bearbeiten -->
   <div id="staff-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
-    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-md w-full shadow-2xl space-y-4">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-lg w-full shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scroll">
       <h3 id="staff-modal-title" class="font-title text-xl font-bold text-leather-900">Mitarbeiter aufnehmen</h3>
       <input type="hidden" id="staff-edit-id">
       <div>
@@ -1022,20 +1022,29 @@
           <select id="staff-discord-select" class="w-full bg-white border border-leather-800/30 p-2 text-sm rounded focus:outline-none"></select>
         </div>
         <div>
-          <label class="block text-[11px] uppercase font-title tracking-wider text-leather-900 mb-1">Zugriffsrolle</label>
-          <select id="staff-access-role" class="w-full bg-white border border-leather-800/30 p-2 text-sm rounded focus:outline-none">
-            <option value="mitarbeiter">Mitarbeiter – Bestellungen, Kutsche, Notizen, Kunden</option>
-            <option value="leitung">Leitung – darf alles</option>
+          <label class="block text-[11px] uppercase font-title tracking-wider text-leather-900 mb-1">oder Discord-ID von Hand eintragen</label>
+          <input type="text" id="staff-discord-manual" inputmode="numeric" placeholder="z. B. 160849534363238401" class="w-full bg-white border border-leather-800/30 p-2 text-sm rounded focus:outline-none font-mono">
+        </div>
+        <div>
+          <label class="block text-[11px] uppercase font-title tracking-wider text-leather-900 mb-1">Vorlage</label>
+          <select id="staff-access-role" onchange="applyStaffPreset()" class="w-full bg-white border border-leather-800/30 p-2 text-sm rounded focus:outline-none">
+            <option value="mitarbeiter">Mitarbeiter</option>
+            <option value="leitung">Leitung – darf immer alles</option>
             <option value="lesen">Nur lesen</option>
+            <option value="individuell">Individuell (eigene Auswahl)</option>
           </select>
         </div>
-        <p class="text-[11px] text-leather-800/70 font-vintage">Ohne verknüpftes Discord-Konto hat der Mitarbeiter keinen Zugang. Neue Konten erscheinen hier, sobald sich jemand einmal mit Discord angemeldet hat.</p>
+        <div>
+          <span class="block text-[11px] uppercase font-title tracking-wider text-leather-900 mb-1">Was darf dieser Mitarbeiter?</span>
+          <div id="staff-perm-list" class="grid grid-cols-1 gap-1 bg-white border border-leather-800/20 rounded p-2"></div>
+        </div>
+        <p class="text-[11px] text-leather-800/70 font-vintage">Ansehen darf jeder mit Zugang alles außer dem Kassenbuch. Der Zugang gilt erst, wenn ein Discord-Konto verknüpft ist; die Rechte kannst du schon vorher festlegen.</p>
       </div>
       <div class="flex justify-between items-center pt-3 border-t border-leather-800/20">
-        <button id="staff-delete-btn" data-perm="lead" onclick="deleteCurrentStaff()" class="text-xs text-western-red hover:underline font-title uppercase hidden">Mitarbeiter entlassen</button>
+        <button id="staff-delete-btn" data-perm="staff_manage" onclick="deleteCurrentStaff()" class="text-xs text-western-red hover:underline font-title uppercase hidden">Mitarbeiter entlassen</button>
         <div class="flex gap-2 ml-auto">
           <button onclick="closeModal('staff-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
-          <button data-perm="lead" onclick="saveStaff()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Speichern</button>
+          <button data-perm="staff_manage" onclick="saveStaff()" class="px-4 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold">Speichern</button>
         </div>
       </div>
     </div>
@@ -1216,8 +1225,8 @@
       {
         table: 'staff', stateKey: 'staff',
         query: q => q.order('name'),
-        fromRow: s => ({ id: s.id, name: s.name, role: s.role, wage: s.wage, telegram: s.telegram, discordId: s.discord_id || null, discordName: s.discord_name || null, accessRole: s.access_role || null }),
-        toRow: x => ({ name: x.name, role: x.role, wage: x.wage, telegram: x.telegram, discord_id: x.discordId || null, discord_name: x.discordId ? (x.discordName || null) : null, access_role: x.discordId ? (x.accessRole || null) : null })
+        fromRow: s => ({ id: s.id, name: s.name, role: s.role, wage: s.wage, telegram: s.telegram, discordId: s.discord_id || null, discordName: s.discord_name || null, accessRole: s.access_role || null, permissions: Array.isArray(s.permissions) ? s.permissions.slice().sort() : null }),
+        toRow: x => ({ name: x.name, role: x.role, wage: x.wage, telegram: x.telegram, discord_id: x.discordId || null, discord_name: x.discordId ? (x.discordName || null) : null, access_role: x.accessRole || null, permissions: Array.isArray(x.permissions) ? x.permissions.slice().sort() : null })
       },
       {
         table: 'orders', stateKey: 'orders',
@@ -1416,7 +1425,8 @@
         return;
       }
       const info = access.data || {};
-      me = { role: info.role || null, discordId: info.discord_id || null, name: info.name || null, staffName: info.staff_name || null };
+      me = { role: info.role || null, discordId: info.discord_id || null, name: info.name || null, staffName: info.staff_name || null,
+             perms: Array.isArray(info.permissions) ? info.permissions : (ROLE_PRESETS[info.role] || []) };
       applyRole();
 
       if (!me.discordId) {
@@ -1516,37 +1526,68 @@
     }
 
     // ANMELDUNG & ROLLEN
-    let me = { role: null, discordId: null, name: null, staffName: null };
+    let me = { role: null, discordId: null, name: null, staffName: null, perms: [] };
     let signedIn = false;
     let accessRequests = [];   // Discord-Konten, die auf Freigabe warten (nur für die Leitung sichtbar)
 
-    const ROLE_LABELS = { leitung: 'Leitung', mitarbeiter: 'Mitarbeiter', lesen: 'Nur lesen' };
+    const ROLE_LABELS = { leitung: 'Leitung', mitarbeiter: 'Mitarbeiter', lesen: 'Nur lesen', individuell: 'Individuell' };
 
-    // Wer darf in welcher Tabelle was? L = nur Leitung, W = Leitung + Mitarbeiter (identisch zu den Regeln in der Datenbank)
-    const DB_RULES = {
-      orders:          { insert: 'W', update: 'W', delete: 'L' },
-      farm_meta:       { insert: 'W', update: 'W', delete: 'L' },
-      notes:           { insert: 'W', update: 'W', delete: 'W' },
-      note_categories: { insert: 'W', update: 'W', delete: 'W' },
-      customers:       { insert: 'W', update: 'W', delete: 'L' },
-      products:        { insert: 'L', update: 'L', delete: 'L' },
-      categories:      { insert: 'L', update: 'L', delete: 'L' },
-      cash_entries:    { insert: 'L', update: 'L', delete: 'L' },
-      staff:           { insert: 'L', update: 'L', delete: 'L' }
+    // Einzelne Rechte (Häkchen im Mitarbeiter-Dialog) – identisch zu den Regeln in der Datenbank
+    const PERMISSIONS = [
+      { id: 'orders_edit',      label: 'Bestellungen anlegen und bearbeiten' },
+      { id: 'orders_delete',    label: 'Bestellungen löschen' },
+      { id: 'coach',            label: 'Kutschen-Status ändern' },
+      { id: 'notes',            label: 'Notizen und Rubriken bearbeiten' },
+      { id: 'customers_edit',   label: 'Kunden anlegen und ändern' },
+      { id: 'customers_delete', label: 'Kunden löschen' },
+      { id: 'products',         label: 'Produkte, Preise und Kategorien ändern' },
+      { id: 'cash_view',        label: 'Kassenbuch ansehen' },
+      { id: 'cash_edit',        label: 'Kassenbuch bearbeiten (buchen, ändern, löschen)' },
+      { id: 'staff_manage',     label: 'Mitarbeiter und Zugriffe verwalten' }
+    ];
+    const ALL_PERMS = PERMISSIONS.map(p => p.id);
+    const ROLE_PRESETS = {
+      leitung: ALL_PERMS,
+      mitarbeiter: ['orders_edit', 'coach', 'notes', 'customers_edit', 'cash_view'],
+      lesen: ['cash_view']
     };
 
-    function hasLevel(level) {
-      if (me.role === 'leitung') return true;
-      return level === 'W' && me.role === 'mitarbeiter';
+    // Welche Tabelle braucht welches Recht zum Anlegen / Ändern / Löschen
+    const DB_RULES = {
+      orders:          { insert: 'orders_edit',    update: 'orders_edit',    delete: 'orders_delete' },
+      farm_meta:       { insert: 'coach',          update: 'coach',          delete: 'staff_manage' },
+      notes:           { insert: 'notes',          update: 'notes',          delete: 'notes' },
+      note_categories: { insert: 'notes',          update: 'notes',          delete: 'notes' },
+      customers:       { insert: 'customers_edit', update: 'customers_edit', delete: 'customers_delete' },
+      products:        { insert: 'products',       update: 'products',       delete: 'products' },
+      categories:      { insert: 'products',       update: 'products',       delete: 'products' },
+      cash_entries:    { insert: 'cash_edit',      update: 'cash_edit',      delete: 'cash_edit' },
+      staff:           { insert: 'staff_manage',   update: 'staff_manage',   delete: 'staff_manage' }
+    };
+
+    function can(perm) {
+      return !!me.role && (me.role === 'leitung' || (me.perms || []).includes(perm));
     }
 
     function canDb(table, op) {
       const rule = DB_RULES[table];
-      return !!rule && hasLevel(rule[op]);
+      return !!rule && can(rule[op]);
+    }
+
+    // Rechte eines Mitarbeiters, wie sie gelten (Leitung: alles; ohne eigene Auswahl: Vorlage der Rolle)
+    function staffPerms(s) {
+      if (!s || !s.accessRole) return [];
+      if (s.accessRole === 'leitung') return ALL_PERMS.slice();
+      return Array.isArray(s.permissions) ? s.permissions : (ROLE_PRESETS[s.accessRole] || []);
     }
 
     function applyRole() {
       document.body.setAttribute('data-role', me.role || 'keine');
+      // Schaltflächen ausblenden, für die das Recht fehlt (die eigentliche Sperre sitzt in der Datenbank)
+      const missing = me.role ? ALL_PERMS.filter(p => !can(p)) : [];
+      document.getElementById('perm-style').textContent = missing.length
+        ? missing.map(p => `[data-perm="${p}"]`).join(',') + '{display:none !important;}'
+        : '';
       const badge = document.getElementById('user-badge');
       if (!badge) return;
       if (me.role) {
@@ -1639,7 +1680,7 @@
     async function logout() {
       try { if (db) await db.auth.signOut(); } catch(e) { console.warn("Abmelden:", e); }
       signedIn = false;
-      me = { role: null, discordId: null, name: null, staffName: null };
+      me = { role: null, discordId: null, name: null, staffName: null, perms: [] };
       applyRole();
       clearLocalData();
       setDbStatus('busy', 'Nicht angemeldet');
@@ -1650,7 +1691,7 @@
     function renderAccessRequests() {
       const panel = document.getElementById('access-requests-panel');
       if (!panel) return;
-      if (me.role !== 'leitung' || accessRequests.length === 0) {
+      if (!can('staff_manage') || accessRequests.length === 0) {
         panel.classList.add('hidden');
         panel.innerHTML = '';
         return;
@@ -1709,6 +1750,7 @@
       staff.discordId = req.discordId;
       staff.discordName = req.discordName;
       staff.accessRole = role;
+      staff.permissions = role === 'leitung' ? null : (ROLE_PRESETS[role] || []).slice().sort();
       saveState();                       // schreibt die Verknüpfung
       removeAccessRequest(req.discordId); // danach die Anfrage entfernen
       renderAccessRequests();
@@ -1729,12 +1771,54 @@
       if (staff && staff.discordId) {
         html += `<option value="${escapeHtml(staff.discordId)}" data-name="${escapeHtml(staff.discordName || '')}">${escapeHtml(staff.discordName || 'Discord-Konto')} (${escapeHtml(staff.discordId)})</option>`;
       }
+      // Eigenes Konto anbieten, solange es noch keinem Mitarbeiter zugeordnet ist
+      if (me.discordId && !state.staff.some(x => x.discordId === me.discordId)) {
+        html += `<option value="${escapeHtml(me.discordId)}" data-name="${escapeHtml(me.name || '')}">Mein Konto: ${escapeHtml(me.name || 'Discord-Konto')} (${escapeHtml(me.discordId)})</option>`;
+      }
       accessRequests.forEach(r => {
         html += `<option value="${escapeHtml(r.discordId)}" data-name="${escapeHtml(r.discordName)}">Wartet: ${escapeHtml(r.discordName)} (${escapeHtml(r.discordId)})</option>`;
       });
       sel.innerHTML = html;
       sel.value = (staff && staff.discordId) ? staff.discordId : "";
-      document.getElementById('staff-access-role').value = (staff && staff.accessRole) ? staff.accessRole : 'mitarbeiter';
+      document.getElementById('staff-discord-manual').value = "";
+
+      const role = (staff && staff.accessRole) ? staff.accessRole : 'mitarbeiter';
+      const perms = (staff && staff.accessRole) ? staffPerms(staff) : ROLE_PRESETS.mitarbeiter;
+      document.getElementById('staff-access-role').value = role;
+      document.getElementById('staff-perm-list').innerHTML = PERMISSIONS.map(p => `
+        <label class="flex items-center gap-2 text-xs text-leather-900 cursor-pointer py-0.5">
+          <input type="checkbox" data-pid="${p.id}" onchange="onStaffPermToggle()" class="w-4 h-4 accent-emerald-700" ${perms.includes(p.id) ? 'checked' : ''}>
+          <span>${p.label}</span>
+        </label>
+      `).join('');
+      lockStaffPermBoxes();
+    }
+
+    function staffPermBoxes() {
+      return Array.from(document.querySelectorAll('#staff-perm-list input[type="checkbox"]'));
+    }
+
+    // Leitung hat immer alles: Häkchen gesetzt und gesperrt
+    function lockStaffPermBoxes() {
+      const isLead = document.getElementById('staff-access-role').value === 'leitung';
+      staffPermBoxes().forEach(box => {
+        if (isLead) box.checked = true;
+        box.disabled = isLead;
+      });
+    }
+
+    function applyStaffPreset() {
+      const role = document.getElementById('staff-access-role').value;
+      const preset = ROLE_PRESETS[role];
+      if (preset) staffPermBoxes().forEach(box => box.checked = preset.includes(box.getAttribute('data-pid')));
+      lockStaffPermBoxes();
+    }
+
+    // Eigene Auswahl: passt sie zu einer Vorlage, wird die angezeigt, sonst "Individuell"
+    function onStaffPermToggle() {
+      const chosen = staffPermBoxes().filter(b => b.checked).map(b => b.getAttribute('data-pid')).sort().join(',');
+      const match = ['mitarbeiter', 'lesen'].find(r => ROLE_PRESETS[r].slice().sort().join(',') === chosen);
+      document.getElementById('staff-access-role').value = match || 'individuell';
     }
 
     function switchTab(tab) {
@@ -1866,8 +1950,8 @@
             <select onchange="changeNoteCategoryColor(${index}, this.value)" title="Farbe ändern" class="bg-parchment-50 border border-leather-800/30 p-1 text-[11px] rounded focus:outline-none">
               ${NOTE_COLORS.map(col => `<option value="${col.id}" ${col.id === (c.color || 'gold') ? 'selected' : ''}>${col.label}</option>`).join('')}
             </select>
-            <button data-perm="write" onclick="renameNoteCategory(${index})" class="text-western-brass hover:underline">Umbenennen</button>
-            <button data-perm="write" onclick="deleteNoteCategory(${index})" class="text-western-red hover:underline">Löschen</button>
+            <button data-perm="notes" onclick="renameNoteCategory(${index})" class="text-western-brass hover:underline">Umbenennen</button>
+            <button data-perm="notes" onclick="deleteNoteCategory(${index})" class="text-western-red hover:underline">Löschen</button>
           </div>
         </div>
       `).join('');
@@ -2043,8 +2127,8 @@
         <div class="flex justify-between items-center bg-white p-2 rounded border border-leather-800/10 text-xs">
           <span class="font-title font-semibold text-leather-900">${c}</span>
           <div class="space-x-2">
-            <button data-perm="lead" onclick="renameCategory(${index})" class="text-western-brass hover:underline">Umbenennen</button>
-            <button data-perm="lead" onclick="deleteCategory(${index})" class="text-western-red hover:underline">Löschen</button>
+            <button data-perm="products" onclick="renameCategory(${index})" class="text-western-brass hover:underline">Umbenennen</button>
+            <button data-perm="products" onclick="deleteCategory(${index})" class="text-western-red hover:underline">Löschen</button>
           </div>
         </div>
       `).join('');
@@ -2587,7 +2671,7 @@
 
           <div class="flex items-center justify-between sm:justify-end gap-2 sm:w-2/12">
             <span class="font-title font-bold text-western-green text-sm">$ ${(item.amount * (item.unitPrice || 0)).toFixed(2)}</span>
-            <button type="button" data-perm="write" onclick="removeCloneItem(${index})" title="Posten entfernen" class="text-western-red font-bold hover:underline px-1">✕</button>
+            <button type="button" data-perm="orders_edit" onclick="removeCloneItem(${index})" title="Posten entfernen" class="text-western-red font-bold hover:underline px-1">✕</button>
           </div>
         </div>
       `).join('');
@@ -2739,7 +2823,7 @@
           </div>
 
           <div class="text-right md:w-auto">
-            <button data-perm="lead" onclick="openEditItemModal(${item.id})" class="text-xs text-western-brass hover:text-leather-950 underline font-semibold font-title">✏️ Edit</button>
+            <button data-perm="products" onclick="openEditItemModal(${item.id})" class="text-xs text-western-brass hover:text-leather-950 underline font-semibold font-title">✏️ Edit</button>
           </div>
         </div>
       `).join('');
@@ -2809,10 +2893,10 @@
                 <button onclick="openCustomerHistoryModal(${c.id})" class="text-xs bg-western-brass/20 hover:bg-western-brass/30 text-leather-900 px-2.5 py-1 rounded border border-western-brass/40 font-title uppercase font-bold" title="Historie öffnen">
                   📜 Historie
                 </button>
-                <button data-perm="write" onclick="openEditCustomerModal(${c.id})" class="text-xs bg-parchment-200 hover:bg-parchment-300 text-leather-900 px-2.5 py-1 rounded border border-leather-800/30 font-title uppercase font-semibold">
+                <button data-perm="customers_edit" onclick="openEditCustomerModal(${c.id})" class="text-xs bg-parchment-200 hover:bg-parchment-300 text-leather-900 px-2.5 py-1 rounded border border-leather-800/30 font-title uppercase font-semibold">
                   ✏️ Edit
                 </button>
-                <button data-perm="lead" onclick="deleteCustomer(${c.id})" class="text-xs text-western-red hover:underline font-title uppercase">
+                <button data-perm="customers_delete" onclick="deleteCustomer(${c.id})" class="text-xs text-western-red hover:underline font-title uppercase">
                   🗑️ Löschen
                 </button>
               </div>
@@ -3071,7 +3155,7 @@
             <td class="py-2">${c.tierName} ($ ${c.unitPrice.toFixed(2)})</td>
             <td class="py-2 text-right font-bold text-leather-900">$ ${c.totalPrice.toFixed(2)}</td>
             <td class="py-2 text-right">
-              <button data-perm="write" onclick="removeCartItem(${c.id})" class="text-western-red font-bold hover:underline">✕</button>
+              <button data-perm="orders_edit" onclick="removeCartItem(${c.id})" class="text-western-red font-bold hover:underline">✕</button>
             </td>
           </tr>
         `;
@@ -3213,8 +3297,8 @@
               ${c.type === 'in' ? '+' : '-'} $ ${Number(c.amount).toFixed(2)}
             </td>
             <td class="py-2.5 px-3 text-right space-x-2">
-              <button data-perm="lead" onclick="openEditCashModal(${c.id})" class="text-xs text-western-brass hover:text-leather-900 underline font-semibold font-title">✏️</button>
-              <button data-perm="lead" onclick="deleteCashEntry(${c.id})" class="text-xs text-western-red hover:underline font-title">🗑️</button>
+              <button data-perm="cash_edit" onclick="openEditCashModal(${c.id})" class="text-xs text-western-brass hover:text-leather-900 underline font-semibold font-title">✏️</button>
+              <button data-perm="cash_edit" onclick="deleteCashEntry(${c.id})" class="text-xs text-western-red hover:underline font-title">🗑️</button>
             </td>
           </tr>
         `).join('');
@@ -3350,9 +3434,12 @@
             <div class="font-vintage text-sm text-leather-800/80 mt-0.5">
               Rolle: <strong class="text-leather-950">${s.role}</strong>
             </div>
-            <div class="mt-1 text-[10px] font-title uppercase tracking-wider ${s.discordId ? 'text-emerald-800' : 'text-leather-800/50'}">
-              ${s.discordId ? `🔑 Zugang: ${ROLE_LABELS[s.accessRole] || 'ohne Rolle'} · Discord: ${escapeHtml(s.discordName || s.discordId)}` : 'Kein Zugang zur App'}
+<div class="mt-1 text-[10px] font-title uppercase tracking-wider ${s.discordId ? 'text-emerald-800' : (s.accessRole ? 'text-amber-800' : 'text-leather-800/50')}">
+              ${s.discordId
+                ? `🔑 Zugang: ${ROLE_LABELS[s.accessRole] || 'ohne Rechte'} · Discord: ${escapeHtml(s.discordName || s.discordId)}`
+                : (s.accessRole ? `Rechte vorgemerkt (${ROLE_LABELS[s.accessRole] || s.accessRole}) – noch kein Discord-Konto verknüpft` : 'Kein Zugang zur App')}
             </div>
+            ${s.accessRole && s.accessRole !== 'leitung' ? `<div class="text-[10px] text-leather-800/70 mt-0.5">${staffPerms(s).length ? staffPerms(s).map(id => (PERMISSIONS.find(p => p.id === id) || {}).label || id).join(' · ') : 'nur ansehen (ohne Kassenbuch)'}</div>` : ''}
           </div>
 
           <div class="md:w-3/12 flex flex-col justify-center">
@@ -3369,10 +3456,10 @@
             </div>
 
             <div class="flex items-center gap-2">
-              <button data-perm="lead" onclick="openEditStaffModal(${s.id})" class="text-xs bg-parchment-200 hover:bg-parchment-300 text-leather-900 px-3 py-1.5 rounded border border-leather-800/30 font-title uppercase font-semibold">
+              <button data-perm="staff_manage" onclick="openEditStaffModal(${s.id})" class="text-xs bg-parchment-200 hover:bg-parchment-300 text-leather-900 px-3 py-1.5 rounded border border-leather-800/30 font-title uppercase font-semibold">
                 ✏️ Edit
               </button>
-              <button data-perm="lead" onclick="deleteStaffDirect(${s.id})" class="text-xs text-western-red hover:underline font-title uppercase px-1">
+              <button data-perm="staff_manage" onclick="deleteStaffDirect(${s.id})" class="text-xs text-western-red hover:underline font-title uppercase px-1">
                 🗑️ Löschen
               </button>
             </div>
@@ -3420,10 +3507,27 @@
       }
 
       const discordSel = document.getElementById('staff-discord-select');
-      const discordId = discordSel.value || null;
-      const discordOpt = discordSel.options[discordSel.selectedIndex];
-      const discordName = discordId ? (discordOpt.getAttribute('data-name') || null) : null;
-      const accessRole = discordId ? document.getElementById('staff-access-role').value : null;
+      const manualId = document.getElementById('staff-discord-manual').value.trim();
+      let discordId = discordSel.value || null;
+      let discordName = discordId ? (discordSel.options[discordSel.selectedIndex].getAttribute('data-name') || null) : null;
+      if (manualId) {
+        if (!/^\d{15,22}$/.test(manualId)) {
+          westernAlert("Die Discord-ID besteht nur aus Ziffern (15 bis 22 Stellen). Du findest sie in Discord per Rechtsklick auf den Namen → „Benutzer-ID kopieren\".");
+          return;
+        }
+        const known = accessRequests.find(r => r.discordId === manualId);
+        discordName = known ? known.discordName : (manualId === me.discordId ? me.name : null);
+        discordId = manualId;
+      }
+      const taken = discordId ? state.staff.find(x => x.discordId === discordId && String(x.id) !== String(id)) : null;
+      if (taken) {
+        westernAlert(`Dieses Discord-Konto ist bereits mit "${taken.name}" verknüpft.`);
+        return;
+      }
+      const accessRole = document.getElementById('staff-access-role').value;
+      const permissions = accessRole === 'leitung'
+        ? null
+        : staffPermBoxes().filter(b => b.checked).map(b => b.getAttribute('data-pid')).sort();
 
       let target;
       if(id) {
@@ -3442,6 +3546,7 @@
         target.discordId = discordId;
         target.discordName = discordName;
         target.accessRole = accessRole;
+        target.permissions = permissions;
       }
 
       closeModal('staff-modal');
@@ -3643,26 +3748,29 @@
 
     // RECHTE: Aktionen nur ausführen, wenn die Rolle sie erlaubt (zusätzlich zur Sperre in der Datenbank)
     (function guardActions() {
-      const LEAD = ['saveItem', 'deleteCurrentItem', 'addCategory', 'renameCategory', 'deleteCategory',
-                    'saveCashEntry', 'deleteCashEntry', 'saveStaff', 'deleteCurrentStaff', 'deleteStaffDirect',
-                    'deleteCustomer', 'deleteOrder', 'approveAccessRequest', 'rejectAccessRequest'];
-      const WRITE = ['toggleCoach', 'saveNote', 'deleteCurrentNote', 'addNoteCategory', 'deleteNoteCategory',
-                     'changeNoteCategoryColor', 'renameNoteCategory', 'saveCustomer', 'commitOrder',
-                     'toggleItemCheckedInClone', 'saveDetailOrderChanges'];
-      const wrap = (names, level) => names.forEach(name => {
+      const GUARDS = {
+        products:         ['saveItem', 'deleteCurrentItem', 'addCategory', 'renameCategory', 'deleteCategory'],
+        cash_edit:        ['saveCashEntry', 'deleteCashEntry'],
+        staff_manage:     ['saveStaff', 'deleteCurrentStaff', 'deleteStaffDirect', 'approveAccessRequest', 'rejectAccessRequest'],
+        customers_delete: ['deleteCustomer'],
+        customers_edit:   ['saveCustomer'],
+        orders_delete:    ['deleteOrder'],
+        orders_edit:      ['commitOrder', 'toggleItemCheckedInClone', 'saveDetailOrderChanges'],
+        coach:            ['toggleCoach'],
+        notes:            ['saveNote', 'deleteCurrentNote', 'addNoteCategory', 'deleteNoteCategory', 'changeNoteCategoryColor', 'renameNoteCategory']
+      };
+      Object.keys(GUARDS).forEach(perm => GUARDS[perm].forEach(name => {
         const original = window[name];
         if (typeof original !== 'function') return;
         window[name] = function(...args) {
-          if (!hasLevel(level)) {
+          if (!can(perm)) {
             westernAlert('Für diese Aktion fehlt dir die Berechtigung.', 'Kein Zugriff');
             if (name === 'toggleItemCheckedInClone') { try { renderModalViews(); } catch(e) {} }
             return;
           }
           return original.apply(this, args);
         };
-      });
-      wrap(LEAD, 'L');
-      wrap(WRITE, 'W');
+      }));
     })();
 
     // START
