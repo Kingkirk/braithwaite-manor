@@ -934,8 +934,8 @@
       <div class="flex justify-between items-center pt-2 border-t border-leather-800/20">
         <button id="detail-order-delete-btn" data-perm="orders_delete" class="text-xs text-western-red hover:underline font-title uppercase">Bestellung stornieren / löschen</button>
         <div class="flex items-center gap-2">
-          <button id="detail-telegram-btn" onclick="openTelegramFromDetail()" class="px-4 py-2 rounded text-xs uppercase font-title font-bold shadow transition bg-gray-400 text-gray-200 cursor-not-allowed" disabled>
-            📧 Telegramm erstellen
+          <button id="detail-telegram-btn" onclick="openTelegramFromDetail()" class="px-4 py-2 rounded text-xs uppercase font-title font-bold shadow transition bg-western-brass text-white hover:bg-western-brass/80 cursor-pointer" style="display:none">
+            📧 Telegramm nochmal versenden
           </button>
           <button data-perm="orders_edit" onclick="saveDetailOrderChanges()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
             ✓ Änderungen speichern & besiegeln
@@ -2208,6 +2208,17 @@
       return String(text == null ? '' : text).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
     }
 
+    /** ISO-Datum (2026-10-13) oder beliebigen Datums-String ins deutsche Format (13.10.2026) umwandeln */
+    function fmtDate(d) {
+      if (!d) return '—';
+      // Bereits im DE-Format? (dd.mm.yyyy)
+      if (/^\d{2}\.\d{2}\.\d{4}$/.test(d)) return d;
+      // ISO oder ähnlich → parsen
+      const dt = new Date(d);
+      if (isNaN(dt.getTime())) return String(d);
+      return dt.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
     // Rubrik-Auswahl im Notiz-Dialog und Liste im Rubriken-Popup (immer vollständig, auch ohne Notizen)
     function renderNoteCategoryControls() {
       const noteCatSel = document.getElementById('note-category-select');
@@ -2519,7 +2530,7 @@
           <div onclick="openOrderDetailModal(${o.id})" class="cursor-pointer group border-2 border-leather-800/25 bg-parchment-50/90 hover:bg-parchment-100 p-3.5 rounded-lg shadow-sm hover:shadow-md transition flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div class="md:w-4/12 flex items-start gap-3">
               <div class="text-center border-r border-leather-800/20 pr-3 min-w-[55px]">
-                <span class="text-[10px] uppercase font-sans font-bold text-leather-800/60 block">${o.date || '1899-05-12'}</span>
+                <span class="text-[10px] uppercase font-sans font-bold text-leather-800/60 block">${fmtDate(o.date)}</span>
                 <span class="text-sm font-mono font-bold text-western-brass">#${o.orderNumber || 1}</span>
               </div>
               <div>
@@ -2674,7 +2685,7 @@
           <div onclick="openOrderDetailModal(${o.id})" class="cursor-pointer group border-2 border-leather-800/25 bg-parchment-50/90 hover:bg-parchment-100 p-3.5 rounded-lg shadow-sm hover:shadow-md transition flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div class="md:w-4/12 flex items-start gap-3">
               <div class="text-center border-r border-leather-800/20 pr-3 min-w-[55px]">
-                <span class="text-[10px] uppercase font-sans font-bold text-leather-800/60 block">${o.date || '1899-05-12'}</span>
+                <span class="text-[10px] uppercase font-sans font-bold text-leather-800/60 block">${fmtDate(o.date)}</span>
                 <span class="text-sm font-mono font-bold text-western-brass">#${o.orderNumber || 1}</span>
               </div>
               <div>
@@ -2792,7 +2803,7 @@
       const staffSelect = document.getElementById('detail-order-staff-select');
       staffSelect.innerHTML = state.staff.map(s => `<option value="${s.name}" ${s.name === order.staffName ? 'selected' : ''}>${s.name} (${s.role})</option>`).join('');
 
-      document.getElementById('detail-order-meta').innerText = `Bestellung #${order.orderNumber || 1} • Aufgegeben am ${order.date || '1899-05-12'}`;
+      document.getElementById('detail-order-meta').innerText = `Bestellung #${order.orderNumber || 1} • Aufgegeben am ${fmtDate(order.date)}`;
       document.getElementById('detail-order-customer').innerText = order.customer;
       document.getElementById('detail-order-creator-badge').innerText = order.staffName || 'Kontor';
       document.getElementById('detail-order-contact').innerText = order.contact || '-';
@@ -3250,7 +3261,7 @@
               <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-1 border-b border-leather-800/10 pb-1.5">
                 <div class="flex items-center gap-2">
                   <span class="font-mono font-bold text-western-brass text-sm">#${o.orderNumber || 1}</span>
-                  <span class="text-xs text-leather-800/60 font-mono">${o.date || '1899-05-12'}</span>
+                  <span class="text-xs text-leather-800/60 font-mono">${fmtDate(o.date)}</span>
                   <span class="text-[11px] font-vintage text-leather-800/80">• Angenommen von: <strong class="text-leather-900">${o.staffName || 'Kontor'}</strong></span>
                 </div>
                 <div class="flex items-center gap-2">
@@ -4155,29 +4166,35 @@
       });
       allEntries.sort((a, b) => b.sortKey - a.sortKey);
 
-      listEl.innerHTML = allEntries.map(entry => {
+      listEl.innerHTML = allEntries.map((entry, idx) => {
+        const purchaseNr = allEntries.length - idx;
         const itemCount = entry.items.reduce((s, p) => s + p.qty, 0);
-        const productNames = entry.items.map(p => `${p.qty}× ${escapeHtml(p.itemName)}`).join(', ');
+        const productSummary = entry.items.map(p => `${p.qty}× ${escapeHtml(p.itemName)}`).join(', ');
         return `
-          <div class="border-b border-leather-800/10 last:border-b-0">
-            <div onclick="togglePurchaseGroup('${entry.gid}')" class="cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 hover:bg-parchment-100 transition">
+          <div class="border-b border-leather-800/15 last:border-b-0">
+            <div onclick="togglePurchaseGroup('${entry.gid}')" class="cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 hover:bg-parchment-100 transition">
               <div class="flex items-center gap-3">
-                <span id="purch-arrow-${entry.gid}" class="text-leather-800/40 text-xs transition-transform">▶</span>
-                <div>
-                  <span class="text-xs text-leather-800/70 font-vintage">${entry.date}</span>
-                  <span class="text-xs font-title text-leather-900 font-bold ml-2">${escapeHtml(entry.staff)}</span>
-                  <span class="text-[10px] text-leather-800/50 ml-2">(${itemCount} Samen, ${entry.items.length} Posten)</span>
+                <span id="purch-arrow-${entry.gid}" class="text-leather-800/40 text-sm transition-transform">▶</span>
+                <div class="flex flex-col gap-0.5">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-title font-bold text-leather-900">${fmtDate(entry.date)}</span>
+                    <span class="text-xs font-title text-western-brass font-bold">Einkauf #${purchaseNr}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-leather-800/70">🌱 ${productSummary}</span>
+                  </div>
+                  <div class="text-[11px] text-leather-800/60 font-vintage">👤 ${escapeHtml(entry.staff)} · ${itemCount} Samen · ${entry.items.length} Posten</div>
                 </div>
               </div>
               <div class="flex items-center gap-4">
-                <span class="font-title font-bold text-western-red text-sm">$ ${entry.total.toFixed(2)}</span>
+                <span class="font-title font-bold text-western-red text-base">$ ${entry.total.toFixed(2)}</span>
                 <div class="flex gap-1">
                   <button data-perm="cash_edit" onclick="event.stopPropagation(); editPurchaseGroup('${entry.gid}')" class="text-xs text-western-brass hover:underline font-title" title="Bearbeiten">✏️</button>
                   <button data-perm="cash_edit" onclick="event.stopPropagation(); deletePurchaseGroup('${entry.gid}')" class="text-xs text-western-red hover:underline font-title" title="Löschen">🗑️</button>
                 </div>
               </div>
             </div>
-            <div id="purch-detail-${entry.gid}" class="hidden bg-parchment-200/30 px-5 py-2 border-t border-leather-800/10">
+            <div id="purch-detail-${entry.gid}" class="hidden bg-parchment-200/30 px-5 py-3 border-t border-leather-800/10">
               <table class="w-full text-xs">
                 <thead><tr class="text-[10px] uppercase font-title text-leather-800/60">
                   <th class="py-1 text-left">Produkt</th><th class="py-1 text-center">Menge</th><th class="py-1 text-right">EK/Stk.</th><th class="py-1 text-right">Summe</th>
@@ -4300,7 +4317,7 @@
 
     function replaceTelegramPlaceholders(text, order) {
       const kundenName = order.customer || 'Kunde';
-      const bestellDatum = order.date || new Date().toLocaleDateString('de-DE');
+      const bestellDatum = fmtDate(order.date || new Date().toISOString());
       const bestellNummer = order.orderNumber || '—';
       const mitarbeiterName = me.staffName || me.name || 'Unbekannt';
       const gesamtPreis = `$ ${Number(order.price || 0).toFixed(2)}`;
@@ -4363,7 +4380,7 @@
       const sentInfo = document.getElementById('telegram-sent-info');
       const sentBtn = document.getElementById('telegram-mark-sent-btn');
       if (order.telegramSent) {
-        sentInfo.innerText = `📧 Telegramm gesendet von ${order.telegramSent.by} am ${new Date(order.telegramSent.date).toLocaleDateString('de-DE')}`;
+        sentInfo.innerText = `📧 Telegramm gesendet von ${order.telegramSent.by} am ${fmtDate(order.telegramSent.date)}`;
         if (sentBtn) sentBtn.style.display = 'none';
       } else {
         sentInfo.innerText = '';
@@ -4421,26 +4438,23 @@
     function updateTelegramBtnState(status, telegramSent) {
       const btn = document.getElementById('detail-telegram-btn');
       if (!btn) return;
-      if (status === 'Erledigt') {
+      // Button nur sichtbar wenn Telegramm schon mal versendet wurde
+      if (telegramSent) {
+        btn.style.display = '';
         btn.disabled = false;
-        btn.className = 'px-4 py-2 rounded text-xs uppercase font-title font-bold shadow transition bg-western-green text-white hover:bg-western-green/80 cursor-pointer';
-        if (telegramSent) {
-          btn.innerHTML = '✅ Telegramm versendet';
-        } else {
-          btn.innerHTML = '📧 Telegramm erstellen';
-        }
+        btn.className = 'px-4 py-2 rounded text-xs uppercase font-title font-bold shadow transition bg-western-brass text-white hover:bg-western-brass/80 cursor-pointer';
+        btn.innerHTML = '📧 Telegramm nochmal versenden';
       } else {
-        btn.disabled = true;
-        btn.className = 'px-4 py-2 rounded text-xs uppercase font-title font-bold shadow transition bg-gray-400 text-gray-200 cursor-not-allowed';
-        btn.innerHTML = '📧 Telegramm erstellen';
+        btn.style.display = 'none';
       }
     }
 
     function onDetailStatusChange() {
-      const status = document.getElementById('detail-order-status-select')?.value;
+      // Button-Zustand wird nur über telegramSent gesteuert,
+      // nicht mehr über den Status (Erstversand läuft über "Änderungen speichern")
       const order = state.orders.find(o => o.id === currentDetailOrderId);
       const telegramSent = order ? order.telegramSent : null;
-      updateTelegramBtnState(status, telegramSent);
+      updateTelegramBtnState(null, telegramSent);
     }
 
     function copyTelegramField(elementId) {
@@ -4475,8 +4489,10 @@
 
       const sentInfo = document.getElementById('telegram-sent-info');
       const sentBtn = document.getElementById('telegram-mark-sent-btn');
-      sentInfo.innerText = `📧 Telegramm gesendet von ${order.telegramSent.by} am ${new Date(order.telegramSent.date).toLocaleDateString('de-DE')}`;
+      sentInfo.innerText = `📧 Telegramm gesendet von ${order.telegramSent.by} am ${fmtDate(order.telegramSent.date)}`;
       if (sentBtn) sentBtn.style.display = 'none';
+      // Detail-Button aktualisieren (jetzt "nochmal versenden" sichtbar)
+      updateTelegramBtnState(order.status, order.telegramSent);
     }
 
     // Jeder Bereich wird einzeln gezeichnet, damit ein Fehler in einem Bereich nicht die ganze App lahmlegt
