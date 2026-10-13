@@ -534,63 +534,72 @@
           </div>
         </div>
 
-        <!-- Einkaufsmaske -->
+        <!-- Einkaufsmaske mit Warenkorb -->
         <div class="border-2 border-leather-800/40 bg-parchment-100/95 p-5 md:p-6 rounded-lg shadow-md space-y-5">
           <h3 class="font-title text-lg font-bold text-leather-900 border-b border-leather-800/20 pb-2">🌾 Neuen Einkauf erfassen</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs items-end">
-            <div class="flex flex-col">
-              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Produkt</label>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 text-xs items-end">
+            <div class="flex flex-col sm:col-span-6">
+              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">🌱 Produkt (Saatgut)</label>
               <select id="purchase-item" onchange="updatePurchasePreview()" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none font-semibold"></select>
             </div>
-            <div class="flex flex-col">
-              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Menge (Samen/Einheiten)</label>
+            <div class="flex flex-col sm:col-span-3">
+              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Menge (Samen)</label>
               <input type="number" id="purchase-qty" min="1" value="1" oninput="updatePurchasePreview()" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none font-semibold">
             </div>
-            <div class="flex flex-col">
-              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Einkäufer</label>
-              <select id="purchase-staff" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none font-semibold"></select>
-            </div>
-            <div class="flex flex-col">
-              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Summe</label>
+            <div class="flex flex-col sm:col-span-2">
+              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Vorschau</label>
               <div class="h-10 flex items-center">
-                <span id="purchase-preview-total" class="text-xl font-bold font-title text-western-red">$ 0.00</span>
-                <span id="purchase-preview-unit" class="text-leather-800/60 ml-2 text-[11px]">(EK: $ 0.00 / Stk.)</span>
+                <span id="purchase-preview-total" class="text-lg font-bold font-title text-western-red">$ 0.00</span>
               </div>
             </div>
+            <div class="sm:col-span-1">
+              <button type="button" data-perm="cash_edit" onclick="addPurchaseToCart()" class="w-full h-10 bg-leather-900 hover:bg-leather-800 text-parchment-100 rounded font-title text-sm font-bold shadow">
+                +
+              </button>
+            </div>
           </div>
-          <div class="flex justify-end pt-2">
-            <button data-perm="cash_edit" onclick="bookPurchase()" class="px-5 py-2.5 bg-western-red hover:bg-red-700 text-white rounded font-title text-xs uppercase tracking-wider font-bold shadow-lg transition">
-              🛒 Einkauf buchen & in Kasse verbuchen
-            </button>
+
+          <!-- Einkaufs-Warenkorb -->
+          <div id="purchase-cart-container" class="mt-2 border-t border-leather-800/15 pt-3">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-leather-800/20 text-leather-800/80 font-title uppercase">
+                  <th class="py-1">Produkt</th>
+                  <th class="py-1 text-center">Menge</th>
+                  <th class="py-1 text-right">EK / Stk.</th>
+                  <th class="py-1 text-right">Summe</th>
+                  <th class="py-1 text-right w-12"></th>
+                </tr>
+              </thead>
+              <tbody id="purchase-cart-body" class="divide-y divide-leather-800/10">
+                <tr><td colspan="5" class="py-3 text-center text-leather-800/50 italic">Noch keine Waren hinzugefügt.</td></tr>
+              </tbody>
+            </table>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center mt-4 pt-3 border-t border-leather-800/20 gap-3">
+              <div class="text-sm font-title text-leather-900">
+                Gesamtpreis: <span id="purchase-cart-total" class="text-2xl font-bold text-western-red ml-2">$ 0.00</span>
+              </div>
+              <button data-perm="cash_edit" onclick="bookPurchase()" class="w-full sm:w-auto bg-western-red hover:bg-red-700 text-white px-6 py-2.5 rounded font-title text-xs uppercase tracking-wider font-bold shadow-lg transition">
+                🛒 Einkauf buchen & in Kasse verbuchen
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Einkaufshistorie -->
+        <!-- Einkaufshistorie (Akkordeon) -->
         <div class="border-2 border-leather-800/30 bg-parchment-50 rounded-lg shadow-sm overflow-hidden">
           <div class="bg-parchment-200/80 px-5 py-3 border-b border-leather-800/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <h3 class="font-title text-lg font-bold text-leather-900">📋 Einkaufshistorie</h3>
             <div class="flex items-center gap-3">
-              <label class="text-xs font-title uppercase text-leather-800/70">Filter nach Mitarbeiter:</label>
+              <label class="text-xs font-title uppercase text-leather-800/70">Filter:</label>
               <select id="purchase-filter-staff" onchange="renderPurchases()" class="text-xs bg-parchment-50 border border-leather-800/25 p-1.5 rounded font-title font-semibold focus:outline-none">
                 <option value="alle">Alle Mitarbeiter</option>
               </select>
             </div>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-parchment-200/60 text-[11px] uppercase font-title text-leather-900 tracking-wider">
-                  <th class="py-2.5 px-3">Datum</th>
-                  <th class="py-2.5 px-3">Produkt</th>
-                  <th class="py-2.5 px-3 text-center">Menge</th>
-                  <th class="py-2.5 px-3 text-right">Stückpreis</th>
-                  <th class="py-2.5 px-3 text-right">Gesamt</th>
-                  <th class="py-2.5 px-3">Einkäufer</th>
-                  <th class="py-2.5 px-3 text-right">Aktion</th>
-                </tr>
-              </thead>
-              <tbody id="purchase-table-body"></tbody>
-            </table>
+          <div id="purchase-history-list" class="divide-y divide-leather-800/15">
+            <div class="text-center py-6 text-leather-800/60 font-vintage text-base">Noch keine Einkäufe verbucht.</div>
           </div>
           <div id="purchase-summary" class="px-5 py-3 border-t border-leather-800/20 bg-parchment-200/40"></div>
         </div>
@@ -675,7 +684,7 @@
   </div>
 
   <!-- TELEGRAMM-GENERATOR-MODAL -->
-  <div id="telegram-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-3 md:p-4 z-50">
+  <div id="telegram-modal" class="fixed inset-0 bg-black/85 hidden items-center justify-center p-3 md:p-4" style="z-index:60">
     <div class="bg-parchment-100 border-2 border-leather-800 p-5 md:p-6 rounded-lg max-w-2xl w-full shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scroll">
       <div class="flex justify-between items-start border-b border-leather-800/20 pb-3">
         <div>
@@ -687,22 +696,34 @@
         <button onclick="closeModal('telegram-modal')" class="text-leather-800/60 hover:text-leather-900 text-xl leading-none">✕</button>
       </div>
 
-      <!-- Template-Einstellungen (nur Leitung) -->
-      <div id="telegram-template-section" data-perm="staff_manage" class="border border-western-brass/40 bg-parchment-200/40 p-3 rounded space-y-2">
+      <!-- Template-Einstellungen (nur mit telegram_edit Permission) -->
+      <div id="telegram-template-section" data-perm="telegram_edit" class="border border-western-brass/40 bg-parchment-200/40 p-3 rounded space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-xs font-title uppercase tracking-wider text-western-brass font-bold">⚙️ Vorlage anpassen (Leitung)</span>
           <button onclick="toggleTelegramTemplateEdit()" id="telegram-template-toggle" class="text-xs text-western-brass hover:underline font-title">Bearbeiten</button>
         </div>
-        <div id="telegram-template-edit" class="hidden space-y-2">
-          <div>
-            <label class="text-[11px] font-title uppercase text-leather-800/70">Einleitungstext</label>
-            <textarea id="tpl-intro" rows="2" class="w-full bg-parchment-50 border border-leather-800/20 p-2 text-xs rounded focus:outline-none resize-none"></textarea>
+        <div id="telegram-template-edit" class="hidden space-y-3">
+          <div class="bg-parchment-50 border border-leather-800/15 p-2.5 rounded text-[11px] font-vintage text-leather-800/80">
+            <strong class="font-title uppercase text-leather-900 text-[10px]">Verfügbare Textbausteine:</strong><br>
+            <code class="text-western-brass">{kundenName}</code> — Kundenname &nbsp;·&nbsp;
+            <code class="text-western-brass">{bestellDatum}</code> — Bestelldatum &nbsp;·&nbsp;
+            <code class="text-western-brass">{bestellNummer}</code> — Auftragsnummer<br>
+            <code class="text-western-brass">{mitarbeiterName}</code> — Wer das Telegramm sendet &nbsp;·&nbsp;
+            <code class="text-western-brass">{artikelListe}</code> — Auflistung aller Positionen<br>
+            <code class="text-western-brass">{gesamtPreis}</code> — Gesamtsumme &nbsp;·&nbsp;
+            <code class="text-western-brass">{lieferInfo}</code> — Lieferart & Zeitfenster &nbsp;·&nbsp;
+            <code class="text-western-brass">{ansprechpartner}</code> — Ansprechpartner
           </div>
           <div>
-            <label class="text-[11px] font-title uppercase text-leather-800/70">Abschlusstext</label>
-            <textarea id="tpl-outro" rows="2" class="w-full bg-parchment-50 border border-leather-800/20 p-2 text-xs rounded focus:outline-none resize-none"></textarea>
+            <label class="text-[11px] font-title uppercase text-leather-800/70">Titel-Vorlage</label>
+            <input type="text" id="tpl-title" class="w-full bg-parchment-50 border border-leather-800/20 p-2 text-xs rounded focus:outline-none" placeholder="z.B. Braithwaite Manor — Bestellung #{bestellNummer}">
           </div>
-          <div class="flex justify-end">
+          <div>
+            <label class="text-[11px] font-title uppercase text-leather-800/70">Nachrichtentext-Vorlage</label>
+            <textarea id="tpl-body" rows="8" class="w-full bg-parchment-50 border border-leather-800/20 p-2 text-xs rounded focus:outline-none resize-none font-mono"></textarea>
+          </div>
+          <div class="flex justify-between items-center">
+            <button onclick="resetTelegramTemplate()" class="text-xs text-western-red hover:underline font-title">↺ Auf Standard zurücksetzen</button>
             <button onclick="saveTelegramTemplate()" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-3 py-1.5 rounded font-title uppercase font-bold">Vorlage speichern</button>
           </div>
         </div>
@@ -895,7 +916,7 @@
         <div>
           <label class="block text-[11px] uppercase font-title font-bold text-leather-900 mb-1">Auftragsstatus:</label>
           <div class="flex items-center gap-2">
-            <select id="detail-order-status-select" class="bg-white border border-leather-800/30 p-1.5 text-xs rounded font-semibold focus:outline-none">
+            <select id="detail-order-status-select" onchange="onDetailStatusChange()" class="bg-white border border-leather-800/30 p-1.5 text-xs rounded font-semibold focus:outline-none">
               <option value="Offen">Offen</option>
               <option value="In Arbeit">In Arbeit</option>
               <option value="Abholbereit">Abholbereit</option>
@@ -913,7 +934,7 @@
       <div class="flex justify-between items-center pt-2 border-t border-leather-800/20">
         <button id="detail-order-delete-btn" data-perm="orders_delete" class="text-xs text-western-red hover:underline font-title uppercase">Bestellung stornieren / löschen</button>
         <div class="flex items-center gap-2">
-          <button id="detail-telegram-btn" onclick="openTelegramFromDetail()" class="px-4 py-2 bg-western-brass hover:bg-yellow-700 text-white rounded text-xs uppercase font-title font-bold shadow transition hidden">
+          <button id="detail-telegram-btn" onclick="openTelegramFromDetail()" class="px-4 py-2 rounded text-xs uppercase font-title font-bold shadow transition bg-gray-400 text-gray-200 cursor-not-allowed" disabled>
             📧 Telegramm erstellen
           </button>
           <button data-perm="orders_edit" onclick="saveDetailOrderChanges()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
@@ -1409,8 +1430,8 @@
       {
         table: 'cash_entries', stateKey: 'cash',
         query: q => q.order('id', { ascending: false }),
-        fromRow: c => ({ id: c.id, date: c.date, desc: c.description, type: c.type, amount: Number(c.amount || 0) }),
-        toRow: x => ({ date: x.date, description: x.desc, type: x.type, amount: Number(x.amount || 0) })
+        fromRow: c => ({ id: c.id, date: c.date, desc: c.description, type: c.type, amount: Number(c.amount || 0), purchaseGroup: c.purchase_group || null }),
+        toRow: x => ({ date: x.date, description: x.desc, type: x.type, amount: Number(x.amount || 0), purchase_group: x.purchaseGroup || null })
       },
       {
         table: 'notes', stateKey: 'notes',
@@ -1421,8 +1442,8 @@
       {
         table: 'purchases', stateKey: 'purchases',
         query: q => q.order('id', { ascending: false }),
-        fromRow: r => ({ id: r.id, date: r.created_at ? r.created_at.split('T')[0] : '', staffName: r.staff_name, itemId: r.item_id, itemName: r.item_name, qty: Number(r.qty || 0), unitPrice: Number(r.unit_price || 0), total: Number(r.total || 0) }),
-        toRow: x => ({ staff_name: x.staffName, item_id: x.itemId, item_name: x.itemName, qty: x.qty, unit_price: x.unitPrice, total: x.total })
+        fromRow: r => ({ id: r.id, date: r.created_at ? r.created_at.split('T')[0] : '', staffName: r.staff_name, itemId: r.item_id, itemName: r.item_name, qty: Number(r.qty || 0), unitPrice: Number(r.unit_price || 0), total: Number(r.total || 0), purchaseGroup: r.purchase_group || null }),
+        toRow: x => ({ staff_name: x.staffName, item_id: x.itemId, item_name: x.itemName, qty: x.qty, unit_price: x.unitPrice, total: x.total, purchase_group: x.purchaseGroup || null })
       }
     ];
 
@@ -1722,6 +1743,7 @@
       { id: 'products',         label: 'Produkte, Preise und Kategorien ändern' },
       { id: 'cash_view',        label: 'Kassenbuch ansehen' },
       { id: 'cash_edit',        label: 'Kassenbuch bearbeiten (buchen, ändern, löschen)' },
+      { id: 'telegram_edit',   label: 'Telegramm-Vorlagen bearbeiten' },
       { id: 'staff_manage',     label: 'Mitarbeiter und Zugriffe verwalten' }
     ];
     const ALL_PERMS = PERMISSIONS.map(p => p.id);
@@ -2792,16 +2814,8 @@
         }
       };
 
-      // Telegramm-Button nur bei erledigten Bestellungen anzeigen
-      const telegramBtn = document.getElementById('detail-telegram-btn');
-      if (telegramBtn) {
-        telegramBtn.classList.toggle('hidden', order.status !== 'Erledigt');
-        if (order.telegramSent) {
-          telegramBtn.innerHTML = `📧 Telegramm ansehen <span class="text-[10px] opacity-70">(gesendet)</span>`;
-        } else {
-          telegramBtn.innerHTML = '📧 Telegramm erstellen';
-        }
-      }
+      // Telegramm-Button Zustand aktualisieren
+      updateTelegramBtnState(order.status, order.telegramSent);
 
       setDetailModalTab('pack');
       renderModalViews();
@@ -3005,7 +3019,7 @@
       document.getElementById('detail-order-price').innerText = `$ ${total.toFixed(2)}`;
     }
 
-    function saveDetailOrderChanges() {
+    async function saveDetailOrderChanges() {
       if (!editingOrderClone) return;
       const original = state.orders.find(o => o.id === currentDetailOrderId);
       if (!original) return;
@@ -3041,6 +3055,14 @@
       }
 
       closeModal('order-detail-modal');
+
+      // Bei neuem Status "Erledigt" fragen ob Telegramm erstellt werden soll
+      if (oldStatus !== 'Erledigt' && newStatus === 'Erledigt' && !original.telegramSent) {
+        const wantTelegram = await westernConfirm('Möchtest du jetzt das Telegramm für den Kunden erstellen?', 'Auftrag erledigt — Telegramm senden?');
+        if (wantTelegram) {
+          openTelegramModal(original.id);
+        }
+      }
     }
 
     function renderInventory() {
@@ -3959,20 +3981,18 @@
     // EINKAUF — Saatgut-/Wareneinkauf mit Kassenbuchung
     // ═══════════════════════════════════════════════════════════════
 
-    let purchasePage = 1;
+    let purchaseCart = [];
 
     function populatePurchaseDropdowns() {
       const itemSel = document.getElementById('purchase-item');
-      const staffSel = document.getElementById('purchase-staff');
       const filterSel = document.getElementById('purchase-filter-staff');
-      if (!itemSel || !staffSel) return;
+      if (!itemSel) return;
 
-      itemSel.innerHTML = state.inventory.map(i =>
-        `<option value="${i.id}" data-cost="${Number(i.cost || 0).toFixed(2)}">${i.name} (EK: $ ${Number(i.cost || 0).toFixed(2)} / Samen)</option>`
-      ).join('');
-
-      staffSel.innerHTML = state.staff.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-      if (me.staffName && Array.from(staffSel.options).some(o => o.value === me.staffName)) staffSel.value = me.staffName;
+      itemSel.innerHTML = state.inventory.map(i => {
+        const cost = Number(i.cost || 0);
+        const yld = Number(i.yieldPerSeed || 1);
+        return `<option value="${i.id}" data-cost="${cost.toFixed(2)}" data-yield="${yld}">🌱 ${i.name} (EK: $ ${cost.toFixed(2)} → Ertrag: ${yld})</option>`;
+      }).join('');
 
       if (filterSel) {
         const currentVal = filterSel.value;
@@ -3988,89 +4008,192 @@
       const itemSel = document.getElementById('purchase-item');
       const qtySel = document.getElementById('purchase-qty');
       const totalEl = document.getElementById('purchase-preview-total');
-      const unitEl = document.getElementById('purchase-preview-unit');
       if (!itemSel || !qtySel || !totalEl) return;
       const selected = itemSel.options[itemSel.selectedIndex];
       const unitPrice = selected ? Number(selected.dataset.cost || 0) : 0;
       const qty = Math.max(1, Number(qtySel.value) || 1);
-      const total = unitPrice * qty;
-      totalEl.innerText = `$ ${total.toFixed(2)}`;
-      if (unitEl) unitEl.innerText = `(EK: $ ${unitPrice.toFixed(2)} / Stk.)`;
+      totalEl.innerText = `$ ${(unitPrice * qty).toFixed(2)}`;
+    }
+
+    function addPurchaseToCart() {
+      const itemSel = document.getElementById('purchase-item');
+      const qtySel = document.getElementById('purchase-qty');
+      if (!itemSel || !itemSel.value) { westernAlert('Bitte ein Produkt auswählen!'); return; }
+      const selected = itemSel.options[itemSel.selectedIndex];
+      const itemId = Number(itemSel.value);
+      const item = state.inventory.find(i => i.id === itemId);
+      const cost = Number(selected.dataset.cost || 0);
+      const qty = Math.max(1, Number(qtySel.value) || 1);
+      if (cost <= 0) { westernAlert('Der Einkaufspreis ist $ 0 — bitte Saatgutpreis beim Produkt hinterlegen.'); return; }
+
+      purchaseCart.push({
+        id: Date.now() + Math.random(),
+        itemId: itemId,
+        name: item ? item.name : selected.text.split(' (')[0],
+        qty: qty,
+        unitPrice: cost,
+        totalPrice: cost * qty
+      });
+      qtySel.value = 1;
+      updatePurchasePreview();
+      renderPurchaseCart();
+    }
+
+    function removePurchaseCartItem(cartId) {
+      purchaseCart = purchaseCart.filter(c => c.id !== cartId);
+      renderPurchaseCart();
+    }
+
+    function renderPurchaseCart() {
+      const tbody = document.getElementById('purchase-cart-body');
+      const totalEl = document.getElementById('purchase-cart-total');
+      if (!tbody) return;
+      let total = 0;
+      if (purchaseCart.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-3 text-center text-leather-800/50 italic">Noch keine Waren hinzugefügt.</td></tr>`;
+        if (totalEl) totalEl.innerText = '$ 0.00';
+        return;
+      }
+      tbody.innerHTML = purchaseCart.map(c => {
+        total += c.totalPrice;
+        return `
+          <tr class="hover:bg-leather-800/5">
+            <td class="py-2 font-semibold text-leather-900">🌱 ${escapeHtml(c.name)}</td>
+            <td class="py-2 text-center font-bold">${c.qty}</td>
+            <td class="py-2 text-right text-leather-800/80">$ ${c.unitPrice.toFixed(2)}</td>
+            <td class="py-2 text-right font-bold text-western-red">$ ${c.totalPrice.toFixed(2)}</td>
+            <td class="py-2 text-right">
+              <button data-perm="cash_edit" onclick="removePurchaseCartItem(${c.id})" class="text-western-red font-bold hover:underline">✕</button>
+            </td>
+          </tr>`;
+      }).join('');
+      if (totalEl) totalEl.innerText = `$ ${total.toFixed(2)}`;
     }
 
     function bookPurchase() {
       if (!can('cash_edit')) { westernAlert('Keine Berechtigung für Einkäufe.'); return; }
-      const itemSel = document.getElementById('purchase-item');
-      const qtySel = document.getElementById('purchase-qty');
-      const staffSel = document.getElementById('purchase-staff');
-      if (!itemSel || !itemSel.value) { westernAlert('Bitte ein Produkt auswählen!'); return; }
-      const qty = Math.max(1, Number(qtySel.value) || 1);
-      const selected = itemSel.options[itemSel.selectedIndex];
-      const unitPrice = Number(selected.dataset.cost || 0);
-      const total = unitPrice * qty;
-      const itemId = Number(itemSel.value);
-      const itemName = state.inventory.find(i => i.id === itemId)?.name || selected.text.split(' (')[0];
-      const staffName = staffSel.value || me.staffName || 'Unbekannt';
+      if (purchaseCart.length === 0) { westernAlert('Der Einkaufswagen ist noch leer! Füge Produkte mit dem + Button hinzu.'); return; }
 
-      if (total <= 0) { westernAlert('Der Einkaufspreis ist $ 0 — bitte Saatgutpreis beim Produkt hinterlegen.'); return; }
+      const staffName = me.staffName || me.name || 'Unbekannt';
+      const groupId = 'PG-' + Date.now();
+      let grandTotal = 0;
+      let itemsSummary = [];
 
-      const purchase = {
-        id: Date.now(),
-        date: new Date().toISOString().split('T')[0],
-        staffName: staffName,
-        itemId: itemId,
-        itemName: itemName,
-        qty: qty,
-        unitPrice: unitPrice,
-        total: total
-      };
-      state.purchases.unshift(purchase);
+      purchaseCart.forEach((c, idx) => {
+        const purchase = {
+          id: Date.now() + idx,
+          date: new Date().toISOString().split('T')[0],
+          staffName: staffName,
+          itemId: c.itemId,
+          itemName: c.name,
+          qty: c.qty,
+          unitPrice: c.unitPrice,
+          total: c.totalPrice,
+          purchaseGroup: groupId
+        };
+        state.purchases.unshift(purchase);
+        grandTotal += c.totalPrice;
+        itemsSummary.push(`${c.qty}× ${c.name}`);
+      });
 
-      // Kassenbuchung als Ausgabe
+      // Eine Kassenbuchung für den gesamten Einkauf
       const cashEntry = {
-        id: Date.now() + 1,
+        id: Date.now() + 100,
         date: new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-        desc: `Einkauf: ${qty}× ${itemName} (Saatgut-EK)`,
+        desc: `Einkauf: ${itemsSummary.join(', ')} (Saatgut-EK)`,
         type: 'out',
-        amount: total
+        amount: grandTotal,
+        purchaseGroup: groupId
       };
       state.cash.push(cashEntry);
 
-      qtySel.value = 1;
-      updatePurchasePreview();
+      purchaseCart = [];
+      renderPurchaseCart();
       renderPurchases();
       renderTreasury();
       saveState();
-      westernAlert(`Einkauf gebucht: ${qty}× ${itemName} für $ ${total.toFixed(2)} — als Ausgabe verbucht.`);
+      westernAlert(`Einkauf gebucht: ${itemsSummary.join(', ')} — Gesamt $ ${grandTotal.toFixed(2)} als Ausgabe verbucht.`);
     }
 
     function renderPurchases() {
-      const tbody = document.getElementById('purchase-table-body');
+      const listEl = document.getElementById('purchase-history-list');
       const summaryEl = document.getElementById('purchase-summary');
-      if (!tbody) return;
+      if (!listEl) return;
 
       const filterStaff = document.getElementById('purchase-filter-staff')?.value || 'alle';
       const filtered = state.purchases.filter(p => filterStaff === 'alle' || p.staffName === filterStaff);
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-leather-800/60 font-vintage text-base">Noch keine Einkäufe verbucht.</td></tr>`;
+        listEl.innerHTML = `<div class="text-center py-6 text-leather-800/60 font-vintage text-base">Noch keine Einkäufe verbucht.</div>`;
         if (summaryEl) summaryEl.innerHTML = '';
         return;
       }
 
-      tbody.innerHTML = filtered.map(p => `
-        <tr class="hover:bg-leather-800/5 transition">
-          <td class="py-2.5 px-3 text-xs text-leather-800/70 font-vintage">${p.date || ''}</td>
-          <td class="py-2.5 px-3 text-leather-900 font-vintage text-base font-semibold">${escapeHtml(p.itemName)}</td>
-          <td class="py-2.5 px-3 text-center font-bold font-title">${p.qty}</td>
-          <td class="py-2.5 px-3 text-right text-leather-800/80">$ ${Number(p.unitPrice).toFixed(2)}</td>
-          <td class="py-2.5 px-3 text-right font-bold text-western-red">$ ${Number(p.total).toFixed(2)}</td>
-          <td class="py-2.5 px-3 text-xs font-title text-leather-900">${escapeHtml(p.staffName)}</td>
-          <td class="py-2.5 px-3 text-right">
-            <button data-perm="cash_edit" onclick="deletePurchase(${p.id})" class="text-xs text-western-red hover:underline font-title">🗑️</button>
-          </td>
-        </tr>
-      `).join('');
+      // Nach purchaseGroup gruppieren
+      const groups = {};
+      const ungrouped = [];
+      filtered.forEach(p => {
+        if (p.purchaseGroup) {
+          if (!groups[p.purchaseGroup]) groups[p.purchaseGroup] = [];
+          groups[p.purchaseGroup].push(p);
+        } else {
+          // Alte Einzel-Einträge ohne Gruppe als eigene "Gruppe" behandeln
+          ungrouped.push(p);
+        }
+      });
+
+      // Alle Gruppen + ungrouped als sortierte Liste (neueste zuerst)
+      const allEntries = [];
+      Object.entries(groups).forEach(([gid, items]) => {
+        const total = items.reduce((s, p) => s + Number(p.total), 0);
+        const date = items[0]?.date || '';
+        const staff = items[0]?.staffName || '';
+        allEntries.push({ type: 'group', gid, items, total, date, staff, sortKey: items[0]?.id || 0 });
+      });
+      ungrouped.forEach(p => {
+        allEntries.push({ type: 'single', items: [p], total: Number(p.total), date: p.date, staff: p.staffName, gid: 'S-' + p.id, sortKey: p.id });
+      });
+      allEntries.sort((a, b) => b.sortKey - a.sortKey);
+
+      listEl.innerHTML = allEntries.map(entry => {
+        const itemCount = entry.items.reduce((s, p) => s + p.qty, 0);
+        const productNames = entry.items.map(p => `${p.qty}× ${escapeHtml(p.itemName)}`).join(', ');
+        return `
+          <div class="border-b border-leather-800/10 last:border-b-0">
+            <div onclick="togglePurchaseGroup('${entry.gid}')" class="cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 hover:bg-parchment-100 transition">
+              <div class="flex items-center gap-3">
+                <span id="purch-arrow-${entry.gid}" class="text-leather-800/40 text-xs transition-transform">▶</span>
+                <div>
+                  <span class="text-xs text-leather-800/70 font-vintage">${entry.date}</span>
+                  <span class="text-xs font-title text-leather-900 font-bold ml-2">${escapeHtml(entry.staff)}</span>
+                  <span class="text-[10px] text-leather-800/50 ml-2">(${itemCount} Samen, ${entry.items.length} Posten)</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <span class="font-title font-bold text-western-red text-sm">$ ${entry.total.toFixed(2)}</span>
+                <div class="flex gap-1">
+                  <button data-perm="cash_edit" onclick="event.stopPropagation(); editPurchaseGroup('${entry.gid}')" class="text-xs text-western-brass hover:underline font-title" title="Bearbeiten">✏️</button>
+                  <button data-perm="cash_edit" onclick="event.stopPropagation(); deletePurchaseGroup('${entry.gid}')" class="text-xs text-western-red hover:underline font-title" title="Löschen">🗑️</button>
+                </div>
+              </div>
+            </div>
+            <div id="purch-detail-${entry.gid}" class="hidden bg-parchment-200/30 px-5 py-2 border-t border-leather-800/10">
+              <table class="w-full text-xs">
+                <thead><tr class="text-[10px] uppercase font-title text-leather-800/60">
+                  <th class="py-1 text-left">Produkt</th><th class="py-1 text-center">Menge</th><th class="py-1 text-right">EK/Stk.</th><th class="py-1 text-right">Summe</th>
+                </tr></thead>
+                <tbody>${entry.items.map(p => `
+                  <tr class="border-t border-leather-800/5">
+                    <td class="py-1.5 font-vintage text-leather-900">🌱 ${escapeHtml(p.itemName)}</td>
+                    <td class="py-1.5 text-center font-bold">${p.qty}</td>
+                    <td class="py-1.5 text-right text-leather-800/80">$ ${Number(p.unitPrice).toFixed(2)}</td>
+                    <td class="py-1.5 text-right font-bold text-western-red">$ ${Number(p.total).toFixed(2)}</td>
+                  </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>`;
+      }).join('');
 
       // Zusammenfassung
       if (summaryEl) {
@@ -4084,18 +4207,77 @@
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
             <div class="text-leather-800/80 font-vintage">${staffSummary}</div>
             <div class="font-title font-bold text-leather-900 text-sm">Gesamt: <span class="text-western-red">$ ${totalSum.toFixed(2)}</span></div>
-          </div>
-        `;
+          </div>`;
       }
     }
 
-    async function deletePurchase(id) {
+    function togglePurchaseGroup(gid) {
+      const detail = document.getElementById('purch-detail-' + gid);
+      const arrow = document.getElementById('purch-arrow-' + gid);
+      if (!detail) return;
+      const isOpen = !detail.classList.contains('hidden');
+      detail.classList.toggle('hidden', isOpen);
+      if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(90deg)';
+    }
+
+    async function deletePurchaseGroup(gid) {
       if (!can('cash_edit')) { westernAlert('Keine Berechtigung.'); return; }
-      const ok = await westernConfirm('Einkauf stornieren', 'Soll dieser Einkauf gelöscht werden? Die zugehörige Kassenbuchung bleibt bestehen und muss ggf. manuell entfernt werden.');
+      const ok = await westernConfirm('Soll dieser Einkauf storniert werden?\nDie zugehörige Kassenbuchung wird ebenfalls entfernt.', 'Einkauf stornieren');
       if (!ok) return;
-      state.purchases = state.purchases.filter(p => p.id !== id);
+      // Purchases entfernen
+      if (gid.startsWith('S-')) {
+        const singleId = Number(gid.replace('S-', ''));
+        state.purchases = state.purchases.filter(p => p.id !== singleId);
+      } else {
+        state.purchases = state.purchases.filter(p => p.purchaseGroup !== gid);
+      }
+      // Kassenbuchung entfernen
+      state.cash = state.cash.filter(c => c.purchaseGroup !== gid);
       renderPurchases();
+      renderTreasury();
       saveState();
+    }
+
+    async function editPurchaseGroup(gid) {
+      if (!can('cash_edit')) { westernAlert('Keine Berechtigung.'); return; }
+      // Einfache Bearbeitung: Gruppe löschen (mit Kassenkorrektur) und Warenkorb befüllen
+      let items;
+      if (gid.startsWith('S-')) {
+        const singleId = Number(gid.replace('S-', ''));
+        items = state.purchases.filter(p => p.id === singleId);
+      } else {
+        items = state.purchases.filter(p => p.purchaseGroup === gid);
+      }
+      if (items.length === 0) return;
+
+      const ok = await westernConfirm('Der Einkauf wird zum Bearbeiten in den Warenkorb geladen.\nDer alte Eintrag wird entfernt.', 'Einkauf bearbeiten');
+      if (!ok) return;
+
+      // In den Warenkorb laden
+      purchaseCart = items.map(p => ({
+        id: Date.now() + Math.random(),
+        itemId: p.itemId,
+        name: p.itemName,
+        qty: p.qty,
+        unitPrice: p.unitPrice,
+        totalPrice: p.total
+      }));
+
+      // Alte Einträge entfernen
+      if (gid.startsWith('S-')) {
+        const singleId = Number(gid.replace('S-', ''));
+        state.purchases = state.purchases.filter(p => p.id !== singleId);
+      } else {
+        state.purchases = state.purchases.filter(p => p.purchaseGroup !== gid);
+      }
+      state.cash = state.cash.filter(c => c.purchaseGroup !== gid);
+
+      renderPurchaseCart();
+      renderPurchases();
+      renderTreasury();
+      saveState();
+      switchTab('purchase');
+      westernAlert('Einkauf in den Warenkorb geladen. Bearbeite und buche ihn erneut.');
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -4106,54 +4288,59 @@
 
     function getDefaultTelegramTemplate() {
       return {
-        intro: 'Werte(r) {kundenName},\n\nIhre Bestellung bei Braithwaite Manor wurde bearbeitet und ist bereit.',
-        outro: 'Mit freundlichen Grüßen,\nBraithwaite Manor — Gewerbe & Handel'
+        title: 'Braithwaite Manor — Bestellung #{bestellNummer}',
+        body: 'Werte(r) {kundenName},\n\nIhre Bestellung bei Braithwaite Manor wurde bearbeitet und ist abholbereit.\n\n══════════════════════════\nIhre Bestellübersicht:\n══════════════════════════\n\n{artikelListe}\n\n──────────────────────────\nGesamtbetrag: {gesamtPreis}\nLieferart: {lieferInfo}\n──────────────────────────\n\nAnsprechpartner: {ansprechpartner}\nBestelldatum: {bestellDatum}\n\nMit freundlichen Grüßen,\nBraithwaite Manor — Gewerbe & Handel'
       };
     }
 
     function getTelegramTemplate() {
-      if (state.telegramTemplate && state.telegramTemplate.intro) return state.telegramTemplate;
+      if (state.telegramTemplate && state.telegramTemplate.title) return state.telegramTemplate;
       return getDefaultTelegramTemplate();
     }
 
-    function generateTelegramTitle(order) {
-      return `Braithwaite Manor — Bestellung #${order.orderNumber || '—'}`;
-    }
-
-    function generateTelegramBody(order) {
-      const tpl = getTelegramTemplate();
+    function replaceTelegramPlaceholders(text, order) {
       const kundenName = order.customer || 'Kunde';
-      const intro = tpl.intro.replace(/\{kundenName\}/g, kundenName);
+      const bestellDatum = order.date || new Date().toLocaleDateString('de-DE');
+      const bestellNummer = order.orderNumber || '—';
+      const mitarbeiterName = me.staffName || me.name || 'Unbekannt';
+      const gesamtPreis = `$ ${Number(order.price || 0).toFixed(2)}`;
 
-      let posLines = '';
+      let artikelListe = '';
       if (order.itemsList && order.itemsList.length > 0) {
-        posLines = order.itemsList.map(item => {
+        artikelListe = order.itemsList.map(item => {
           const name = item.name || item.text || 'Unbekannt';
           const amount = item.amount || item.qty || 1;
           const price = Number(item.lineTotal || item.price || 0);
           return `  • ${amount}× ${name} — $ ${price.toFixed(2)}`;
         }).join('\n');
       } else if (order.items) {
-        posLines = '  ' + order.items;
+        artikelListe = '  ' + order.items;
       }
 
-      const gesamtpreis = `$ ${Number(order.price || 0).toFixed(2)}`;
       const lieferart = order.deliveryMode || 'Nicht angegeben';
       const zeitfenster = order.timeslot || 'Zeitnah nach Absprache';
+      const lieferInfo = `${lieferart} — ${zeitfenster}`;
+      const ansprechpartner = mitarbeiterName;
 
-      let body = intro + '\n\n';
-      body += '══════════════════════════\n';
-      body += 'Ihre Bestellübersicht:\n';
-      body += '══════════════════════════\n\n';
-      body += posLines + '\n\n';
-      body += `──────────────────────────\n`;
-      body += `Gesamtbetrag: ${gesamtpreis}\n`;
-      body += `Lieferart: ${lieferart}\n`;
-      body += `Zeitfenster: ${zeitfenster}\n`;
-      body += `──────────────────────────\n\n`;
-      body += tpl.outro;
+      return text
+        .replace(/\{kundenName\}/g, kundenName)
+        .replace(/\{bestellDatum\}/g, bestellDatum)
+        .replace(/\{bestellNummer\}/g, bestellNummer)
+        .replace(/\{mitarbeiterName\}/g, mitarbeiterName)
+        .replace(/\{artikelListe\}/g, artikelListe)
+        .replace(/\{gesamtPreis\}/g, gesamtPreis)
+        .replace(/\{lieferInfo\}/g, lieferInfo)
+        .replace(/\{ansprechpartner\}/g, ansprechpartner);
+    }
 
-      return body;
+    function generateTelegramTitle(order) {
+      const tpl = getTelegramTemplate();
+      return replaceTelegramPlaceholders(tpl.title, order);
+    }
+
+    function generateTelegramBody(order) {
+      const tpl = getTelegramTemplate();
+      return replaceTelegramPlaceholders(tpl.body, order);
     }
 
     function openTelegramModal(orderId) {
@@ -4167,10 +4354,10 @@
 
       // Template-Felder vorbelegen
       const tpl = getTelegramTemplate();
-      const tplIntro = document.getElementById('tpl-intro');
-      const tplOutro = document.getElementById('tpl-outro');
-      if (tplIntro) tplIntro.value = tpl.intro;
-      if (tplOutro) tplOutro.value = tpl.outro;
+      const tplTitle = document.getElementById('tpl-title');
+      const tplBody = document.getElementById('tpl-body');
+      if (tplTitle) tplTitle.value = tpl.title;
+      if (tplBody) tplBody.value = tpl.body;
 
       // Gesendet-Info
       const sentInfo = document.getElementById('telegram-sent-info');
@@ -4196,9 +4383,9 @@
     }
 
     function saveTelegramTemplate() {
-      const intro = document.getElementById('tpl-intro')?.value?.trim() || getDefaultTelegramTemplate().intro;
-      const outro = document.getElementById('tpl-outro')?.value?.trim() || getDefaultTelegramTemplate().outro;
-      state.telegramTemplate = { intro, outro };
+      const title = document.getElementById('tpl-title')?.value?.trim() || getDefaultTelegramTemplate().title;
+      const body = document.getElementById('tpl-body')?.value?.trim() || getDefaultTelegramTemplate().body;
+      state.telegramTemplate = { title, body };
       saveState();
 
       // Vorschau aktualisieren
@@ -4210,6 +4397,50 @@
         }
       }
       westernAlert('Telegramm-Vorlage gespeichert!');
+    }
+
+    function resetTelegramTemplate() {
+      const def = getDefaultTelegramTemplate();
+      const tplTitle = document.getElementById('tpl-title');
+      const tplBody = document.getElementById('tpl-body');
+      if (tplTitle) tplTitle.value = def.title;
+      if (tplBody) tplBody.value = def.body;
+      state.telegramTemplate = { ...def };
+      saveState();
+      // Vorschau aktualisieren
+      if (currentTelegramOrderId) {
+        const order = state.orders.find(o => o.id === currentTelegramOrderId);
+        if (order) {
+          document.getElementById('telegram-title-text').innerText = generateTelegramTitle(order);
+          document.getElementById('telegram-body-text').innerText = generateTelegramBody(order);
+        }
+      }
+      westernAlert('Vorlage auf Standard zurückgesetzt!');
+    }
+
+    function updateTelegramBtnState(status, telegramSent) {
+      const btn = document.getElementById('detail-telegram-btn');
+      if (!btn) return;
+      if (status === 'Erledigt') {
+        btn.disabled = false;
+        btn.className = 'px-4 py-2 rounded text-xs uppercase font-title font-bold shadow transition bg-western-green text-white hover:bg-western-green/80 cursor-pointer';
+        if (telegramSent) {
+          btn.innerHTML = '✅ Telegramm versendet';
+        } else {
+          btn.innerHTML = '📧 Telegramm erstellen';
+        }
+      } else {
+        btn.disabled = true;
+        btn.className = 'px-4 py-2 rounded text-xs uppercase font-title font-bold shadow transition bg-gray-400 text-gray-200 cursor-not-allowed';
+        btn.innerHTML = '📧 Telegramm erstellen';
+      }
+    }
+
+    function onDetailStatusChange() {
+      const status = document.getElementById('detail-order-status-select')?.value;
+      const order = state.orders.find(o => o.id === currentDetailOrderId);
+      const telegramSent = order ? order.telegramSent : null;
+      updateTelegramBtnState(status, telegramSent);
     }
 
     function copyTelegramField(elementId) {
