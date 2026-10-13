@@ -83,6 +83,7 @@
       background: #bfa068;
       border-radius: 3px;
     }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
 
     /* Rechte: welche Schaltflächen ausgeblendet werden, legt applyRole() im Skript fest */
   </style>
@@ -150,26 +151,26 @@
         </button>
       </div>
 
-      <nav class="flex justify-center flex-wrap gap-1 md:gap-3 mt-6 border-t border-leather-800/20 pt-4">
-        <button onclick="switchTab('orders')" id="tab-orders" class="px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-leather-900 font-bold text-leather-900">
+      <nav class="flex justify-start md:justify-center flex-nowrap gap-0.5 md:gap-1 mt-6 border-t border-leather-800/20 pt-4 overflow-x-auto scrollbar-hide -mx-4 px-4" style="-ms-overflow-style:none;scrollbar-width:none;">
+        <button onclick="switchTab('orders')" id="tab-orders" class="px-2 md:px-3 py-1.5 font-title text-[10px] md:text-xs tracking-wide uppercase transition-all border-b-2 border-leather-900 font-bold text-leather-900 whitespace-nowrap flex-shrink-0">
           📜 Auftragsbuch
         </button>
-        <button onclick="switchTab('inventory')" id="tab-inventory" class="px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
+        <button onclick="switchTab('inventory')" id="tab-inventory" class="px-2 md:px-3 py-1.5 font-title text-[10px] md:text-xs tracking-wide uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900 whitespace-nowrap flex-shrink-0">
           🌾 Produkte
         </button>
-        <button onclick="switchTab('treasury')" id="tab-treasury" class="px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
-          💰 Kasse & Verkauf
+        <button onclick="switchTab('treasury')" id="tab-treasury" class="px-2 md:px-3 py-1.5 font-title text-[10px] md:text-xs tracking-wide uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900 whitespace-nowrap flex-shrink-0">
+          💰 Kasse
         </button>
-        <button onclick="switchTab('purchase')" id="tab-purchase" class="px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
+        <button onclick="switchTab('purchase')" id="tab-purchase" class="px-2 md:px-3 py-1.5 font-title text-[10px] md:text-xs tracking-wide uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900 whitespace-nowrap flex-shrink-0">
           🛒 Einkauf
         </button>
-        <button onclick="switchTab('customers')" id="tab-customers" class="px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
+        <button onclick="switchTab('customers')" id="tab-customers" class="px-2 md:px-3 py-1.5 font-title text-[10px] md:text-xs tracking-wide uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900 whitespace-nowrap flex-shrink-0">
           👥 Kunden
         </button>
-        <button onclick="switchTab('all-orders')" id="tab-all-orders" class="px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
-          📦 Bestellarchiv
+        <button onclick="switchTab('all-orders')" id="tab-all-orders" class="px-2 md:px-3 py-1.5 font-title text-[10px] md:text-xs tracking-wide uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900 whitespace-nowrap flex-shrink-0">
+          📦 Archiv
         </button>
-        <button onclick="switchTab('staff')" id="tab-staff" class="px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
+        <button onclick="switchTab('staff')" id="tab-staff" class="px-2 md:px-3 py-1.5 font-title text-[10px] md:text-xs tracking-wide uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900 whitespace-nowrap flex-shrink-0">
           👥 Mitarbeiter
         </button>
       </nav>
@@ -1853,7 +1854,6 @@
                      || new URLSearchParams(location.search).get('error_description');
         let text = 'Bitte melde dich mit deinem Discord-Konto an.';
         if (fromUrl) text = 'Anmeldung fehlgeschlagen: ' + fromUrl;
-        else if (!/^https?:$/.test(location.protocol)) text = 'Die Anmeldung funktioniert nur über die Webadresse der App, nicht mit einer lokal geöffneten Datei.';
         setDbStatus('busy', 'Nicht angemeldet');
         showAuth('login', text);
         return;
@@ -2033,12 +2033,12 @@
         const view = document.getElementById(`view-${t}`);
         const btn = document.getElementById(`tab-${t}`);
         if(view) view.classList.add('hidden');
-        if(btn) btn.className = "px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900";
+        if(btn) btn.className = "px-2 md:px-3 py-1.5 font-title text-[10px] md:text-xs tracking-wide uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900 whitespace-nowrap flex-shrink-0";
       });
       const activeView = document.getElementById(`view-${tab}`);
       const activeBtn = document.getElementById(`tab-${tab}`);
       if(activeView) activeView.classList.remove('hidden');
-      if(activeBtn) activeBtn.className = "px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-leather-900 font-bold text-leather-900";
+      if(activeBtn) activeBtn.className = "px-2 md:px-3 py-1.5 font-title text-[10px] md:text-xs tracking-wide uppercase transition-all border-b-2 border-leather-900 font-bold text-leather-900 whitespace-nowrap flex-shrink-0";
     }
 
     function renderCoach() {
