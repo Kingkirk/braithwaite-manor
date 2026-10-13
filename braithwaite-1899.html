@@ -160,6 +160,9 @@
         <button onclick="switchTab('treasury')" id="tab-treasury" class="px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
           💰 Kasse & Verkauf
         </button>
+        <button onclick="switchTab('purchase')" id="tab-purchase" class="px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
+          🛒 Einkauf
+        </button>
         <button onclick="switchTab('customers')" id="tab-customers" class="px-3.5 py-1.5 font-title text-xs md:text-sm tracking-wider uppercase transition-all border-b-2 border-transparent text-leather-800/60 hover:text-leather-900">
           👥 Kunden
         </button>
@@ -522,6 +525,77 @@
         <div id="archive-pagination" class="flex justify-between items-center pt-3 border-t border-leather-800/20 text-xs"></div>
       </section>
 
+      <!-- TAB: EINKAUF -->
+      <section id="view-purchase" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-leather-800/20 pb-3">
+          <div>
+            <h2 class="font-title text-2xl font-bold text-leather-900">🛒 Saatgut- & Wareneinkauf</h2>
+            <p class="text-sm text-leather-800/70">Einkäufe zum Saatgutpreis (EK) buchen — wird automatisch als Ausgabe in die Kasse verbucht</p>
+          </div>
+        </div>
+
+        <!-- Einkaufsmaske -->
+        <div class="border-2 border-leather-800/40 bg-parchment-100/95 p-5 md:p-6 rounded-lg shadow-md space-y-5">
+          <h3 class="font-title text-lg font-bold text-leather-900 border-b border-leather-800/20 pb-2">🌾 Neuen Einkauf erfassen</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs items-end">
+            <div class="flex flex-col">
+              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Produkt</label>
+              <select id="purchase-item" onchange="updatePurchasePreview()" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none font-semibold"></select>
+            </div>
+            <div class="flex flex-col">
+              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Menge (Samen/Einheiten)</label>
+              <input type="number" id="purchase-qty" min="1" value="1" oninput="updatePurchasePreview()" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none font-semibold">
+            </div>
+            <div class="flex flex-col">
+              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Einkäufer</label>
+              <select id="purchase-staff" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none font-semibold"></select>
+            </div>
+            <div class="flex flex-col">
+              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Summe</label>
+              <div class="h-10 flex items-center">
+                <span id="purchase-preview-total" class="text-xl font-bold font-title text-western-red">$ 0.00</span>
+                <span id="purchase-preview-unit" class="text-leather-800/60 ml-2 text-[11px]">(EK: $ 0.00 / Stk.)</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end pt-2">
+            <button data-perm="cash_edit" onclick="bookPurchase()" class="px-5 py-2.5 bg-western-red hover:bg-red-700 text-white rounded font-title text-xs uppercase tracking-wider font-bold shadow-lg transition">
+              🛒 Einkauf buchen & in Kasse verbuchen
+            </button>
+          </div>
+        </div>
+
+        <!-- Einkaufshistorie -->
+        <div class="border-2 border-leather-800/30 bg-parchment-50 rounded-lg shadow-sm overflow-hidden">
+          <div class="bg-parchment-200/80 px-5 py-3 border-b border-leather-800/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h3 class="font-title text-lg font-bold text-leather-900">📋 Einkaufshistorie</h3>
+            <div class="flex items-center gap-3">
+              <label class="text-xs font-title uppercase text-leather-800/70">Filter nach Mitarbeiter:</label>
+              <select id="purchase-filter-staff" onchange="renderPurchases()" class="text-xs bg-parchment-50 border border-leather-800/25 p-1.5 rounded font-title font-semibold focus:outline-none">
+                <option value="alle">Alle Mitarbeiter</option>
+              </select>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-parchment-200/60 text-[11px] uppercase font-title text-leather-900 tracking-wider">
+                  <th class="py-2.5 px-3">Datum</th>
+                  <th class="py-2.5 px-3">Produkt</th>
+                  <th class="py-2.5 px-3 text-center">Menge</th>
+                  <th class="py-2.5 px-3 text-right">Stückpreis</th>
+                  <th class="py-2.5 px-3 text-right">Gesamt</th>
+                  <th class="py-2.5 px-3">Einkäufer</th>
+                  <th class="py-2.5 px-3 text-right">Aktion</th>
+                </tr>
+              </thead>
+              <tbody id="purchase-table-body"></tbody>
+            </table>
+          </div>
+          <div id="purchase-summary" class="px-5 py-3 border-t border-leather-800/20 bg-parchment-200/40"></div>
+        </div>
+      </section>
+
       <!-- TAB 6: MITARBEITER -->
       <section id="view-staff" class="hidden space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-leather-800/20 pb-3">
@@ -596,6 +670,71 @@
         <button onclick="closeModal('western-alert-modal')" class="px-6 py-2 bg-leather-900 hover:bg-leather-800 text-parchment-100 rounded text-xs uppercase font-title font-bold shadow-lg">
           Verstanden
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELEGRAMM-GENERATOR-MODAL -->
+  <div id="telegram-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-3 md:p-4 z-50">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-5 md:p-6 rounded-lg max-w-2xl w-full shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scroll">
+      <div class="flex justify-between items-start border-b border-leather-800/20 pb-3">
+        <div>
+          <span class="text-xs uppercase font-title tracking-wider text-western-brass font-bold flex items-center gap-1.5">
+            <span>📧</span> Telegramm-Nachricht erstellen
+          </span>
+          <h3 id="telegram-order-info" class="font-title text-lg font-bold text-leather-900 mt-1">Bestellung #—</h3>
+        </div>
+        <button onclick="closeModal('telegram-modal')" class="text-leather-800/60 hover:text-leather-900 text-xl leading-none">✕</button>
+      </div>
+
+      <!-- Template-Einstellungen (nur Leitung) -->
+      <div id="telegram-template-section" data-perm="staff_manage" class="border border-western-brass/40 bg-parchment-200/40 p-3 rounded space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-title uppercase tracking-wider text-western-brass font-bold">⚙️ Vorlage anpassen (Leitung)</span>
+          <button onclick="toggleTelegramTemplateEdit()" id="telegram-template-toggle" class="text-xs text-western-brass hover:underline font-title">Bearbeiten</button>
+        </div>
+        <div id="telegram-template-edit" class="hidden space-y-2">
+          <div>
+            <label class="text-[11px] font-title uppercase text-leather-800/70">Einleitungstext</label>
+            <textarea id="tpl-intro" rows="2" class="w-full bg-parchment-50 border border-leather-800/20 p-2 text-xs rounded focus:outline-none resize-none"></textarea>
+          </div>
+          <div>
+            <label class="text-[11px] font-title uppercase text-leather-800/70">Abschlusstext</label>
+            <textarea id="tpl-outro" rows="2" class="w-full bg-parchment-50 border border-leather-800/20 p-2 text-xs rounded focus:outline-none resize-none"></textarea>
+          </div>
+          <div class="flex justify-end">
+            <button onclick="saveTelegramTemplate()" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-3 py-1.5 rounded font-title uppercase font-bold">Vorlage speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Titel -->
+      <div class="space-y-1">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-title uppercase tracking-wider text-leather-900 font-bold">Telegramm-Titel</label>
+          <button onclick="copyTelegramField('telegram-title-text')" class="text-xs text-western-brass hover:underline font-title flex items-center gap-1">📋 Titel kopieren</button>
+        </div>
+        <div id="telegram-title-text" class="bg-parchment-50 border border-leather-800/20 p-3 rounded font-vintage text-sm text-leather-900 select-all"></div>
+      </div>
+
+      <!-- Nachrichtentext -->
+      <div class="space-y-1">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-title uppercase tracking-wider text-leather-900 font-bold">Nachrichtentext</label>
+          <button onclick="copyTelegramField('telegram-body-text')" class="text-xs text-western-brass hover:underline font-title flex items-center gap-1">📋 Nachricht kopieren</button>
+        </div>
+        <div id="telegram-body-text" class="bg-parchment-50 border border-leather-800/20 p-3 rounded font-vintage text-sm text-leather-900 whitespace-pre-wrap select-all leading-relaxed"></div>
+      </div>
+
+      <!-- Aktionen -->
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2 border-t border-leather-800/20">
+        <span id="telegram-sent-info" class="text-xs text-leather-800/60 font-vintage italic"></span>
+        <div class="flex gap-2">
+          <button onclick="closeModal('telegram-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80 hover:underline">Schließen</button>
+          <button id="telegram-mark-sent-btn" onclick="markTelegramSent()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
+            ✓ Als gesendet markieren
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -773,9 +912,14 @@
 
       <div class="flex justify-between items-center pt-2 border-t border-leather-800/20">
         <button id="detail-order-delete-btn" data-perm="orders_delete" class="text-xs text-western-red hover:underline font-title uppercase">Bestellung stornieren / löschen</button>
-        <button data-perm="orders_edit" onclick="saveDetailOrderChanges()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
-          ✓ Änderungen speichern & besiegeln
-        </button>
+        <div class="flex items-center gap-2">
+          <button id="detail-telegram-btn" onclick="openTelegramFromDetail()" class="px-4 py-2 bg-western-brass hover:bg-yellow-700 text-white rounded text-xs uppercase font-title font-bold shadow transition hidden">
+            📧 Telegramm erstellen
+          </button>
+          <button data-perm="orders_edit" onclick="saveDetailOrderChanges()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
+            ✓ Änderungen speichern & besiegeln
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1158,7 +1302,9 @@
       orders: [],
       inventory: [],
       cash: [],
-      staff: []
+      staff: [],
+      purchases: [],
+      telegramTemplate: null
     };
 
     try {
@@ -1245,7 +1391,8 @@
           staffName: o.staff_name,
           price: Number(o.price || 0),
           status: o.status,
-          bookedToCash: (o.status === 'Erledigt')
+          bookedToCash: (o.status === 'Erledigt'),
+          telegramSent: o.telegram_sent || null
         }),
         toRow: x => ({
           order_number: x.orderNumber,
@@ -1255,7 +1402,8 @@
           timeslot: x.timeslot,
           staff_name: x.staffName,
           price: Number(x.price || 0),
-          status: x.status
+          status: x.status,
+          telegram_sent: x.telegramSent || null
         })
       },
       {
@@ -1269,12 +1417,19 @@
         query: q => q.order('id', { ascending: false }),
         fromRow: n => ({ id: n.id, title: n.title, text: n.content, category: n.category || 'allg', date: n.created_at ? n.created_at.split('T')[0] : '' }),
         toRow: x => ({ title: x.title, content: x.text, category: x.category })
+      },
+      {
+        table: 'purchases', stateKey: 'purchases',
+        query: q => q.order('id', { ascending: false }),
+        fromRow: r => ({ id: r.id, date: r.created_at ? r.created_at.split('T')[0] : '', staffName: r.staff_name, itemId: r.item_id, itemName: r.item_name, qty: Number(r.qty || 0), unitPrice: Number(r.unit_price || 0), total: Number(r.total || 0) }),
+        toRow: x => ({ staff_name: x.staffName, item_id: x.itemId, item_name: x.itemName, qty: x.qty, unit_price: x.unitPrice, total: x.total })
       }
     ];
 
     const dbSnapshot = {};        // letzter bekannter Stand der Datenbank je Tabelle (id -> Zeile als Text)
     let dbCategoryNames = null;   // Kategorienamen, wie sie in der Datenbank stehen
     let dbCoachAway = null;
+    let dbTelegramTemplate = null;
     let dbLoaded = false;
     let dbQueue = Promise.resolve();
     let localVersion = 0;
@@ -1392,6 +1547,16 @@
         if (await run('farm_meta', canDb('farm_meta', 'update') && db.from('farm_meta').upsert({ key: 'coach_away', value: String(wanted) }))) dbCoachAway = wanted;
       }
 
+      // Telegramm-Vorlage speichern
+      const tplJson = state.telegramTemplate ? JSON.stringify(state.telegramTemplate) : null;
+      if (tplJson !== dbTelegramTemplate) {
+        if (tplJson) {
+          if (await run('farm_meta', canDb('farm_meta', 'update') && db.from('farm_meta').upsert({ key: 'telegram_template', value: tplJson }))) dbTelegramTemplate = tplJson;
+        } else {
+          if (await run('farm_meta', canDb('farm_meta', 'delete') && db.from('farm_meta').delete().eq('key', 'telegram_template'))) dbTelegramTemplate = null;
+        }
+      }
+
       if (idsChanged) renderAll();
       if (errors.length > 0) {
         console.warn("Supabase Speichern:", errors);
@@ -1503,6 +1668,13 @@
         dbCoachAway = coachRow ? (coachRow.value === 'true' || coachRow.value === true) : null;
         state.coachAway = (dbCoachAway === true);
 
+        const tplRow = (meta.data || []).find(m => m.key === 'telegram_template');
+        if (tplRow && tplRow.value) {
+          try { state.telegramTemplate = JSON.parse(tplRow.value); dbTelegramTemplate = tplRow.value; } catch(e) { state.telegramTemplate = null; dbTelegramTemplate = null; }
+        } else {
+          dbTelegramTemplate = null;
+        }
+
         const maxOrderNum = state.orders.reduce((max, o) => Math.max(max, o.orderNumber || 0), 0);
         state.nextOrderNumber = maxOrderNum + 1;
 
@@ -1569,6 +1741,7 @@
       products:        { insert: 'products',       update: 'products',       delete: 'products' },
       categories:      { insert: 'products',       update: 'products',       delete: 'products' },
       cash_entries:    { insert: 'cash_edit',      update: 'cash_edit',      delete: 'cash_edit' },
+      purchases:       { insert: 'cash_edit',      update: 'cash_edit',      delete: 'cash_edit' },
       staff:           { insert: 'staff_manage',   update: 'staff_manage',   delete: 'staff_manage' }
     };
 
@@ -1829,7 +2002,7 @@
     }
 
     function switchTab(tab) {
-      const allTabs = ['orders', 'all-orders', 'inventory', 'customers', 'treasury', 'staff'];
+      const allTabs = ['orders', 'all-orders', 'inventory', 'customers', 'treasury', 'staff', 'purchase'];
       allTabs.forEach(t => {
         const view = document.getElementById(`view-${t}`);
         const btn = document.getElementById(`tab-${t}`);
@@ -2518,6 +2691,7 @@
                 <span class="px-2 py-0.5 text-[11px] font-title uppercase tracking-wider font-bold rounded border ${badgeColor} inline-block mt-0.5 shadow-sm">
                   ${o.status}
                 </span>
+                ${o.telegramSent ? `<span class="block text-[10px] text-western-brass mt-1 font-vintage">📧 gesendet von ${escapeHtml(o.telegramSent.by)}</span>` : ''}
               </div>
             </div>
           </div>
@@ -2618,9 +2792,25 @@
         }
       };
 
+      // Telegramm-Button nur bei erledigten Bestellungen anzeigen
+      const telegramBtn = document.getElementById('detail-telegram-btn');
+      if (telegramBtn) {
+        telegramBtn.classList.toggle('hidden', order.status !== 'Erledigt');
+        if (order.telegramSent) {
+          telegramBtn.innerHTML = `📧 Telegramm ansehen <span class="text-[10px] opacity-70">(gesendet)</span>`;
+        } else {
+          telegramBtn.innerHTML = '📧 Telegramm erstellen';
+        }
+      }
+
       setDetailModalTab('pack');
       renderModalViews();
       openModal('order-detail-modal');
+    }
+
+    function openTelegramFromDetail() {
+      if (!currentDetailOrderId) return;
+      openTelegramModal(currentDetailOrderId);
     }
 
     function renderModalViews() {
@@ -3765,11 +3955,305 @@
       m.classList.remove('flex');
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // EINKAUF — Saatgut-/Wareneinkauf mit Kassenbuchung
+    // ═══════════════════════════════════════════════════════════════
+
+    let purchasePage = 1;
+
+    function populatePurchaseDropdowns() {
+      const itemSel = document.getElementById('purchase-item');
+      const staffSel = document.getElementById('purchase-staff');
+      const filterSel = document.getElementById('purchase-filter-staff');
+      if (!itemSel || !staffSel) return;
+
+      itemSel.innerHTML = state.inventory.map(i =>
+        `<option value="${i.id}" data-cost="${Number(i.cost || 0).toFixed(2)}">${i.name} (EK: $ ${Number(i.cost || 0).toFixed(2)} / Samen)</option>`
+      ).join('');
+
+      staffSel.innerHTML = state.staff.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+      if (me.staffName && Array.from(staffSel.options).some(o => o.value === me.staffName)) staffSel.value = me.staffName;
+
+      if (filterSel) {
+        const currentVal = filterSel.value;
+        const staffNames = [...new Set(state.purchases.map(p => p.staffName))].sort();
+        filterSel.innerHTML = `<option value="alle">Alle Mitarbeiter</option>` + staffNames.map(n => `<option value="${n}">${n}</option>`).join('');
+        if (currentVal && Array.from(filterSel.options).some(o => o.value === currentVal)) filterSel.value = currentVal;
+      }
+
+      updatePurchasePreview();
+    }
+
+    function updatePurchasePreview() {
+      const itemSel = document.getElementById('purchase-item');
+      const qtySel = document.getElementById('purchase-qty');
+      const totalEl = document.getElementById('purchase-preview-total');
+      const unitEl = document.getElementById('purchase-preview-unit');
+      if (!itemSel || !qtySel || !totalEl) return;
+      const selected = itemSel.options[itemSel.selectedIndex];
+      const unitPrice = selected ? Number(selected.dataset.cost || 0) : 0;
+      const qty = Math.max(1, Number(qtySel.value) || 1);
+      const total = unitPrice * qty;
+      totalEl.innerText = `$ ${total.toFixed(2)}`;
+      if (unitEl) unitEl.innerText = `(EK: $ ${unitPrice.toFixed(2)} / Stk.)`;
+    }
+
+    function bookPurchase() {
+      if (!can('cash_edit')) { westernAlert('Keine Berechtigung für Einkäufe.'); return; }
+      const itemSel = document.getElementById('purchase-item');
+      const qtySel = document.getElementById('purchase-qty');
+      const staffSel = document.getElementById('purchase-staff');
+      if (!itemSel || !itemSel.value) { westernAlert('Bitte ein Produkt auswählen!'); return; }
+      const qty = Math.max(1, Number(qtySel.value) || 1);
+      const selected = itemSel.options[itemSel.selectedIndex];
+      const unitPrice = Number(selected.dataset.cost || 0);
+      const total = unitPrice * qty;
+      const itemId = Number(itemSel.value);
+      const itemName = state.inventory.find(i => i.id === itemId)?.name || selected.text.split(' (')[0];
+      const staffName = staffSel.value || me.staffName || 'Unbekannt';
+
+      if (total <= 0) { westernAlert('Der Einkaufspreis ist $ 0 — bitte Saatgutpreis beim Produkt hinterlegen.'); return; }
+
+      const purchase = {
+        id: Date.now(),
+        date: new Date().toISOString().split('T')[0],
+        staffName: staffName,
+        itemId: itemId,
+        itemName: itemName,
+        qty: qty,
+        unitPrice: unitPrice,
+        total: total
+      };
+      state.purchases.unshift(purchase);
+
+      // Kassenbuchung als Ausgabe
+      const cashEntry = {
+        id: Date.now() + 1,
+        date: new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        desc: `Einkauf: ${qty}× ${itemName} (Saatgut-EK)`,
+        type: 'out',
+        amount: total
+      };
+      state.cash.push(cashEntry);
+
+      qtySel.value = 1;
+      updatePurchasePreview();
+      renderPurchases();
+      renderTreasury();
+      saveState();
+      westernAlert(`Einkauf gebucht: ${qty}× ${itemName} für $ ${total.toFixed(2)} — als Ausgabe verbucht.`);
+    }
+
+    function renderPurchases() {
+      const tbody = document.getElementById('purchase-table-body');
+      const summaryEl = document.getElementById('purchase-summary');
+      if (!tbody) return;
+
+      const filterStaff = document.getElementById('purchase-filter-staff')?.value || 'alle';
+      const filtered = state.purchases.filter(p => filterStaff === 'alle' || p.staffName === filterStaff);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-leather-800/60 font-vintage text-base">Noch keine Einkäufe verbucht.</td></tr>`;
+        if (summaryEl) summaryEl.innerHTML = '';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => `
+        <tr class="hover:bg-leather-800/5 transition">
+          <td class="py-2.5 px-3 text-xs text-leather-800/70 font-vintage">${p.date || ''}</td>
+          <td class="py-2.5 px-3 text-leather-900 font-vintage text-base font-semibold">${escapeHtml(p.itemName)}</td>
+          <td class="py-2.5 px-3 text-center font-bold font-title">${p.qty}</td>
+          <td class="py-2.5 px-3 text-right text-leather-800/80">$ ${Number(p.unitPrice).toFixed(2)}</td>
+          <td class="py-2.5 px-3 text-right font-bold text-western-red">$ ${Number(p.total).toFixed(2)}</td>
+          <td class="py-2.5 px-3 text-xs font-title text-leather-900">${escapeHtml(p.staffName)}</td>
+          <td class="py-2.5 px-3 text-right">
+            <button data-perm="cash_edit" onclick="deletePurchase(${p.id})" class="text-xs text-western-red hover:underline font-title">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Zusammenfassung
+      if (summaryEl) {
+        const totalSum = filtered.reduce((s, p) => s + Number(p.total), 0);
+        const byStaff = {};
+        filtered.forEach(p => { byStaff[p.staffName] = (byStaff[p.staffName] || 0) + Number(p.total); });
+        const staffSummary = Object.entries(byStaff).map(([name, sum]) =>
+          `<span class="inline-block mr-4"><strong class="font-title">${escapeHtml(name)}:</strong> $ ${sum.toFixed(2)}</span>`
+        ).join('');
+        summaryEl.innerHTML = `
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+            <div class="text-leather-800/80 font-vintage">${staffSummary}</div>
+            <div class="font-title font-bold text-leather-900 text-sm">Gesamt: <span class="text-western-red">$ ${totalSum.toFixed(2)}</span></div>
+          </div>
+        `;
+      }
+    }
+
+    async function deletePurchase(id) {
+      if (!can('cash_edit')) { westernAlert('Keine Berechtigung.'); return; }
+      const ok = await westernConfirm('Einkauf stornieren', 'Soll dieser Einkauf gelöscht werden? Die zugehörige Kassenbuchung bleibt bestehen und muss ggf. manuell entfernt werden.');
+      if (!ok) return;
+      state.purchases = state.purchases.filter(p => p.id !== id);
+      renderPurchases();
+      saveState();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // TELEGRAMM-GENERATOR — Kundennachrichten aus Bestellungen
+    // ═══════════════════════════════════════════════════════════════
+
+    let currentTelegramOrderId = null;
+
+    function getDefaultTelegramTemplate() {
+      return {
+        intro: 'Werte(r) {kundenName},\n\nIhre Bestellung bei Braithwaite Manor wurde bearbeitet und ist bereit.',
+        outro: 'Mit freundlichen Grüßen,\nBraithwaite Manor — Gewerbe & Handel'
+      };
+    }
+
+    function getTelegramTemplate() {
+      if (state.telegramTemplate && state.telegramTemplate.intro) return state.telegramTemplate;
+      return getDefaultTelegramTemplate();
+    }
+
+    function generateTelegramTitle(order) {
+      return `Braithwaite Manor — Bestellung #${order.orderNumber || '—'}`;
+    }
+
+    function generateTelegramBody(order) {
+      const tpl = getTelegramTemplate();
+      const kundenName = order.customer || 'Kunde';
+      const intro = tpl.intro.replace(/\{kundenName\}/g, kundenName);
+
+      let posLines = '';
+      if (order.itemsList && order.itemsList.length > 0) {
+        posLines = order.itemsList.map(item => {
+          const name = item.name || item.text || 'Unbekannt';
+          const amount = item.amount || item.qty || 1;
+          const price = Number(item.lineTotal || item.price || 0);
+          return `  • ${amount}× ${name} — $ ${price.toFixed(2)}`;
+        }).join('\n');
+      } else if (order.items) {
+        posLines = '  ' + order.items;
+      }
+
+      const gesamtpreis = `$ ${Number(order.price || 0).toFixed(2)}`;
+      const lieferart = order.deliveryMode || 'Nicht angegeben';
+      const zeitfenster = order.timeslot || 'Zeitnah nach Absprache';
+
+      let body = intro + '\n\n';
+      body += '══════════════════════════\n';
+      body += 'Ihre Bestellübersicht:\n';
+      body += '══════════════════════════\n\n';
+      body += posLines + '\n\n';
+      body += `──────────────────────────\n`;
+      body += `Gesamtbetrag: ${gesamtpreis}\n`;
+      body += `Lieferart: ${lieferart}\n`;
+      body += `Zeitfenster: ${zeitfenster}\n`;
+      body += `──────────────────────────\n\n`;
+      body += tpl.outro;
+
+      return body;
+    }
+
+    function openTelegramModal(orderId) {
+      const order = state.orders.find(o => o.id === orderId);
+      if (!order) { westernAlert('Bestellung nicht gefunden.'); return; }
+      currentTelegramOrderId = orderId;
+
+      document.getElementById('telegram-order-info').innerText = `Bestellung #${order.orderNumber || '—'} — ${order.customer || 'Kunde'}`;
+      document.getElementById('telegram-title-text').innerText = generateTelegramTitle(order);
+      document.getElementById('telegram-body-text').innerText = generateTelegramBody(order);
+
+      // Template-Felder vorbelegen
+      const tpl = getTelegramTemplate();
+      const tplIntro = document.getElementById('tpl-intro');
+      const tplOutro = document.getElementById('tpl-outro');
+      if (tplIntro) tplIntro.value = tpl.intro;
+      if (tplOutro) tplOutro.value = tpl.outro;
+
+      // Gesendet-Info
+      const sentInfo = document.getElementById('telegram-sent-info');
+      const sentBtn = document.getElementById('telegram-mark-sent-btn');
+      if (order.telegramSent) {
+        sentInfo.innerText = `📧 Telegramm gesendet von ${order.telegramSent.by} am ${new Date(order.telegramSent.date).toLocaleDateString('de-DE')}`;
+        if (sentBtn) sentBtn.style.display = 'none';
+      } else {
+        sentInfo.innerText = '';
+        if (sentBtn) sentBtn.style.display = '';
+      }
+
+      // Template-Edit ausblenden
+      const tplEdit = document.getElementById('telegram-template-edit');
+      if (tplEdit) tplEdit.classList.add('hidden');
+
+      openModal('telegram-modal');
+    }
+
+    function toggleTelegramTemplateEdit() {
+      const el = document.getElementById('telegram-template-edit');
+      if (el) el.classList.toggle('hidden');
+    }
+
+    function saveTelegramTemplate() {
+      const intro = document.getElementById('tpl-intro')?.value?.trim() || getDefaultTelegramTemplate().intro;
+      const outro = document.getElementById('tpl-outro')?.value?.trim() || getDefaultTelegramTemplate().outro;
+      state.telegramTemplate = { intro, outro };
+      saveState();
+
+      // Vorschau aktualisieren
+      if (currentTelegramOrderId) {
+        const order = state.orders.find(o => o.id === currentTelegramOrderId);
+        if (order) {
+          document.getElementById('telegram-title-text').innerText = generateTelegramTitle(order);
+          document.getElementById('telegram-body-text').innerText = generateTelegramBody(order);
+        }
+      }
+      westernAlert('Telegramm-Vorlage gespeichert!');
+    }
+
+    function copyTelegramField(elementId) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        westernAlert('In die Zwischenablage kopiert!');
+      }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        westernAlert('In die Zwischenablage kopiert!');
+      });
+    }
+
+    function markTelegramSent() {
+      if (!currentTelegramOrderId) return;
+      const order = state.orders.find(o => o.id === currentTelegramOrderId);
+      if (!order) return;
+      order.telegramSent = {
+        by: me.staffName || me.name || 'Unbekannt',
+        date: new Date().toISOString()
+      };
+      saveState();
+      renderOrders();
+      renderArchiveOrders();
+
+      const sentInfo = document.getElementById('telegram-sent-info');
+      const sentBtn = document.getElementById('telegram-mark-sent-btn');
+      sentInfo.innerText = `📧 Telegramm gesendet von ${order.telegramSent.by} am ${new Date(order.telegramSent.date).toLocaleDateString('de-DE')}`;
+      if (sentBtn) sentBtn.style.display = 'none';
+    }
+
     // Jeder Bereich wird einzeln gezeichnet, damit ein Fehler in einem Bereich nicht die ganze App lahmlegt
     function renderAll() {
       const steps = [
         renderCoach, renderNotes, renderCategoryButtons, renderOrders, renderArchiveOrders,
-        renderInventory, renderCustomerList, renderTreasury, renderStaff, renderAccessRequests, populatePosDropdowns, renderCart
+        renderInventory, renderCustomerList, renderTreasury, renderStaff, renderAccessRequests, populatePosDropdowns, renderCart,
+        renderPurchases, populatePurchaseDropdowns
       ];
 
       // Auswahl im Kassenbereich über das Neuzeichnen hinweg merken
