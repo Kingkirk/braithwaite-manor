@@ -3012,15 +3012,35 @@
       const done = Math.max(0, Math.min(Number(item.amount || 1), Number(value) || 0));
       item.done = done;
 
-      // Automatisch abhaken wenn fertig
+      // Automatisch abhaken wenn fertig, Haken entfernen wenn nicht fertig
       if (done >= Number(item.amount || 1)) {
         item.checked = true;
+      } else {
+        item.checked = false;
+      }
+
+      // Status automatisch anpassen (nicht wenn bereits Erledigt)
+      if (editingOrderClone.status !== 'Erledigt') {
+        const items = editingOrderClone.itemsList;
+        const checkedCount = items.filter(i => i.checked).length;
+        const totalCount = items.length;
+        const anyProgress = items.some(i => (Number(i.done) || 0) > 0);
+
+        if (checkedCount === totalCount && totalCount > 0) {
+          editingOrderClone.status = 'Abholbereit';
+        } else if (anyProgress || checkedCount > 0) {
+          editingOrderClone.status = 'In Arbeit';
+        } else {
+          editingOrderClone.status = 'Offen';
+        }
+        document.getElementById('detail-order-status-select').value = editingOrderClone.status;
       }
 
       // In Original sofort übernehmen und speichern
       const original = state.orders.find(o => o.id === currentDetailOrderId);
       if (original) {
         original.itemsList = JSON.parse(JSON.stringify(editingOrderClone.itemsList));
+        original.status = editingOrderClone.status;
         localVersion++;
         renderOrders();
         renderArchiveOrders();
