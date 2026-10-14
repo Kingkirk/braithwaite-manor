@@ -90,86 +90,176 @@
     /* Rechte: welche Schaltflächen ausgeblendet werden, legt applyRole() im Skript fest */
 
     /* ═══════════════════════ DARK THEME (Claude-Stil) ═══════════════════════ */
+    /* Basis: Claude's Farbpalette — #2b2b2e Hintergrund, #3b3b3e Oberflächen, #e8e4df Text */
     .theme-claude body {
-      background-color: #1a1a1e;
+      background-color: #1b1b1f;
       background-image: none;
-      color: #d4d4d8;
+      color: #e8e4df;
+      font-family: 'Inter', sans-serif !important;
     }
     .theme-claude .parchment-sheet {
-      background: #27272a;
+      background: #2b2b2e;
       background-image: none;
-      box-shadow: 0 0 0 1px #3f3f46, 0 14px 40px rgba(0,0,0,0.5);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 20px rgba(0,0,0,0.3);
+      border-radius: 12px;
     }
     .theme-claude .custom-scroll::-webkit-scrollbar-thumb {
       background: #52525b;
+      border-radius: 4px;
     }
-    /* Fonts im Dark Theme → Inter sans-serif */
-    .theme-claude .font-title,
-    .theme-claude .font-vintage,
-    .theme-claude .font-body { font-family: 'Inter', sans-serif !important; }
 
-    /* Farben überschreiben */
+    /* ── Alle Schriften → Inter ── */
+    .theme-claude, .theme-claude *, .theme-claude .font-title,
+    .theme-claude .font-vintage, .theme-claude .font-body,
+    .theme-claude h1, .theme-claude h2, .theme-claude h3, .theme-claude h4,
+    .theme-claude button, .theme-claude span, .theme-claude p, .theme-claude div,
+    .theme-claude label, .theme-claude a { font-family: 'Inter', sans-serif !important; }
+
+    /* ── Hintergründe ── */
     .theme-claude .bg-parchment-200\/60,
     .theme-claude .bg-parchment-200,
-    .theme-claude .bg-parchment-100 { background-color: #18181b !important; }
+    .theme-claude .bg-parchment-100 { background-color: #1b1b1f !important; }
     .theme-claude .bg-parchment-300\/80,
-    .theme-claude .bg-parchment-300 { background-color: #27272a !important; }
-    .theme-claude .bg-parchment-50 { background-color: #1f1f23 !important; }
-    .theme-claude .border-leather-800\/40,
-    .theme-claude .border-leather-800\/20 { border-color: #3f3f46 !important; }
-    .theme-claude .text-leather-900 { color: #e4e4e7 !important; }
+    .theme-claude .bg-parchment-300 { background-color: #2b2b2e !important; }
+    .theme-claude .bg-parchment-50,
+    .theme-claude .bg-parchment-50\/90 { background-color: #232327 !important; }
+    .theme-claude .bg-white { background-color: #2b2b2e !important; }
+    .theme-claude .bg-gray-50 { background-color: #232327 !important; }
+    .theme-claude .bg-parchment-200\/50 { background-color: #232327 !important; }
+
+    /* ── Textfarben ── */
+    .theme-claude .text-leather-900 { color: #e8e4df !important; }
     .theme-claude .text-leather-800\/85,
-    .theme-claude .text-leather-800\/60 { color: #a1a1aa !important; }
-    .theme-claude .text-leather-800 { color: #d4d4d8 !important; }
-    .theme-claude .text-leather-950 { color: #fafafa !important; }
-    .theme-claude .text-western-brass { color: #d4956b !important; }
-    .theme-claude .text-western-ink { color: #e4e4e7 !important; }
-    .theme-claude .bg-western-brass { background-color: #d4956b !important; }
-    .theme-claude .bg-western-green { background-color: #22c55e !important; }
-    .theme-claude .bg-western-red { background-color: #ef4444 !important; }
-    .theme-claude .text-western-green { color: #4ade80 !important; }
-    .theme-claude .text-western-red { color: #f87171 !important; }
-    .theme-claude .bg-leather-900 { background-color: #27272a !important; }
-    .theme-claude .bg-leather-800 { background-color: #3f3f46 !important; }
+    .theme-claude .text-leather-800\/60 { color: #9a9590 !important; }
+    .theme-claude .text-leather-800 { color: #c5c0ba !important; }
+    .theme-claude .text-leather-800\/70,
+    .theme-claude .text-leather-800\/75,
+    .theme-claude .text-leather-800\/80,
+    .theme-claude .text-leather-800\/50 { color: #8a8580 !important; }
+    .theme-claude .text-leather-950 { color: #f5f3f0 !important; }
+    .theme-claude .text-western-ink { color: #e8e4df !important; }
+    .theme-claude .text-gray-500,
+    .theme-claude .text-gray-600 { color: #8a8580 !important; }
+    .theme-claude .text-gray-700 { color: #c5c0ba !important; }
+    .theme-claude .text-gray-900 { color: #e8e4df !important; }
 
-    /* Header im Dark Theme */
-    .theme-claude header { background-color: #18181b !important; border-color: #3f3f46 !important; }
+    /* ── Akzentfarben (Claude's Terracotta/Orange) ── */
+    .theme-claude .text-western-brass { color: #da7756 !important; }
+    .theme-claude .bg-western-brass { background-color: #da7756 !important; }
+    .theme-claude .hover\:bg-western-brass\/80:hover { background-color: #c26a4b !important; }
+    .theme-claude .text-western-green { color: #5cb97a !important; }
+    .theme-claude .bg-western-green { background-color: #3d9960 !important; }
+    .theme-claude .text-western-red { color: #e8594d !important; }
+    .theme-claude .bg-western-red { background-color: #d44638 !important; }
+    .theme-claude .hover\:bg-western-red\/80:hover { background-color: #b83c30 !important; }
+    .theme-claude .text-amber-950 { color: #e8e4df !important; }
 
-    /* Inputs & Selects */
+    /* ── Hintergrundfarben für Badges/Tags ── */
+    .theme-claude .bg-leather-900 { background-color: #3b3b3e !important; }
+    .theme-claude .bg-leather-800 { background-color: #454548 !important; }
+    .theme-claude .bg-amber-100\/90,
+    .theme-claude .bg-amber-100 { background-color: #3b3527 !important; }
+    .theme-claude .bg-emerald-200 { background-color: #1a3a28 !important; }
+    .theme-claude .text-emerald-900 { color: #5cb97a !important; }
+    .theme-claude .bg-emerald-800 { background-color: #1a3a28 !important; }
+
+    /* ── Borders ── */
+    .theme-claude .border-leather-800\/40,
+    .theme-claude .border-leather-800\/20,
+    .theme-claude .border-leather-800\/15,
+    .theme-claude .border-leather-800\/10,
+    .theme-claude .border-leather-800\/25 { border-color: #3b3b3e !important; }
+    .theme-claude .border-gray-200 { border-color: #3b3b3e !important; }
+    .theme-claude .border-amber-800\/30 { border-color: #5a4a2a !important; }
+
+    /* ── Header ── */
+    .theme-claude header {
+      background-color: #232327 !important;
+      border-color: #3b3b3e !important;
+    }
+
+    /* ── Tabs ── */
+    .theme-claude .border-leather-900 { border-color: #da7756 !important; }
+    .theme-claude nav button { color: #8a8580 !important; }
+    .theme-claude nav button:hover { color: #e8e4df !important; }
+
+    /* ── Inputs & Selects ── */
     .theme-claude input, .theme-claude select, .theme-claude textarea {
-      background-color: #27272a !important;
-      color: #e4e4e7 !important;
-      border-color: #3f3f46 !important;
+      background-color: #1b1b1f !important;
+      color: #e8e4df !important;
+      border-color: #3b3b3e !important;
+      border-radius: 8px !important;
+    }
+    .theme-claude input:focus, .theme-claude select:focus, .theme-claude textarea:focus {
+      border-color: #da7756 !important;
+      outline: none !important;
+      box-shadow: 0 0 0 2px rgba(218,119,86,0.2) !important;
     }
     .theme-claude input::placeholder, .theme-claude textarea::placeholder {
-      color: #71717a !important;
+      color: #6a6560 !important;
+    }
+    .theme-claude input[type="checkbox"] {
+      accent-color: #da7756 !important;
     }
 
-    /* Modals */
-    .theme-claude [id$="-modal"] > div > div {
-      background-color: #27272a !important;
-      border-color: #3f3f46 !important;
-      color: #e4e4e7 !important;
+    /* ── Modals ── */
+    .theme-claude [id$="-modal"] > div > div,
+    .theme-claude [id$="-modal"] .parchment-sheet {
+      background-color: #2b2b2e !important;
+      border-color: #3b3b3e !important;
+      color: #e8e4df !important;
+    }
+    .theme-claude [id$="-modal"] {
+      background-color: rgba(0,0,0,0.7) !important;
     }
 
-    /* Tabs aktiv im Dark Theme */
-    .theme-claude .border-leather-900 { border-color: #d4956b !important; }
+    /* ── Buttons ── */
+    .theme-claude button {
+      border-radius: 8px !important;
+    }
+    .theme-claude .bg-emerald-700 { background-color: #3d9960 !important; }
+    .theme-claude .hover\:bg-emerald-800:hover { background-color: #2d7a48 !important; }
+    .theme-claude .bg-red-700,
+    .theme-claude .bg-red-800 { background-color: #d44638 !important; }
 
-    /* Cards und Listenelemente */
-    .theme-claude .bg-white { background-color: #27272a !important; }
-    .theme-claude .bg-gray-50 { background-color: #1f1f23 !important; }
-    .theme-claude .border-gray-200 { border-color: #3f3f46 !important; }
-    .theme-claude .text-gray-500 { color: #a1a1aa !important; }
-    .theme-claude .text-gray-600 { color: #a1a1aa !important; }
-    .theme-claude .text-gray-700 { color: #d4d4d8 !important; }
-    .theme-claude .text-gray-900 { color: #e4e4e7 !important; }
+    /* ── Kutsche-Button ── */
+    .theme-claude #coach-btn {
+      border-radius: 12px !important;
+    }
 
-    /* Hover States */
-    .theme-claude .hover\:bg-parchment-100:hover { background-color: #3f3f46 !important; }
-    .theme-claude .hover\:text-leather-900:hover { color: #e4e4e7 !important; }
+    /* ── Kategorie-Buttons ── */
+    .theme-claude .bg-leather-950 { background-color: #da7756 !important; }
+    .theme-claude .text-parchment-100 { color: #ffffff !important; }
+    .theme-claude .bg-parchment-100\/70 { background-color: #2b2b2e !important; }
 
-    /* Drop-shadow entfernen im Dark Theme */
+    /* ── Cards und Listenelemente ── */
+    .theme-claude .hover\:bg-parchment-100:hover { background-color: #333338 !important; }
+    .theme-claude .hover\:text-leather-900:hover { color: #e8e4df !important; }
+    .theme-claude .group:hover .group-hover\:text-amber-950 { color: #da7756 !important; }
+
+    /* ── Progressbars ── */
+    .theme-claude .bg-leather-800\/10 { background-color: #3b3b3e !important; }
+    .theme-claude .bg-leather-800\/20 { background-color: #454548 !important; }
+
+    /* ── Schatten und Effekte anpassen ── */
     .theme-claude .drop-shadow-sm { filter: none !important; }
+    .theme-claude .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
+    .theme-claude .shadow-lg { box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important; }
+
+    /* ── Notification-Banner ── */
+    .theme-claude #db-status {
+      background-color: #2b2b2e !important;
+      border-color: #3b3b3e !important;
+    }
+
+    /* ── Spezielle Elemente ── */
+    .theme-claude .italic { font-style: italic; }
+    .theme-claude .tracking-wider { letter-spacing: 0.05em !important; }
+    .theme-claude .tracking-widest { letter-spacing: 0.08em !important; }
+    .theme-claude .uppercase { text-transform: uppercase; }
+
+    /* ── Western Confirm/Alert Dialoge ── */
+    .theme-claude .bg-parchment-100\/95 { background-color: #2b2b2e !important; }
 
     /* Theme-Toggle Button */
     .theme-toggle { cursor: pointer; transition: all 0.3s ease; }
@@ -505,6 +595,9 @@
           <div class="flex items-center gap-2 flex-wrap">
             <button data-perm="cash_edit" onclick="openNewCashModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
               + Manuelle Buchung erfassen
+            </button>
+            <button data-perm="cash_reset" onclick="openCashResetModal()" class="bg-western-red text-white hover:bg-western-red/80 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+              🔄 Kasse zurücksetzen
             </button>
           </div>
         </div>
@@ -1209,6 +1302,38 @@
     </div>
   </div>
 
+  <!-- Modal: Kasse zurücksetzen -->
+  <div id="cash-reset-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-md w-full shadow-2xl space-y-4">
+      <h3 class="font-title text-xl font-bold text-leather-900">🔄 Kasse zurücksetzen</h3>
+      <p class="text-sm text-leather-800/80 font-body">Alle gewählten Buchungen werden unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</p>
+      <div>
+        <label class="block text-xs uppercase font-title tracking-wider text-leather-900 mb-1">Art des Resets</label>
+        <select id="cash-reset-type" onchange="updateCashResetOptions()" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded focus:outline-none font-semibold">
+          <option value="full">Kompletter Reset — alle Buchungen löschen</option>
+          <option value="before">Teilweise — alle Buchungen VOR einem Datum löschen</option>
+          <option value="type">Teilweise — nur Einnahmen oder nur Ausgaben löschen</option>
+        </select>
+      </div>
+      <div id="cash-reset-date-row" class="hidden">
+        <label class="block text-xs uppercase font-title tracking-wider text-leather-900 mb-1">Alle Buchungen vor diesem Datum löschen</label>
+        <input type="date" id="cash-reset-date" onchange="updateCashResetOptions()" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded focus:outline-none">
+      </div>
+      <div id="cash-reset-type-row" class="hidden">
+        <label class="block text-xs uppercase font-title tracking-wider text-leather-900 mb-1">Buchungsart</label>
+        <select id="cash-reset-entry-type" onchange="updateCashResetOptions()" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded focus:outline-none font-semibold">
+          <option value="in">Nur Einnahmen löschen</option>
+          <option value="out">Nur Ausgaben löschen</option>
+        </select>
+      </div>
+      <div id="cash-reset-preview" class="text-sm font-title text-western-red font-bold p-3 bg-parchment-200/60 rounded border border-western-red/30"></div>
+      <div class="flex justify-end gap-3 pt-3">
+        <button onclick="closeModal('cash-reset-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
+        <button onclick="executeCashReset()" class="px-4 py-2 bg-western-red text-white rounded text-xs uppercase font-title font-bold hover:bg-western-red/80">Endgültig löschen</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Mitarbeiter aufnehmen / bearbeiten -->
   <div id="staff-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
     <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-lg w-full shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scroll">
@@ -1845,7 +1970,8 @@
       { id: 'cash_view',        label: 'Kassenbuch ansehen' },
       { id: 'cash_edit',        label: 'Kassenbuch bearbeiten (buchen, ändern, löschen)' },
       { id: 'telegram_edit',   label: 'Telegramm-Vorlagen bearbeiten' },
-      { id: 'staff_manage',     label: 'Mitarbeiter und Zugriffe verwalten' }
+      { id: 'staff_manage',     label: 'Mitarbeiter und Zugriffe verwalten' },
+      { id: 'cash_reset',       label: 'Kasse komplett oder teilweise zurücksetzen' }
     ];
     const ALL_PERMS = PERMISSIONS.map(p => p.id);
     const ROLE_PRESETS = {
@@ -3896,6 +4022,76 @@
         state.cash = state.cash.filter(c => c.id !== id);
         saveState();
       }
+    }
+
+    /* ═══ Kassen-Reset-Funktionen (nur Leitung) ═══ */
+    function openCashResetModal() {
+      if (!can('cash_reset')) return;
+      document.getElementById('cash-reset-type').value = 'full';
+      document.getElementById('cash-reset-date').value = '';
+      document.getElementById('cash-reset-entry-type').value = 'in';
+      updateCashResetOptions();
+      openModal('cash-reset-modal');
+    }
+
+    function updateCashResetOptions() {
+      const type = document.getElementById('cash-reset-type').value;
+      document.getElementById('cash-reset-date-row').classList.toggle('hidden', type !== 'before');
+      document.getElementById('cash-reset-type-row').classList.toggle('hidden', type !== 'type');
+      // Vorschau aktualisieren
+      const affected = getCashResetAffected();
+      const preview = document.getElementById('cash-reset-preview');
+      if (affected.length === 0) {
+        preview.innerHTML = 'Keine Buchungen betroffen.';
+      } else {
+        const sum = affected.reduce((s, c) => s + (c.type === 'in' ? c.amount : -c.amount), 0);
+        preview.innerHTML = `⚠️ ${affected.length} Buchung${affected.length !== 1 ? 'en' : ''} betroffen (Netto: $ ${sum.toFixed(2)})`;
+      }
+    }
+
+    function getCashResetAffected() {
+      const type = document.getElementById('cash-reset-type').value;
+      if (type === 'full') return [...state.cash];
+      if (type === 'before') {
+        const cutoff = document.getElementById('cash-reset-date').value;
+        if (!cutoff) return [];
+        return state.cash.filter(c => c.date < cutoff);
+      }
+      if (type === 'type') {
+        const entryType = document.getElementById('cash-reset-entry-type').value;
+        return state.cash.filter(c => c.type === entryType);
+      }
+      return [];
+    }
+
+    async function executeCashReset() {
+      if (!can('cash_reset')) return;
+      const affected = getCashResetAffected();
+      if (affected.length === 0) {
+        await westernAlert('Keine Buchungen zum Löschen vorhanden.');
+        return;
+      }
+      const type = document.getElementById('cash-reset-type').value;
+      let msg = '';
+      if (type === 'full') {
+        msg = `ALLE ${affected.length} Buchungen werden unwiderruflich gelöscht. Der Kassenstand wird auf $ 0.00 zurückgesetzt.`;
+      } else if (type === 'before') {
+        const cutoff = document.getElementById('cash-reset-date').value;
+        msg = `${affected.length} Buchungen vor dem ${fmtDate(cutoff)} werden unwiderruflich gelöscht.`;
+      } else {
+        const label = document.getElementById('cash-reset-entry-type').value === 'in' ? 'Einnahmen' : 'Ausgaben';
+        msg = `Alle ${affected.length} ${label} werden unwiderruflich gelöscht.`;
+      }
+      const confirmed = await westernConfirm(msg + '\n\nDiese Aktion kann NICHT rückgängig gemacht werden!', 'Kasse zurücksetzen — Bestätigung', 'Endgültig löschen', 'Abbrechen');
+      if (!confirmed) return;
+      // Zweite Sicherheitsabfrage
+      const doubleConfirm = await westernConfirm('Wirklich sicher? Letzte Chance zum Abbrechen.', 'Letzte Warnung');
+      if (!doubleConfirm) return;
+      const affectedIds = new Set(affected.map(c => c.id));
+      state.cash = state.cash.filter(c => !affectedIds.has(c.id));
+      closeModal('cash-reset-modal');
+      saveState();
+      await westernAlert(`${affected.length} Buchung${affected.length !== 1 ? 'en' : ''} wurden gelöscht.`);
     }
 
     function renderStaff() {
