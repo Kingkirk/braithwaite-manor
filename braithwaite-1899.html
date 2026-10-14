@@ -19,7 +19,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Dancing+Script:wght@400;500;600;700&family=IM+Fell+English:ital@0;1&family=MedievalSharp&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Dancing+Script:wght@400;500;600;700&family=IM+Fell+English:ital@0;1&family=Inter:wght@300;400;500;600;700&family=MedievalSharp&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -52,7 +52,9 @@
           fontFamily: {
             title: ['Cinzel', 'serif'],
             vintage: ['"IM Fell English"', 'serif'],
-            body: ['Spectral', 'serif']
+            body: ['Spectral', 'serif'],
+            'dark-title': ['Inter', 'sans-serif'],
+            'dark-body': ['Inter', 'sans-serif']
           }
         }
       }
@@ -86,6 +88,92 @@
     .scrollbar-hide::-webkit-scrollbar { display: none; }
 
     /* Rechte: welche Schaltflächen ausgeblendet werden, legt applyRole() im Skript fest */
+
+    /* ═══════════════════════ DARK THEME (Claude-Stil) ═══════════════════════ */
+    .theme-claude body {
+      background-color: #1a1a1e;
+      background-image: none;
+      color: #d4d4d8;
+    }
+    .theme-claude .parchment-sheet {
+      background: #27272a;
+      background-image: none;
+      box-shadow: 0 0 0 1px #3f3f46, 0 14px 40px rgba(0,0,0,0.5);
+    }
+    .theme-claude .custom-scroll::-webkit-scrollbar-thumb {
+      background: #52525b;
+    }
+    /* Fonts im Dark Theme → Inter sans-serif */
+    .theme-claude .font-title,
+    .theme-claude .font-vintage,
+    .theme-claude .font-body { font-family: 'Inter', sans-serif !important; }
+
+    /* Farben überschreiben */
+    .theme-claude .bg-parchment-200\/60,
+    .theme-claude .bg-parchment-200,
+    .theme-claude .bg-parchment-100 { background-color: #18181b !important; }
+    .theme-claude .bg-parchment-300\/80,
+    .theme-claude .bg-parchment-300 { background-color: #27272a !important; }
+    .theme-claude .bg-parchment-50 { background-color: #1f1f23 !important; }
+    .theme-claude .border-leather-800\/40,
+    .theme-claude .border-leather-800\/20 { border-color: #3f3f46 !important; }
+    .theme-claude .text-leather-900 { color: #e4e4e7 !important; }
+    .theme-claude .text-leather-800\/85,
+    .theme-claude .text-leather-800\/60 { color: #a1a1aa !important; }
+    .theme-claude .text-leather-800 { color: #d4d4d8 !important; }
+    .theme-claude .text-leather-950 { color: #fafafa !important; }
+    .theme-claude .text-western-brass { color: #d4956b !important; }
+    .theme-claude .text-western-ink { color: #e4e4e7 !important; }
+    .theme-claude .bg-western-brass { background-color: #d4956b !important; }
+    .theme-claude .bg-western-green { background-color: #22c55e !important; }
+    .theme-claude .bg-western-red { background-color: #ef4444 !important; }
+    .theme-claude .text-western-green { color: #4ade80 !important; }
+    .theme-claude .text-western-red { color: #f87171 !important; }
+    .theme-claude .bg-leather-900 { background-color: #27272a !important; }
+    .theme-claude .bg-leather-800 { background-color: #3f3f46 !important; }
+
+    /* Header im Dark Theme */
+    .theme-claude header { background-color: #18181b !important; border-color: #3f3f46 !important; }
+
+    /* Inputs & Selects */
+    .theme-claude input, .theme-claude select, .theme-claude textarea {
+      background-color: #27272a !important;
+      color: #e4e4e7 !important;
+      border-color: #3f3f46 !important;
+    }
+    .theme-claude input::placeholder, .theme-claude textarea::placeholder {
+      color: #71717a !important;
+    }
+
+    /* Modals */
+    .theme-claude [id$="-modal"] > div > div {
+      background-color: #27272a !important;
+      border-color: #3f3f46 !important;
+      color: #e4e4e7 !important;
+    }
+
+    /* Tabs aktiv im Dark Theme */
+    .theme-claude .border-leather-900 { border-color: #d4956b !important; }
+
+    /* Cards und Listenelemente */
+    .theme-claude .bg-white { background-color: #27272a !important; }
+    .theme-claude .bg-gray-50 { background-color: #1f1f23 !important; }
+    .theme-claude .border-gray-200 { border-color: #3f3f46 !important; }
+    .theme-claude .text-gray-500 { color: #a1a1aa !important; }
+    .theme-claude .text-gray-600 { color: #a1a1aa !important; }
+    .theme-claude .text-gray-700 { color: #d4d4d8 !important; }
+    .theme-claude .text-gray-900 { color: #e4e4e7 !important; }
+
+    /* Hover States */
+    .theme-claude .hover\:bg-parchment-100:hover { background-color: #3f3f46 !important; }
+    .theme-claude .hover\:text-leather-900:hover { color: #e4e4e7 !important; }
+
+    /* Drop-shadow entfernen im Dark Theme */
+    .theme-claude .drop-shadow-sm { filter: none !important; }
+
+    /* Theme-Toggle Button */
+    .theme-toggle { cursor: pointer; transition: all 0.3s ease; }
+    .theme-toggle:hover { transform: scale(1.1); }
   </style>
   <style id="perm-style"></style>
 
@@ -131,6 +219,7 @@
           <div id="user-badge" class="hidden items-center gap-1.5 text-[10px] font-title px-2 py-0.5 rounded bg-parchment-300/80 border border-leather-800/20 text-leather-900">
             <span>👤</span>
             <span id="user-badge-text">-</span>
+            <button onclick="toggleTheme()" id="theme-toggle-btn" class="ml-2 theme-toggle text-base" title="Design wechseln">🌙</button>
             <button onclick="logout()" class="ml-1 underline text-western-red hover:text-leather-950">Abmelden</button>
           </div>
         </div>
@@ -1399,8 +1488,8 @@
       {
         table: 'staff', stateKey: 'staff',
         query: q => q.order('name'),
-        fromRow: s => ({ id: s.id, name: s.name, role: s.role, wage: s.wage, telegram: s.telegram, discordId: s.discord_id || null, discordName: s.discord_name || null, accessRole: s.access_role || null, permissions: Array.isArray(s.permissions) ? s.permissions.slice().sort() : null }),
-        toRow: x => ({ name: x.name, role: x.role, wage: x.wage, telegram: x.telegram, discord_id: x.discordId || null, discord_name: x.discordId ? (x.discordName || null) : null, access_role: x.accessRole || null, permissions: Array.isArray(x.permissions) ? x.permissions.slice().sort() : null })
+        fromRow: s => ({ id: s.id, name: s.name, role: s.role, wage: s.wage, telegram: s.telegram, discordId: s.discord_id || null, discordName: s.discord_name || null, accessRole: s.access_role || null, permissions: Array.isArray(s.permissions) ? s.permissions.slice().sort() : null, theme: s.theme || 'western' }),
+        toRow: x => ({ name: x.name, role: x.role, wage: x.wage, telegram: x.telegram, discord_id: x.discordId || null, discord_name: x.discordId ? (x.discordName || null) : null, access_role: x.accessRole || null, permissions: Array.isArray(x.permissions) ? x.permissions.slice().sort() : null, theme: x.theme || 'western' })
       },
       {
         table: 'orders', stateKey: 'orders',
@@ -1619,7 +1708,7 @@
       }
       const info = access.data || {};
       me = { role: info.role || null, discordId: info.discord_id || null, name: info.name || null, staffName: info.staff_name || null,
-             perms: Array.isArray(info.permissions) ? info.permissions : (ROLE_PRESETS[info.role] || []) };
+             perms: Array.isArray(info.permissions) ? info.permissions : (ROLE_PRESETS[info.role] || []), theme: 'western' };
       applyRole();
 
       if (!me.discordId) {
@@ -1683,6 +1772,13 @@
 
         dbCategoryNames = new Set((cats.data || []).map(c => c.name));
         state.categories = Array.from(dbCategoryNames);
+
+        // Theme des eingeloggten Mitarbeiters laden
+        if (me.discordId) {
+          const myStaff = state.staff.find(s => s.discordId === me.discordId);
+          if (myStaff && myStaff.theme) { me.theme = myStaff.theme; }
+          applyTheme(me.theme);
+        }
         // Kategorien, die nur an Produkten hängen, ebenfalls anbieten
         state.inventory.forEach(p => {
           if (p.category && !state.categories.includes(p.category)) state.categories.push(p.category);
@@ -1731,7 +1827,7 @@
     }
 
     // ANMELDUNG & ROLLEN
-    let me = { role: null, discordId: null, name: null, staffName: null, perms: [] };
+    let me = { role: null, discordId: null, name: null, staffName: null, perms: [], theme: 'western' };
     let signedIn = false;
     let accessRequests = [];   // Discord-Konten, die auf Freigabe warten (nur für die Leitung sichtbar)
 
@@ -2025,6 +2121,31 @@
       const chosen = staffPermBoxes().filter(b => b.checked).map(b => b.getAttribute('data-pid')).sort().join(',');
       const match = ['mitarbeiter', 'lesen'].find(r => ROLE_PRESETS[r].slice().sort().join(',') === chosen);
       document.getElementById('staff-access-role').value = match || 'individuell';
+    }
+
+    // ═══════════════════════ THEME SYSTEM ═══════════════════════
+    function applyTheme(theme) {
+      const html = document.documentElement;
+      if (theme === 'claude') {
+        html.classList.add('theme-claude');
+      } else {
+        html.classList.remove('theme-claude');
+      }
+      const btn = document.getElementById('theme-toggle-btn');
+      if (btn) btn.textContent = theme === 'claude' ? '☀️' : '🌙';
+    }
+
+    async function toggleTheme() {
+      const newTheme = me.theme === 'claude' ? 'western' : 'claude';
+      me.theme = newTheme;
+      applyTheme(newTheme);
+
+      // In der DB speichern
+      const myStaff = state.staff.find(s => s.discordId === me.discordId);
+      if (myStaff) {
+        myStaff.theme = newTheme;
+        saveState();
+      }
     }
 
     function switchTab(tab) {
@@ -2557,9 +2678,19 @@
                   ✓ ${checkedCount}/${totalItemsCount} Artikel fertig
                 </span>
               </div>
-              <p class="font-vintage text-sm text-leather-900 truncate">
-                ${o.items}
-              </p>
+              <div class="space-y-1 mt-1">
+                ${items.length > 0 ? items.slice(0, 3).map(it => {
+                  const d = Number(it.done || 0);
+                  const t = Number(it.amount || 1);
+                  const p = Math.min(100, Math.round((d / t) * 100));
+                  const pc = p === 100 ? 'bg-western-green' : (p > 0 ? 'bg-western-brass' : 'bg-leather-800/20');
+                  return `<div class="flex items-center gap-1.5 text-[11px]">
+                    <span class="font-vintage text-leather-900 truncate max-w-[120px]">${it.amount}× ${it.name}</span>
+                    <div class="flex-1 bg-leather-800/10 rounded-full h-1.5 overflow-hidden min-w-[40px]"><div class="${pc} h-full rounded-full" style="width:${p}%"></div></div>
+                    <span class="font-title font-bold ${d >= t ? 'text-western-green' : 'text-leather-800/70'} whitespace-nowrap">${d}/${t}</span>
+                  </div>`;
+                }).join('') + (items.length > 3 ? `<span class="text-[10px] text-leather-800/50 font-vintage">+${items.length - 3} weitere…</span>` : '') : `<p class="font-vintage text-sm text-leather-900 truncate">${o.items}</p>`}
+              </div>
             </div>
 
             <div class="md:w-3/12 flex items-center justify-between md:justify-end gap-3.5">
@@ -2728,7 +2859,7 @@
                 <span class="px-2 py-0.5 text-[11px] font-title uppercase tracking-wider font-bold rounded border ${badgeColor} inline-block mt-0.5 shadow-sm">
                   ${o.status}
                 </span>
-                ${o.telegramSent ? `<span class="block text-[10px] text-western-brass mt-1 font-vintage">📧 gesendet von ${escapeHtml(o.telegramSent.by)} am ${fmtDate(o.telegramSent.date)}</span>` : (o.status === 'Erledigt' ? `<span class="block text-[10px] text-western-red mt-1 font-vintage font-bold">⚠️ Telegramm ausstehend</span>` : '')}
+                ${o.telegramSent ? `<span class="block text-[10px] text-western-brass mt-1 font-vintage">📧 gesendet von ${escapeHtml(o.telegramSent.by)} am ${fmtDate(o.telegramSent.date)}</span>` : (o.status === 'Abholbereit' ? `<span class="block text-[10px] text-western-red mt-1 font-vintage font-bold">⚠️ Telegramm ausstehend</span>` : '')}
               </div>
             </div>
           </div>
@@ -2864,25 +2995,46 @@
         const yieldPerSeed = (invItem && invItem.yieldPerSeed) ? invItem.yieldPerSeed : 1;
         const seedsNeeded = Math.ceil(item.amount / yieldPerSeed);
         const totalPrice = (item.amount * (item.unitPrice || 0)).toFixed(2);
+        const done = Number(item.done || 0);
+        const total = Number(item.amount || 1);
+        const pct = Math.min(100, Math.round((done / total) * 100));
+        const remaining = Math.max(0, total - done);
+        const progressColor = pct === 100 ? 'bg-western-green' : (pct > 0 ? 'bg-western-brass' : 'bg-leather-800/20');
 
         return `
-          <label class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded bg-white border border-leather-800/15 cursor-pointer hover:bg-parchment-100 transition shadow-sm">
-            <div class="flex items-center gap-3">
-              <input type="checkbox" onchange="toggleItemCheckedInClone(${index}, this.checked)" ${item.checked ? 'checked' : ''} class="w-4 h-4 accent-emerald-800 cursor-pointer rounded">
-              <span class="text-xs font-title font-semibold ${item.checked ? 'line-through text-leather-800/50' : 'text-leather-900'}">
-                ${item.amount}x ${item.name} <span class="text-[11px] text-leather-800/70 font-vintage font-normal">(${item.tierName || 'Normal'})</span>
-              </span>
+          <div class="flex flex-col gap-1.5 p-2.5 rounded bg-white border border-leather-800/15 hover:bg-parchment-100 transition shadow-sm">
+            <label class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" onchange="toggleItemCheckedInClone(${index}, this.checked)" ${item.checked ? 'checked' : ''} class="w-4 h-4 accent-emerald-800 cursor-pointer rounded">
+                <span class="text-xs font-title font-semibold ${item.checked ? 'line-through text-leather-800/50' : 'text-leather-900'}">
+                  ${item.amount}× ${item.name} <span class="text-[11px] text-leather-800/70 font-vintage font-normal">(${item.tierName || 'Normal'})</span>
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between sm:justify-end gap-3 pl-7 sm:pl-0">
+                <span class="px-2 py-0.5 rounded text-[10px] font-title font-bold bg-amber-100/90 text-amber-950 border border-amber-800/30 whitespace-nowrap">
+                  🌱 ${seedsNeeded} Samen nötig <span class="font-vintage text-leather-800/70 font-normal">(${yieldPerSeed}/Samen)</span>
+                </span>
+                <span class="font-bold text-western-green font-title text-sm whitespace-nowrap min-w-[65px] text-right">
+                  $ ${totalPrice}
+                </span>
+              </div>
+            </label>
+
+            <!-- Fortschritts-Tracker -->
+            <div class="flex items-center gap-2 pl-7">
+              <div class="flex-1 bg-leather-800/10 rounded-full h-3 overflow-hidden border border-leather-800/15">
+                <div class="${progressColor} h-full rounded-full transition-all duration-300" style="width:${pct}%"></div>
+              </div>
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                <input type="number" min="0" max="${total}" value="${done}"
+                  onchange="updateItemProgress(${index}, this.value)"
+                  class="w-14 text-center text-[11px] font-title font-bold border border-leather-800/20 rounded px-1 py-0.5 bg-parchment-50">
+                <span class="text-[11px] font-title text-leather-800/70">/ ${total}</span>
+                <span class="text-[10px] font-vintage ${remaining === 0 ? 'text-western-green font-bold' : 'text-western-red'}">${remaining === 0 ? '✓ fertig' : remaining + ' offen'}</span>
+              </div>
             </div>
-            
-            <div class="flex items-center justify-between sm:justify-end gap-3 pl-7 sm:pl-0">
-              <span class="px-2 py-0.5 rounded text-[10px] font-title font-bold bg-amber-100/90 text-amber-950 border border-amber-800/30 whitespace-nowrap">
-                🌱 ${seedsNeeded} Samen nötig <span class="font-vintage text-leather-800/70 font-normal">(${yieldPerSeed}/Samen)</span>
-              </span>
-              <span class="font-bold text-western-green font-title text-sm whitespace-nowrap min-w-[65px] text-right">
-                $ ${totalPrice}
-              </span>
-            </div>
-          </label>
+          </div>
         `;
       }).join('');
     }
@@ -2923,6 +3075,30 @@
         renderArchiveOrders();
         queuePush();
 
+      }
+
+      renderModalViews();
+    }
+
+    function updateItemProgress(index, value) {
+      if (!editingOrderClone || !editingOrderClone.itemsList[index]) return;
+      const item = editingOrderClone.itemsList[index];
+      const done = Math.max(0, Math.min(Number(item.amount || 1), Number(value) || 0));
+      item.done = done;
+
+      // Automatisch abhaken wenn fertig
+      if (done >= Number(item.amount || 1)) {
+        item.checked = true;
+      }
+
+      // In Original sofort übernehmen und speichern
+      const original = state.orders.find(o => o.id === currentDetailOrderId);
+      if (original) {
+        original.itemsList = JSON.parse(JSON.stringify(editingOrderClone.itemsList));
+        localVersion++;
+        renderOrders();
+        renderArchiveOrders();
+        queuePush();
       }
 
       renderModalViews();
@@ -3071,9 +3247,9 @@
 
       closeModal('order-detail-modal');
 
-      // Bei neuem Status "Erledigt" fragen ob Telegramm erstellt werden soll
-      if (oldStatus !== 'Erledigt' && newStatus === 'Erledigt' && !original.telegramSent) {
-        const wantTelegram = await westernConfirm('Möchtest du jetzt das Telegramm für den Kunden erstellen?', 'Auftrag erledigt — Telegramm senden?', 'Ja', 'Nein');
+      // Bei neuem Status "Abholbereit" fragen ob Telegramm erstellt werden soll
+      if (oldStatus !== 'Abholbereit' && newStatus === 'Abholbereit' && !original.telegramSent) {
+        const wantTelegram = await westernConfirm('Möchtest du jetzt das Telegramm für den Kunden erstellen?', 'Auftrag abholbereit — Telegramm senden?', 'Ja', 'Nein');
         if (wantTelegram) {
           openTelegramModal(original.id);
         }
@@ -4442,20 +4618,20 @@
     function updateTelegramBtnState(status, telegramSent) {
       const btn = document.getElementById('detail-telegram-btn');
       if (!btn) return;
-      if (status === 'Erledigt' && telegramSent) {
+      if ((status === 'Abholbereit' || status === 'Erledigt') && telegramSent) {
         // Schon versendet → nochmal versenden möglich
         btn.style.display = '';
         btn.disabled = false;
         btn.className = 'px-4 py-2 rounded text-xs uppercase font-title font-bold shadow transition bg-western-brass text-white hover:bg-western-brass/80 cursor-pointer';
         btn.innerHTML = '📧 Telegramm nochmal versenden';
-      } else if (status === 'Erledigt' && !telegramSent) {
-        // Erledigt aber noch nicht versendet → nachholen
+      } else if (status === 'Abholbereit' && !telegramSent) {
+        // Abholbereit aber noch nicht versendet → nachholen
         btn.style.display = '';
         btn.disabled = false;
         btn.className = 'px-4 py-2 rounded text-xs uppercase font-title font-bold shadow transition bg-western-red text-white hover:bg-western-red/80 cursor-pointer';
         btn.innerHTML = '⚠️ Telegramm versenden';
       } else {
-        // Noch nicht erledigt → Button verstecken
+        // Noch nicht abholbereit → Button verstecken
         btn.style.display = 'none';
       }
     }
