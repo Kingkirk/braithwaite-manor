@@ -470,7 +470,8 @@
             <h2 class="font-title text-2xl font-bold text-leather-900">Produkte & Ertragskalkulation</h2>
             <p class="text-sm text-leather-800/70">1 🌱 = [Ertrag] Ertrag, Saatgutpreis (EK) und die 4 Verkaufspreisstufen</p>
           </div>
-          <div class="flex gap-2 flex-wrap">
+          <div class="flex gap-2 flex-wrap items-center">
+            <input type="text" id="inventory-search" placeholder="Produkt suchen..." oninput="renderInventory()" class="bg-parchment-50 border border-leather-800/30 px-3 py-2 text-xs rounded focus:outline-none placeholder-leather-800/40 w-48">
             <button data-perm="products" onclick="openModal('category-modal')" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3.5 py-2 rounded font-title text-xs tracking-wider uppercase font-semibold shadow">
               🏷️ Kategorien verwalten
             </button>
@@ -482,9 +483,6 @@
 
         <div class="flex flex-col md:flex-row gap-3 items-center justify-between bg-parchment-100/70 p-3 rounded border border-leather-800/20">
           <div id="category-filter-buttons" class="flex gap-2 flex-wrap"></div>
-          <div class="w-full md:w-64">
-            <input type="text" id="inventory-search" placeholder="Produkt suchen (z. B. Hopfen)..." oninput="renderInventory()" class="w-full bg-parchment-50 border border-leather-800/30 p-1.5 text-xs rounded focus:outline-none placeholder-leather-800/40">
-          </div>
         </div>
 
         <div id="inventory-list" class="space-y-3"></div>
@@ -569,9 +567,12 @@
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-1">
-              <div class="sm:col-span-5">
+              <div class="sm:col-span-2">
+                <label class="block text-[11px] font-title uppercase text-leather-800 mb-1">Suche</label>
+                <input type="text" id="pos-item-search" placeholder="Suchen..." oninput="filterPosItemSelect()" class="w-full bg-white border border-leather-800/30 p-2 text-xs rounded focus:outline-none placeholder-leather-800/40">
+              </div>
+              <div class="sm:col-span-3">
                 <label class="block text-[11px] font-title uppercase text-leather-800 mb-1">Produkt</label>
-                <input type="text" id="pos-item-search" placeholder="Produkt suchen..." oninput="filterPosItemSelect()" class="w-full bg-white border border-leather-800/30 p-2 text-xs rounded focus:outline-none mb-1 placeholder-leather-800/40">
                 <select id="pos-item-select" class="w-full bg-white border border-leather-800/30 p-2 text-xs rounded focus:outline-none font-semibold"></select>
               </div>
 
@@ -760,9 +761,12 @@
         <div class="border-2 border-leather-800/40 bg-parchment-100/95 p-5 md:p-6 rounded-lg shadow-md space-y-5">
           <h3 class="font-title text-lg font-bold text-leather-900 border-b border-leather-800/20 pb-2">🌾 Neuen Einkauf erfassen</h3>
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 text-xs items-end">
-            <div class="flex flex-col sm:col-span-6">
+            <div class="flex flex-col sm:col-span-2">
+              <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">Suche</label>
+              <input type="text" id="purchase-item-search" placeholder="Suchen..." oninput="filterPurchaseItemSelect()" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none placeholder-leather-800/40">
+            </div>
+            <div class="flex flex-col sm:col-span-4">
               <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">🌱 Produkt (Saatgut)</label>
-              <input type="text" id="purchase-item-search" placeholder="Produkt suchen..." oninput="filterPurchaseItemSelect()" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none mb-1 placeholder-leather-800/40">
               <select id="purchase-item" onchange="updatePurchasePreview()" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none font-semibold"></select>
             </div>
             <div class="flex flex-col sm:col-span-3">
@@ -1440,8 +1444,35 @@
     function toggleDarkMode() {
       const html = document.documentElement;
       const isDark = html.classList.toggle('dark');
-      localStorage.setItem('bm-dark-mode', isDark ? '1' : '0');
+      // Sofort in localStorage für schnellen Seitenaufbau
+      try { localStorage.setItem('bm-dark-mode', isDark ? '1' : '0'); } catch(e) {}
       updateDarkModeBtn();
+      // In Datenbank für den angemeldeten Benutzer speichern
+      saveDarkModeToDb(isDark);
+    }
+    async function saveDarkModeToDb(isDark) {
+      if (!db || !me.discordId) return;
+      try {
+        const staff = state.staff.find(s => s.discordId === me.discordId);
+        if (staff) {
+          staff.darkMode = isDark;
+          await db.from('staff').update({ dark_mode: isDark }).eq('discord_id', me.discordId);
+        }
+      } catch(e) { console.warn('Dark-Mode-Speicherung:', e); }
+    }
+    function applyDarkModeFromUser() {
+      // Beim Login: Dark Mode des Benutzers aus der DB laden
+      const staff = state.staff.find(s => s.discordId === me.discordId);
+      if (staff && typeof staff.darkMode === 'boolean') {
+        const html = document.documentElement;
+        if (staff.darkMode) {
+          html.classList.add('dark');
+        } else {
+          html.classList.remove('dark');
+        }
+        try { localStorage.setItem('bm-dark-mode', staff.darkMode ? '1' : '0'); } catch(e) {}
+        updateDarkModeBtn();
+      }
     }
     function updateDarkModeBtn() {
       const btn = document.getElementById('dark-mode-toggle');
@@ -1455,7 +1486,7 @@
         btn.className = 'px-3 py-1 rounded-full border text-[11px] font-title tracking-wider uppercase font-bold shadow transition-all border-leather-800/30 bg-parchment-200 text-leather-900';
       }
     }
-    // Dark Mode beim Laden wiederherstellen (vor Rendern)
+    // Dark Mode beim Laden aus localStorage wiederherstellen (vor DB-Laden, vermeidet Flash)
     (function() {
       try {
         if (localStorage.getItem('bm-dark-mode') === '1') {
@@ -1686,8 +1717,8 @@
       {
         table: 'staff', stateKey: 'staff',
         query: q => q.order('name'),
-        fromRow: s => ({ id: s.id, name: s.name, role: s.role, wage: s.wage, telegram: s.telegram, discordId: s.discord_id || null, discordName: s.discord_name || null, accessRole: s.access_role || null, permissions: Array.isArray(s.permissions) ? s.permissions.slice().sort() : null, }),
-        toRow: x => ({ name: x.name, role: x.role, wage: x.wage, telegram: x.telegram, discord_id: x.discordId || null, discord_name: x.discordId ? (x.discordName || null) : null, access_role: x.accessRole || null, permissions: Array.isArray(x.permissions) ? x.permissions.slice().sort() : null })
+        fromRow: s => ({ id: s.id, name: s.name, role: s.role, wage: s.wage, telegram: s.telegram, discordId: s.discord_id || null, discordName: s.discord_name || null, accessRole: s.access_role || null, permissions: Array.isArray(s.permissions) ? s.permissions.slice().sort() : null, darkMode: !!s.dark_mode }),
+        toRow: x => ({ name: x.name, role: x.role, wage: x.wage, telegram: x.telegram, discord_id: x.discordId || null, discord_name: x.discordId ? (x.discordName || null) : null, access_role: x.accessRole || null, permissions: Array.isArray(x.permissions) ? x.permissions.slice().sort() : null, dark_mode: !!x.darkMode })
       },
       {
         table: 'orders', stateKey: 'orders',
@@ -1973,7 +2004,7 @@
 
         // Theme des eingeloggten Mitarbeiters laden
         if (me.discordId) {
-          const myStaff = state.staff.find(s => s.discordId === me.discordId);
+          applyDarkModeFromUser();
         }
         // Kategorien, die nur an Produkten hängen, ebenfalls anbieten
         state.inventory.forEach(p => {
@@ -3151,7 +3182,7 @@
       const isHidden = div.classList.contains('hidden');
       if (isHidden) {
         const sel = document.getElementById('detail-order-customer-select');
-        sel.innerHTML = state.customers.map(c => `<option value="${c.id}" ${c.name === editingOrderClone.customer ? 'selected' : ''}>${c.name} — ${c.location || ''}</option>`).join('');
+        sel.innerHTML = state.customers.map(c => `<option value="${c.id}" ${c.company === editingOrderClone.customer ? 'selected' : ''}>${c.company} — ${c.location || ''}</option>`).join('');
         div.classList.remove('hidden');
       } else {
         div.classList.add('hidden');
@@ -3163,12 +3194,12 @@
       const selId = Number(document.getElementById('detail-order-customer-select').value);
       const cust = state.customers.find(c => c.id === selId);
       if (!cust) return;
-      editingOrderClone.customer = cust.name;
+      editingOrderClone.customer = cust.company;
       editingOrderClone.contact = cust.contact || '';
       editingOrderClone.location = cust.location || '';
       editingOrderClone.telegram = cust.telegram || '';
       editingOrderClone.customerId = cust.id;
-      document.getElementById('detail-order-customer').innerText = cust.name;
+      document.getElementById('detail-order-customer').innerText = cust.company;
       document.getElementById('detail-order-contact').innerText = cust.contact || '-';
       document.getElementById('detail-order-location').innerText = cust.location || '-';
       document.getElementById('detail-order-telegram').innerText = cust.telegram || '-';
@@ -4874,8 +4905,8 @@
         artikelListe = order.itemsList.map(item => {
           const name = item.name || item.text || 'Unbekannt';
           const amount = item.amount || item.qty || 1;
-          const lineTotal = Number(item.lineTotal || item.price || 0);
-          const unitPrice = amount > 0 ? (lineTotal / amount) : 0;
+          const unitPrice = Number(item.unitPrice || 0);
+          const lineTotal = amount * unitPrice;
           return `  • ${amount}× ${name} á $ ${unitPrice.toFixed(2)} — $ ${lineTotal.toFixed(2)}`;
         }).join('\n');
       } else if (order.items) {
