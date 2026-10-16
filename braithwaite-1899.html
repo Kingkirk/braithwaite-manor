@@ -226,11 +226,6 @@
     }
 
     /* DB-Status Badge */
-    html.dark #db-status {
-      background-color: #1A1A18 !important;
-      border-color: #33322E !important;
-      color: #E5E4DE !important;
-    }
     html.dark #db-status-badge,
     html.dark #user-badge {
       background-color: #1E1E1C !important;
@@ -327,7 +322,7 @@
   </div>
 
   <!-- Anzeige: Verbindung zur Datenbank -->
-  <div id="db-status" class="fixed bottom-2 right-2 z-40 px-3 py-1 rounded-full border text-[11px] font-title tracking-wider shadow-lg bg-leather-900 border-western-brass text-parchment-100">Lade Daten aus der Datenbank …</div>
+  <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="fixed bottom-2 right-2 z-40 px-3 py-1 rounded-full border text-[11px] font-title tracking-wider uppercase font-bold shadow-lg transition-all cursor-pointer border-leather-800/30 bg-parchment-200 text-leather-900" title="Dark Mode umschalten">🌙 Dark Mode</button>
 
   <div class="w-full max-w-6xl parchment-sheet rounded-lg border border-leather-800 flex flex-col min-h-[920px] shadow-2xl mb-8">
     
@@ -361,13 +356,10 @@
           </p>
         </div>
 
-        <!-- Rechts: Dark Mode Toggle & Kutsche Status Button -->
+        <!-- Rechts: Kutsche Status Button -->
         <div class="flex flex-col items-center gap-2">
           <button id="coach-btn" onclick="toggleCoach()" class="py-3 px-4 rounded-lg font-title text-sm md:text-base tracking-widest uppercase font-bold text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] border-2 flex flex-col items-center justify-center gap-1 min-w-[160px]">
             <span id="coach-btn-text">🐴 Kutsche am Hof</span>
-          </button>
-          <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="px-3 py-1 rounded-full border text-[11px] font-title tracking-wider uppercase font-bold shadow transition-all" title="Dark Mode umschalten">
-            🌙 Nachtmodus
           </button>
         </div>
       </div>
@@ -470,12 +462,12 @@
             <h2 class="font-title text-2xl font-bold text-leather-900">Produkte & Ertragskalkulation</h2>
             <p class="text-sm text-leather-800/70">1 🌱 = [Ertrag] Ertrag, Saatgutpreis (EK) und die 4 Verkaufspreisstufen</p>
           </div>
-          <div class="flex gap-2 flex-wrap items-center">
-            <input type="text" id="inventory-search" placeholder="Produkt suchen..." oninput="renderInventory()" class="bg-parchment-50 border border-leather-800/30 px-3 py-2 text-xs rounded focus:outline-none placeholder-leather-800/40 w-48">
-            <button data-perm="products" onclick="openModal('category-modal')" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3.5 py-2 rounded font-title text-xs tracking-wider uppercase font-semibold shadow">
+          <div class="flex gap-2 items-center flex-shrink-0">
+            <input type="text" id="inventory-search" placeholder="Suchen..." oninput="renderInventory()" class="bg-parchment-50 border border-leather-800/30 px-3 py-2 text-xs rounded focus:outline-none placeholder-leather-800/40 w-36">
+            <button data-perm="products" onclick="openModal('category-modal')" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-3.5 py-2 rounded font-title text-xs tracking-wider uppercase font-semibold shadow whitespace-nowrap">
               🏷️ Kategorien verwalten
             </button>
-            <button data-perm="products" onclick="openNewItemModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+            <button data-perm="products" onclick="openNewItemModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold whitespace-nowrap">
               + Neues Produkt anlegen
             </button>
           </div>
@@ -1479,11 +1471,11 @@
       if (!btn) return;
       const isDark = document.documentElement.classList.contains('dark');
       if (isDark) {
-        btn.innerHTML = '☀️ Tagmodus';
-        btn.className = 'px-3 py-1 rounded-full border text-[11px] font-title tracking-wider uppercase font-bold shadow transition-all border-[#33322E] bg-[#2C2B27] text-[#E5E4DE]';
+        btn.innerHTML = '☀️ Light Mode';
+        btn.className = 'fixed bottom-2 right-2 z-40 px-3 py-1 rounded-full border text-[11px] font-title tracking-wider uppercase font-bold shadow-lg transition-all cursor-pointer border-[#33322E] bg-[#2C2B27] text-[#E5E4DE]';
       } else {
-        btn.innerHTML = '🌙 Nachtmodus';
-        btn.className = 'px-3 py-1 rounded-full border text-[11px] font-title tracking-wider uppercase font-bold shadow transition-all border-leather-800/30 bg-parchment-200 text-leather-900';
+        btn.innerHTML = '🌙 Dark Mode';
+        btn.className = 'fixed bottom-2 right-2 z-40 px-3 py-1 rounded-full border text-[11px] font-title tracking-wider uppercase font-bold shadow-lg transition-all cursor-pointer border-leather-800/30 bg-parchment-200 text-leather-900';
       }
     }
     // Dark Mode beim Laden aus localStorage wiederherstellen (vor DB-Laden, vermeidet Flash)
@@ -1780,18 +1772,7 @@
     let lastLoadedJson = "";
 
     function setDbStatus(kind, text) {
-      const el = document.getElementById('db-status');
-      if (!el) return;
-      const styles = {
-        ok: 'bg-emerald-800 border-emerald-950 text-white',
-        busy: 'bg-leather-900 border-western-brass text-parchment-100',
-        error: 'bg-red-800 border-red-950 text-white'
-      };
-      el.className = 'fixed bottom-2 right-2 z-40 px-3 py-1 rounded-full border text-[11px] font-title tracking-wider shadow-lg max-w-[90vw] truncate ' + (styles[kind] || styles.busy);
-      el.innerText = text;
-      el.title = text;
-
-      // Anzeige oben links zeigt denselben echten Zustand
+      // Anzeige oben links
       const top = document.getElementById('db-status-text');
       if (top) top.innerText = kind === 'ok' ? 'Datenbank verbunden' : (kind === 'error' ? 'Datenbank-Fehler' : 'Verbinde …');
       const dot = document.getElementById('db-status-dot');
