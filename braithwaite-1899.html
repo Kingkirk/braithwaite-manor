@@ -87,6 +87,221 @@
 
     /* Rechte: welche Schaltflächen ausgeblendet werden, legt applyRole() im Skript fest */
 
+    /* ══════════════════════════════════════════
+       DARK MODE — warmes, minimalistisches Design
+       ══════════════════════════════════════════ */
+    html.dark body {
+      background-color: #141413 !important;
+      background-image: radial-gradient(#1E1E1C 1px, transparent 1px), radial-gradient(#1E1E1C 1px, #141413 1px) !important;
+      color: #E5E4DE !important;
+    }
+
+    html.dark .parchment-sheet {
+      background: #161615 !important;
+      background-image: none !important;
+      box-shadow: 0 0 0 1px #282724, 0 0 0 6px #0F0F0E, 0 14px 40px rgba(0,0,0,0.7) !important;
+      border-color: #282724 !important;
+    }
+
+    /* Header & Navigation */
+    html.dark header {
+      border-color: #282724 !important;
+      background: #0F0F0E !important;
+    }
+    html.dark header h1 {
+      color: #ECEBE4 !important;
+      text-shadow: none !important;
+    }
+    html.dark header p {
+      color: #8E8D87 !important;
+    }
+    html.dark nav button {
+      color: #8E8D87 !important;
+    }
+    html.dark nav button[style*="border-bottom-color: rgb(38, 22, 14)"],
+    html.dark nav button.border-leather-900 {
+      color: #ECEBE4 !important;
+      border-color: #c29b38 !important;
+    }
+
+    /* Hauptcontainer-Hintergrund */
+    html.dark main {
+      background: #161615 !important;
+    }
+
+    /* Karten, Boxen, Sektionen */
+    html.dark .bg-parchment-50,
+    html.dark .bg-parchment-100,
+    html.dark [class*="bg-parchment"] {
+      background-color: #1A1A18 !important;
+    }
+    html.dark .bg-parchment-200\/60,
+    html.dark .bg-parchment-200\/80 {
+      background-color: #111110 !important;
+    }
+    html.dark .bg-parchment-300\/80 {
+      background-color: #1E1E1C !important;
+    }
+
+    /* Textfarben */
+    html.dark .text-leather-900,
+    html.dark .text-leather-950,
+    html.dark [class*="text-leather-9"] {
+      color: #E5E4DE !important;
+    }
+    html.dark .text-leather-800,
+    html.dark [class*="text-leather-800\/"] {
+      color: #8E8D87 !important;
+    }
+    html.dark [class*="text-western-ink"] {
+      color: #ECEBE4 !important;
+    }
+
+    /* Borders */
+    html.dark [class*="border-leather-800"],
+    html.dark [class*="border-leather-900"] {
+      border-color: #282724 !important;
+    }
+
+    /* Inputs, Selects, Textareas */
+    html.dark input,
+    html.dark select,
+    html.dark textarea {
+      background-color: #1E1E1C !important;
+      border-color: #33322E !important;
+      color: #E5E4DE !important;
+    }
+    html.dark input::placeholder,
+    html.dark textarea::placeholder {
+      color: #8E8D87 !important;
+    }
+
+    /* Buttons */
+    html.dark .bg-leather-900 {
+      background-color: #2C2B27 !important;
+    }
+    html.dark .bg-leather-900:hover,
+    html.dark .hover\:bg-leather-800:hover {
+      background-color: #3A3935 !important;
+    }
+
+    /* Cards & List items hover */
+    html.dark .group:hover,
+    html.dark [class*="hover:bg-parchment"]:hover {
+      background-color: #262522 !important;
+    }
+
+    /* Modals */
+    html.dark [class*="bg-white"] {
+      background-color: #1A1A18 !important;
+    }
+    html.dark .bg-white\/95 {
+      background-color: rgba(26, 26, 24, 0.95) !important;
+    }
+
+    /* Status-Badges — behalten ihre Farben, aber etwas gedämpfter */
+    html.dark .bg-western-green {
+      background-color: #2d5a27 !important;
+    }
+    html.dark .bg-western-red {
+      background-color: #842217 !important;
+    }
+
+    /* Scrollbar */
+    html.dark .custom-scroll::-webkit-scrollbar-thumb {
+      background: #33322E !important;
+    }
+
+    /* Auth-Screen Dark */
+    html.dark #auth-screen > div {
+      background-color: #1A1A18 !important;
+      border-color: #c29b38 !important;
+    }
+    html.dark #auth-screen > div h1,
+    html.dark #auth-screen > div p {
+      color: #E5E4DE !important;
+    }
+    html.dark #auth-screen {
+      background: radial-gradient(circle at 50% 35%, #1E1E1C 0%, #0F0F0E 75%) !important;
+    }
+
+    /* DB-Status Badge */
+    html.dark #db-status {
+      background-color: #1A1A18 !important;
+      border-color: #33322E !important;
+      color: #E5E4DE !important;
+    }
+    html.dark #db-status-badge,
+    html.dark #user-badge {
+      background-color: #1E1E1C !important;
+      border-color: #33322E !important;
+      color: #E5E4DE !important;
+    }
+
+    /* Coach Button anpassen */
+    html.dark #coach-btn {
+      border-color: #33322E !important;
+    }
+
+    /* Telegram Modal etc. */
+    html.dark .fixed.inset-0[style*="background"] {
+      background-color: rgba(0,0,0,0.7) !important;
+    }
+
+    /* Links / Accent */
+    html.dark a {
+      color: #5897E6 !important;
+    }
+    html.dark a:hover {
+      color: #6CA0E8 !important;
+    }
+
+    /* Western-Confirm/Alert Dialoge */
+    html.dark [class*="westernDialog"],
+    html.dark .western-dialog-overlay > div {
+      background-color: #1A1A18 !important;
+      border-color: #282724 !important;
+      color: #E5E4DE !important;
+    }
+
+    /* Tabellenzeilen */
+    html.dark tr {
+      border-color: #282724 !important;
+    }
+    html.dark th {
+      background-color: #111110 !important;
+      color: #8E8D87 !important;
+      border-color: #282724 !important;
+    }
+    html.dark td {
+      border-color: #282724 !important;
+      color: #E5E4DE !important;
+    }
+    html.dark tr:nth-child(even) td {
+      background-color: #1A1A18 !important;
+    }
+    html.dark tr:nth-child(odd) td {
+      background-color: #161615 !important;
+    }
+    html.dark tr:hover td {
+      background-color: #262522 !important;
+    }
+
+    /* Tab active state override */
+    html.dark [id^="tab-"].border-leather-900 {
+      border-color: #c29b38 !important;
+      color: #ECEBE4 !important;
+    }
+
+    /* Dark Mode Toggle Button */
+    #dark-mode-toggle {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    #dark-mode-toggle:hover {
+      transform: scale(1.1);
+    }
+
   </style>
   <style id="perm-style"></style>
 
@@ -146,10 +361,15 @@
           </p>
         </div>
 
-        <!-- Rechts: Kutsche Status Button -->
-        <button id="coach-btn" onclick="toggleCoach()" class="py-3 px-4 rounded-lg font-title text-sm md:text-base tracking-widest uppercase font-bold text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] border-2 flex flex-col items-center justify-center gap-1 min-w-[160px]">
-          <span id="coach-btn-text">🐴 Kutsche am Hof</span>
-        </button>
+        <!-- Rechts: Dark Mode Toggle & Kutsche Status Button -->
+        <div class="flex flex-col items-center gap-2">
+          <button id="coach-btn" onclick="toggleCoach()" class="py-3 px-4 rounded-lg font-title text-sm md:text-base tracking-widest uppercase font-bold text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] border-2 flex flex-col items-center justify-center gap-1 min-w-[160px]">
+            <span id="coach-btn-text">🐴 Kutsche am Hof</span>
+          </button>
+          <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="px-3 py-1 rounded-full border text-[11px] font-title tracking-wider uppercase font-bold shadow transition-all" title="Dark Mode umschalten">
+            🌙 Nachtmodus
+          </button>
+        </div>
       </div>
 
       <nav class="flex justify-start md:justify-center flex-nowrap gap-0.5 md:gap-1 mt-6 border-t border-leather-800/20 pt-4 overflow-x-auto scrollbar-hide -mx-4 px-4" style="-ms-overflow-style:none;scrollbar-width:none;">
@@ -209,7 +429,7 @@
                   <option value="brown">✒️ Braun</option>
                 </select>
                 <button data-perm="notes" onclick="saveNewNote()" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-4 py-1.5 rounded font-title uppercase font-bold shadow transition tracking-wider">
-                  + Neue Notiz
+                  + ERSTELLEN
                 </button>
               </div>
             </div>
@@ -351,6 +571,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-1">
               <div class="sm:col-span-5">
                 <label class="block text-[11px] font-title uppercase text-leather-800 mb-1">Produkt</label>
+                <input type="text" id="pos-item-search" placeholder="Produkt suchen..." oninput="filterPosItemSelect()" class="w-full bg-white border border-leather-800/30 p-2 text-xs rounded focus:outline-none mb-1 placeholder-leather-800/40">
                 <select id="pos-item-select" class="w-full bg-white border border-leather-800/30 p-2 text-xs rounded focus:outline-none font-semibold"></select>
               </div>
 
@@ -514,12 +735,8 @@
         </div>
 
         <div class="flex flex-col md:flex-row gap-3 items-center justify-between bg-parchment-100/70 p-3 rounded border border-leather-800/20">
-          <div class="flex gap-1.5 flex-wrap">
-            <button onclick="filterArchiveStatus('alle')" id="arch-filter-alle" class="px-3 py-1 text-xs font-title uppercase tracking-wider rounded border border-leather-900 bg-leather-900 text-parchment-100 font-bold">Alle</button>
-            <button onclick="filterArchiveStatus('Offen')" id="arch-filter-Offen" class="px-3 py-1 text-xs font-title uppercase tracking-wider rounded border border-leather-800/30 bg-parchment-50 text-leather-800 hover:bg-parchment-200">Offen</button>
-            <button onclick="filterArchiveStatus('In Arbeit')" id="arch-filter-In-Arbeit" class="px-3 py-1 text-xs font-title uppercase tracking-wider rounded border border-leather-800/30 bg-parchment-50 text-leather-800 hover:bg-parchment-200">In Arbeit</button>
-            <button onclick="filterArchiveStatus('Abholbereit')" id="arch-filter-Abholbereit" class="px-3 py-1 text-xs font-title uppercase tracking-wider rounded border border-leather-800/30 bg-parchment-50 text-leather-800 hover:bg-parchment-200">Abholbereit</button>
-            <button onclick="filterArchiveStatus('Erledigt')" id="arch-filter-Erledigt" class="px-3 py-1 text-xs font-title uppercase tracking-wider rounded border border-leather-800/30 bg-parchment-50 text-leather-800 hover:bg-parchment-200">Erledigt</button>
+          <div class="flex gap-1.5 flex-wrap items-center">
+            <span class="text-xs font-title uppercase tracking-wider text-leather-900 font-bold">📦 Erledigte Bestellungen</span>
           </div>
           <div class="w-full md:w-72">
             <input type="text" id="archive-search" placeholder="Kunde, Ware oder Ersteller suchen..." oninput="archivePage=1; renderArchiveOrders()" class="w-full bg-parchment-50 border border-leather-800/30 p-1.5 text-xs rounded focus:outline-none placeholder-leather-800/40">
@@ -545,6 +762,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 text-xs items-end">
             <div class="flex flex-col sm:col-span-6">
               <label class="font-title uppercase tracking-wider text-leather-900 font-bold mb-1.5">🌱 Produkt (Saatgut)</label>
+              <input type="text" id="purchase-item-search" placeholder="Produkt suchen..." oninput="filterPurchaseItemSelect()" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none mb-1 placeholder-leather-800/40">
               <select id="purchase-item" onchange="updatePurchasePreview()" class="w-full h-10 bg-parchment-50 border border-leather-800/30 px-2.5 rounded focus:outline-none font-semibold"></select>
             </div>
             <div class="flex flex-col sm:col-span-3">
@@ -815,8 +1033,12 @@
         <div>
           <span class="text-[11px] font-vintage text-leather-800/70" id="detail-order-meta">Bestellung #---</span>
           <h3 id="detail-order-customer" class="font-title text-2xl font-bold text-leather-900 leading-tight">-</h3>
-          <div class="text-xs font-semibold text-leather-800/90 mt-0.5">
+          <div id="detail-customer-change" class="hidden mt-1">
+            <select id="detail-order-customer-select" onchange="onDetailCustomerChange()" class="w-full h-8 bg-white border border-leather-800/30 px-2 rounded text-xs focus:outline-none font-semibold"></select>
+          </div>
+          <div class="text-xs font-semibold text-leather-800/90 mt-0.5 flex items-center gap-2">
             Angenommen von: <span id="detail-order-creator-badge" class="bg-parchment-300 text-leather-950 px-2 py-0.5 rounded border border-leather-800/20 font-title font-bold">-</span>
+            <button data-perm="orders_edit" onclick="toggleDetailCustomerChange()" class="text-[10px] text-western-brass hover:text-leather-900 underline font-title uppercase">Kunde ändern</button>
           </div>
         </div>
         <div class="flex items-center gap-3">
@@ -892,6 +1114,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end text-xs">
             <div class="sm:col-span-5">
               <label class="block text-[10px] uppercase font-title text-leather-800 mb-0.5">Produkt</label>
+              <input type="text" id="edit-add-item-search" placeholder="Suchen..." oninput="filterEditAddItemSelect()" class="w-full bg-white border border-leather-800/30 p-1.5 rounded focus:outline-none mb-0.5 text-xs placeholder-leather-800/40">
               <select id="edit-add-item-select" class="w-full bg-white border border-leather-800/30 p-1.5 rounded focus:outline-none font-semibold"></select>
             </div>
             <div class="sm:col-span-3">
@@ -939,6 +1162,9 @@
       <div class="flex justify-between items-center pt-2 border-t border-leather-800/20">
         <button id="detail-order-delete-btn" data-perm="orders_delete" class="text-xs text-western-red hover:underline font-title uppercase">Bestellung stornieren / löschen</button>
         <div class="flex items-center gap-2">
+          <button id="detail-telegram-btn" onclick="openTelegramModal(currentDetailOrderId)" class="hidden px-4 py-2 bg-western-red hover:bg-western-red/80 text-white rounded text-xs uppercase font-title font-bold shadow transition">
+            📧 Telegramm versenden
+          </button>
           <button data-perm="orders_edit" onclick="saveDetailOrderChanges()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
             ✓ Änderungen speichern & besiegeln
           </button>
@@ -1210,6 +1436,34 @@
   </div>
 
   <script>
+    /* ═══ DARK MODE ═══ */
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      localStorage.setItem('bm-dark-mode', isDark ? '1' : '0');
+      updateDarkModeBtn();
+    }
+    function updateDarkModeBtn() {
+      const btn = document.getElementById('dark-mode-toggle');
+      if (!btn) return;
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        btn.innerHTML = '☀️ Tagmodus';
+        btn.className = 'px-3 py-1 rounded-full border text-[11px] font-title tracking-wider uppercase font-bold shadow transition-all border-[#33322E] bg-[#2C2B27] text-[#E5E4DE]';
+      } else {
+        btn.innerHTML = '🌙 Nachtmodus';
+        btn.className = 'px-3 py-1 rounded-full border text-[11px] font-title tracking-wider uppercase font-bold shadow transition-all border-leather-800/30 bg-parchment-200 text-leather-900';
+      }
+    }
+    // Dark Mode beim Laden wiederherstellen (vor Rendern)
+    (function() {
+      try {
+        if (localStorage.getItem('bm-dark-mode') === '1') {
+          document.documentElement.classList.add('dark');
+        }
+      } catch(e) {}
+    })();
+
     // SUPABASE KONFIGURATION
     const SUPABASE_URL = "https://gfurkudezjewwsnpyboo.supabase.co";
     const SUPABASE_ANON = "sb_publishable_z3v_DSs_V4WJnwwZ4O-9RA_Gu1hDLCD";
@@ -2708,14 +2962,14 @@
       document.getElementById('stat-total-volume').innerText = `$ ${totalVolume.toFixed(2)}`;
 
       const filtered = state.orders.filter(o => {
-        const matchStatus = state.currentArchiveStatus === 'alle' || o.status === state.currentArchiveStatus;
-        const matchSearch = !search || 
-          o.customer.toLowerCase().includes(search) || 
+        if (o.status !== 'Erledigt') return false;
+        const matchSearch = !search ||
+          o.customer.toLowerCase().includes(search) ||
           (o.contact && o.contact.toLowerCase().includes(search)) ||
           o.items.toLowerCase().includes(search) ||
           (o.staffName && o.staffName.toLowerCase().includes(search)) ||
           (`#${o.orderNumber}`).toLowerCase().includes(search);
-        return matchStatus && matchSearch;
+        return matchSearch;
       });
 
       if(filtered.length === 0) {
@@ -2736,7 +2990,7 @@
         const badgeColor = getStatusBadgeStyle(o.status);
 
         return `
-          <div onclick="openOrderDetailModal(${o.id})" class="cursor-pointer group border-2 border-leather-800/25 bg-parchment-50/90 hover:bg-parchment-100 p-3.5 rounded-lg shadow-sm hover:shadow-md transition flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div onclick="${me.role === 'leitung' ? `openOrderDetailModal(${o.id})` : `westernAlert('Nur die Leitung darf erledigte Bestellungen bearbeiten.')`}" class="cursor-pointer group border-2 border-leather-800/25 bg-parchment-50/90 hover:bg-parchment-100 p-3.5 rounded-lg shadow-sm hover:shadow-md transition flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div class="md:w-4/12 flex items-start gap-3">
               <div class="text-center border-r border-leather-800/20 pr-3 min-w-[55px]">
                 <span class="text-[10px] uppercase font-sans font-bold text-leather-800/60 block">${fmtDate(o.date)}</span>
@@ -2892,10 +3146,58 @@
       openTelegramModal(currentDetailOrderId);
     }
 
+    function toggleDetailCustomerChange() {
+      const div = document.getElementById('detail-customer-change');
+      const isHidden = div.classList.contains('hidden');
+      if (isHidden) {
+        const sel = document.getElementById('detail-order-customer-select');
+        sel.innerHTML = state.customers.map(c => `<option value="${c.id}" ${c.name === editingOrderClone.customer ? 'selected' : ''}>${c.name} — ${c.location || ''}</option>`).join('');
+        div.classList.remove('hidden');
+      } else {
+        div.classList.add('hidden');
+      }
+    }
+
+    function onDetailCustomerChange() {
+      if (!editingOrderClone) return;
+      const selId = Number(document.getElementById('detail-order-customer-select').value);
+      const cust = state.customers.find(c => c.id === selId);
+      if (!cust) return;
+      editingOrderClone.customer = cust.name;
+      editingOrderClone.contact = cust.contact || '';
+      editingOrderClone.location = cust.location || '';
+      editingOrderClone.telegram = cust.telegram || '';
+      editingOrderClone.customerId = cust.id;
+      document.getElementById('detail-order-customer').innerText = cust.name;
+      document.getElementById('detail-order-contact').innerText = cust.contact || '-';
+      document.getElementById('detail-order-location').innerText = cust.location || '-';
+      document.getElementById('detail-order-telegram').innerText = cust.telegram || '-';
+      document.getElementById('detail-customer-change').classList.add('hidden');
+    }
+
     function renderModalViews() {
       renderOrderDetailChecklist();
       renderOrderDetailEditor();
       recalcEditingOrderTotal();
+      updateDetailTelegramBtn();
+    }
+
+    function updateDetailTelegramBtn() {
+      const btn = document.getElementById('detail-telegram-btn');
+      if (!btn || !editingOrderClone) return;
+      const status = editingOrderClone.status;
+      if (status === 'Abholbereit' || status === 'Erledigt') {
+        btn.classList.remove('hidden');
+        if (editingOrderClone.telegramSent) {
+          btn.innerText = '📧 Telegramm erneut versenden';
+          btn.className = 'px-4 py-2 bg-western-brass hover:bg-western-brass/80 text-white rounded text-xs uppercase font-title font-bold shadow transition';
+        } else {
+          btn.innerText = '📧 Telegramm versenden';
+          btn.className = 'px-4 py-2 bg-western-red hover:bg-western-red/80 text-white rounded text-xs uppercase font-title font-bold shadow transition';
+        }
+      } else {
+        btn.classList.add('hidden');
+      }
     }
 
     function renderOrderDetailChecklist() {
@@ -3176,6 +3478,9 @@
         editingOrderClone.itemsList.forEach(i => i.checked = true);
         // Die Einnahme bucht die Datenbank automatisch, sobald die Bestellung auf „Erledigt" steht
         editingOrderClone.bookedToCash = true;
+      } else if (oldStatus === 'Erledigt' && newStatus !== 'Erledigt') {
+        // Rückbuchung: DB-Trigger entfernt den Kassenbucheintrag automatisch
+        editingOrderClone.bookedToCash = false;
       }
 
       Object.assign(original, editingOrderClone);
@@ -3193,13 +3498,7 @@
 
       closeModal('order-detail-modal');
 
-      // Bei neuem Status "Abholbereit" fragen ob Telegramm erstellt werden soll
-      if (oldStatus !== 'Abholbereit' && newStatus === 'Abholbereit' && !original.telegramSent) {
-        const wantTelegram = await westernConfirm('Möchtest du jetzt das Telegramm für den Kunden erstellen?', 'Auftrag abholbereit — Telegramm senden?', 'Ja', 'Nein');
-        if (wantTelegram) {
-          openTelegramModal(original.id);
-        }
-      }
+      // Telegram-Button wird im Modal angezeigt wenn Status = Abholbereit
     }
 
     function renderInventory() {
@@ -3511,6 +3810,58 @@
       itemSel.innerHTML = filtered.map(i => `
         <option value="${i.id}">${i.name} [1 🌱 = ${i.yieldPerSeed || 1} Ertrag]</option>
       `).join('');
+    }
+
+    /* ── Suchfilter für Produkt-Selects ── */
+
+    function filterPosItemSelect() {
+      const search = (document.getElementById('pos-item-search').value || '').toLowerCase().trim();
+      const itemSel = document.getElementById('pos-item-select');
+      const filtered = state.inventory.filter(i => {
+        if (currentPosCategory !== 'alle' && i.category !== currentPosCategory) return false;
+        if (search && !i.name.toLowerCase().includes(search)) return false;
+        return true;
+      });
+      if (filtered.length === 0) {
+        itemSel.innerHTML = `<option value="">Keine Treffer</option>`;
+        return;
+      }
+      itemSel.innerHTML = filtered.map(i => `
+        <option value="${i.id}">${i.name} [1 🌱 = ${i.yieldPerSeed || 1} Ertrag]</option>
+      `).join('');
+    }
+
+    function filterPurchaseItemSelect() {
+      const search = (document.getElementById('purchase-item-search').value || '').toLowerCase().trim();
+      const itemSel = document.getElementById('purchase-item');
+      const filtered = state.inventory.filter(i => {
+        if (search && !i.name.toLowerCase().includes(search)) return false;
+        return true;
+      });
+      if (filtered.length === 0) {
+        itemSel.innerHTML = `<option value="">Keine Treffer</option>`;
+        return;
+      }
+      itemSel.innerHTML = filtered.map(i => {
+        const cost = Number(i.cost || 0);
+        const yld = Number(i.yieldPerSeed || 1);
+        return `<option value="${i.id}" data-cost="${cost.toFixed(2)}" data-yield="${yld}">🌱 ${i.name} (EK: $ ${cost.toFixed(2)} → Ertrag: ${yld})</option>`;
+      }).join('');
+      updatePurchasePreview();
+    }
+
+    function filterEditAddItemSelect() {
+      const search = (document.getElementById('edit-add-item-search').value || '').toLowerCase().trim();
+      const addItemSelect = document.getElementById('edit-add-item-select');
+      const filtered = state.inventory.filter(i => {
+        if (search && !i.name.toLowerCase().includes(search)) return false;
+        return true;
+      });
+      if (filtered.length === 0) {
+        addItemSelect.innerHTML = `<option value="">Keine Treffer</option>`;
+        return;
+      }
+      addItemSelect.innerHTML = filtered.map(i => `<option value="${i.id}">${i.name} [1 🌱 = ${i.yieldPerSeed || 1} Ertrag]</option>`).join('');
     }
 
     function onCustomerSelect() {
@@ -4523,8 +4874,9 @@
         artikelListe = order.itemsList.map(item => {
           const name = item.name || item.text || 'Unbekannt';
           const amount = item.amount || item.qty || 1;
-          const price = Number(item.lineTotal || item.price || 0);
-          return `  • ${amount}× ${name} — $ ${price.toFixed(2)}`;
+          const lineTotal = Number(item.lineTotal || item.price || 0);
+          const unitPrice = amount > 0 ? (lineTotal / amount) : 0;
+          return `  • ${amount}× ${name} á $ ${unitPrice.toFixed(2)} — $ ${lineTotal.toFixed(2)}`;
         }).join('\n');
       } else if (order.items) {
         artikelListe = '  ' + order.items;
@@ -4767,6 +5119,7 @@
 
     // START
     renderAll();
+    updateDarkModeBtn();
     switchTab('orders');
     startApp();
     setInterval(refreshFromDatabase, 15000);
