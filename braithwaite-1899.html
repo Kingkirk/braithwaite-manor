@@ -1751,8 +1751,8 @@
       {
         table: 'notes', stateKey: 'notes',
         query: q => q.order('id', { ascending: false }),
-        fromRow: n => ({ id: n.id, title: n.title, text: n.content, category: n.category || 'allg', date: n.created_at ? n.created_at.split('T')[0] : '' }),
-        toRow: x => ({ title: x.title, content: x.text, category: x.category })
+        fromRow: n => ({ id: n.id, title: n.title, text: n.content, category: n.category || 'allg', color: n.color || 'gold', author: n.author || '', date: n.created_at ? n.created_at.split('T')[0] : '' }),
+        toRow: x => ({ title: x.title || String(x.text || '').slice(0, 60), content: x.text, category: x.category, color: x.color || 'gold', author: x.author || null })
       },
       {
         table: 'purchases', stateKey: 'purchases',
