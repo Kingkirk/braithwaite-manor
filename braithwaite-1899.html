@@ -234,7 +234,8 @@
     }
 
     /* Coach Button anpassen */
-    html.dark #coach-btn {
+    html.dark #coach-btn,
+    html.dark #tax-btn {
       border-color: #33322E !important;
     }
 
@@ -356,10 +357,13 @@
           </p>
         </div>
 
-        <!-- Rechts: Kutsche Status Button -->
-        <div class="flex flex-col items-center gap-2">
+        <!-- Rechts: Kutsche Status Button + Steuer-Erinnerung -->
+        <div class="flex flex-col sm:flex-row items-center gap-2">
           <button id="coach-btn" onclick="toggleCoach()" class="py-3 px-4 rounded-lg font-title text-sm md:text-base tracking-widest uppercase font-bold text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] border-2 flex flex-col items-center justify-center gap-1 min-w-[160px]">
             <span id="coach-btn-text">🐴 Kutsche am Hof</span>
+          </button>
+          <button id="tax-btn" onclick="showTaxReminder()" title="Erinnerung: Kasse wegen Steuer auf 1000 $ setzen" class="py-3 px-4 rounded-lg font-title text-sm md:text-base tracking-widest uppercase font-bold text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] border-2 flex flex-col items-center justify-center gap-1 min-w-[160px]">
+            <span id="tax-btn-text">💰 Steuer</span>
           </button>
         </div>
       </div>
@@ -484,18 +488,16 @@
       <section id="view-treasury" class="hidden space-y-6">
         
         <!-- Salden-Übersicht -->
-        <div data-perm="cash_view" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div data-perm="cash_view" class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="border border-leather-800/20 bg-parchment-100/80 p-4 rounded text-center">
             <span class="text-xs uppercase font-title tracking-wider text-leather-800/70">Gesamteinnahmen</span>
             <div id="total-income" class="text-2xl font-bold text-western-green font-title mt-1">$ 0.00</div>
+            <span class="cash-period-info block text-[11px] font-vintage italic text-leather-800/70 mt-0.5">Gesamt (alle Buchungen)</span>
           </div>
           <div class="border border-leather-800/20 bg-parchment-100/80 p-4 rounded text-center">
             <span class="text-xs uppercase font-title tracking-wider text-leather-800/70">Gesamtausgaben</span>
             <div id="total-expense" class="text-2xl font-bold text-western-red font-title mt-1">$ 0.00</div>
-          </div>
-          <div class="border-2 border-western-brass/50 bg-parchment-200/50 p-4 rounded text-center">
-            <span class="text-xs uppercase font-title tracking-wider text-leather-800/70">Aktueller Kassenstand</span>
-            <div id="net-balance" class="text-2xl font-bold text-leather-900 font-title mt-1">$ 0.00</div>
+            <span class="cash-period-info block text-[11px] font-vintage italic text-leather-800/70 mt-0.5">Gesamt (alle Buchungen)</span>
           </div>
         </div>
 
@@ -629,6 +631,9 @@
             <p class="text-xs text-leather-800/70">Buchungen können über ✏️ bearbeitet oder 🗑️ storniert werden</p>
           </div>
           <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="openCashChartModal()" class="bg-parchment-300 hover:bg-parchment-400 border border-leather-800/30 text-leather-900 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
+              📈 Entwicklung
+            </button>
             <button data-perm="cash_edit" onclick="openNewCashModal()" class="bg-leather-900 text-parchment-100 hover:bg-leather-800 px-4 py-2 rounded font-title text-xs tracking-wider uppercase shadow font-bold">
               + Manuelle Buchung erfassen
             </button>
@@ -654,6 +659,25 @@
           <div class="w-full sm:w-64">
             <input type="text" id="cash-search-input" placeholder="Buchungstext suchen..." oninput="cashPage=1; renderTreasury()" class="w-full bg-parchment-50 border border-leather-800/30 p-1.5 text-xs rounded focus:outline-none placeholder-leather-800/40">
           </div>
+        </div>
+
+        <!-- Zeitraum-Filter für Kassenbuch (wirkt auch auf Gesamteinnahmen / Gesamtausgaben oben) -->
+        <div class="flex flex-col gap-2 bg-parchment-100/70 p-3 rounded border border-leather-800/20">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-[11px] font-title uppercase tracking-wider text-leather-800/80 font-bold mr-1">Zeitraum:</span>
+            <button onclick="setCashPeriod('book', 'alle')" id="cash-period-book-alle">Gesamt</button>
+            <button onclick="setCashPeriod('book', 'woche')" id="cash-period-book-woche" title="Letzte 7 Tage inkl. heute">Woche (7 Tage)</button>
+            <button onclick="setCashPeriod('book', 'monat')" id="cash-period-book-monat" title="Letzte 30 Tage inkl. heute">Monat (30 Tage)</button>
+            <button onclick="setCashPeriod('book', 'jahr')" id="cash-period-book-jahr" title="Letzte 365 Tage inkl. heute">Jahr (365 Tage)</button>
+            <button onclick="setCashPeriod('book', 'custom')" id="cash-period-book-custom">Beliebiges Datum</button>
+            <span id="cash-period-book-custom-row" class="hidden items-center gap-1.5 text-xs">
+              <label class="font-title uppercase text-[10px] text-leather-800/80">von</label>
+              <input type="date" id="cash-period-book-from" onchange="setCashPeriodDates('book')" class="bg-parchment-50 border border-leather-800/30 p-1 text-xs rounded focus:outline-none">
+              <label class="font-title uppercase text-[10px] text-leather-800/80">bis</label>
+              <input type="date" id="cash-period-book-to" onchange="setCashPeriodDates('book')" class="bg-parchment-50 border border-leather-800/30 p-1 text-xs rounded focus:outline-none">
+            </span>
+          </div>
+          <span id="cash-period-book-label" class="text-xs font-vintage italic text-leather-800/80">Aktiver Zeitraum: Gesamt (alle Buchungen)</span>
         </div>
 
         <div class="overflow-x-auto border border-leather-800/20 rounded-lg bg-parchment-50/60">
@@ -902,83 +926,6 @@
     </div>
   </div>
 
-  <!-- TELEGRAMM-GENERATOR-MODAL -->
-  <div id="telegram-modal" class="fixed inset-0 bg-black/85 hidden items-center justify-center p-3 md:p-4" style="z-index:60">
-    <div class="bg-parchment-100 border-2 border-leather-800 p-5 md:p-6 rounded-lg max-w-2xl w-full shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scroll">
-      <div class="flex justify-between items-start border-b border-leather-800/20 pb-3">
-        <div>
-          <span class="text-xs uppercase font-title tracking-wider text-western-brass font-bold flex items-center gap-1.5">
-            <span>📧</span> Telegramm-Nachricht erstellen
-          </span>
-          <h3 id="telegram-order-info" class="font-title text-lg font-bold text-leather-900 mt-1">Bestellung #—</h3>
-        </div>
-        <button onclick="closeModal('telegram-modal')" class="text-leather-800/60 hover:text-leather-900 text-xl leading-none">✕</button>
-      </div>
-
-      <!-- Template-Einstellungen (nur mit telegram_edit Permission) -->
-      <div id="telegram-template-section" data-perm="telegram_edit" class="border border-western-brass/40 bg-parchment-200/40 p-3 rounded space-y-2">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-title uppercase tracking-wider text-western-brass font-bold">⚙️ Vorlage anpassen (Leitung)</span>
-          <button onclick="toggleTelegramTemplateEdit()" id="telegram-template-toggle" class="text-xs text-western-brass hover:underline font-title">Bearbeiten</button>
-        </div>
-        <div id="telegram-template-edit" class="hidden space-y-3">
-          <div class="bg-parchment-50 border border-leather-800/15 p-2.5 rounded text-[11px] font-vintage text-leather-800/80">
-            <strong class="font-title uppercase text-leather-900 text-[10px]">Verfügbare Textbausteine:</strong><br>
-            <code class="text-western-brass">{kundenName}</code> — Kundenname &nbsp;·&nbsp;
-            <code class="text-western-brass">{bestellDatum}</code> — Bestelldatum &nbsp;·&nbsp;
-            <code class="text-western-brass">{bestellNummer}</code> — Auftragsnummer<br>
-            <code class="text-western-brass">{mitarbeiterName}</code> — Wer das Telegramm sendet &nbsp;·&nbsp;
-            <code class="text-western-brass">{artikelListe}</code> — Auflistung aller Positionen<br>
-            <code class="text-western-brass">{gesamtPreis}</code> — Gesamtsumme &nbsp;·&nbsp;
-            <code class="text-western-brass">{lieferInfo}</code> — Lieferart & Zeitfenster &nbsp;·&nbsp;
-            <code class="text-western-brass">{ansprechpartner}</code> — Ansprechpartner
-          </div>
-          <div>
-            <label class="text-[11px] font-title uppercase text-leather-800/70">Titel-Vorlage</label>
-            <input type="text" id="tpl-title" class="w-full bg-parchment-50 border border-leather-800/20 p-2 text-xs rounded focus:outline-none" placeholder="z.B. Braithwaite Manor — Bestellung #{bestellNummer}">
-          </div>
-          <div>
-            <label class="text-[11px] font-title uppercase text-leather-800/70">Nachrichtentext-Vorlage</label>
-            <textarea id="tpl-body" rows="8" class="w-full bg-parchment-50 border border-leather-800/20 p-2 text-xs rounded focus:outline-none resize-none font-mono"></textarea>
-          </div>
-          <div class="flex justify-between items-center">
-            <button onclick="resetTelegramTemplate()" class="text-xs text-western-red hover:underline font-title">↺ Auf Standard zurücksetzen</button>
-            <button onclick="saveTelegramTemplate()" class="text-xs bg-leather-900 hover:bg-leather-800 text-parchment-100 px-3 py-1.5 rounded font-title uppercase font-bold">Vorlage speichern</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Titel -->
-      <div class="space-y-1">
-        <div class="flex items-center justify-between">
-          <label class="text-xs font-title uppercase tracking-wider text-leather-900 font-bold">Telegramm-Titel</label>
-          <button onclick="copyTelegramField('telegram-title-text')" class="text-xs text-western-brass hover:underline font-title flex items-center gap-1">📋 Titel kopieren</button>
-        </div>
-        <div id="telegram-title-text" class="bg-parchment-50 border border-leather-800/20 p-3 rounded font-vintage text-sm text-leather-900 select-all"></div>
-      </div>
-
-      <!-- Nachrichtentext -->
-      <div class="space-y-1">
-        <div class="flex items-center justify-between">
-          <label class="text-xs font-title uppercase tracking-wider text-leather-900 font-bold">Nachrichtentext</label>
-          <button onclick="copyTelegramField('telegram-body-text')" class="text-xs text-western-brass hover:underline font-title flex items-center gap-1">📋 Nachricht kopieren</button>
-        </div>
-        <div id="telegram-body-text" class="bg-parchment-50 border border-leather-800/20 p-3 rounded font-vintage text-sm text-leather-900 whitespace-pre-wrap select-all leading-relaxed"></div>
-      </div>
-
-      <!-- Aktionen -->
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2 border-t border-leather-800/20">
-        <span id="telegram-sent-info" class="text-xs text-leather-800/60 font-vintage italic"></span>
-        <div class="flex gap-2">
-          <button onclick="closeModal('telegram-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80 hover:underline">Schließen</button>
-          <button id="telegram-mark-sent-btn" onclick="markTelegramSent()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
-            ✓ Als gesendet markieren
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- MODAL: KUNDEN-BESTELLHISTORIE -->
   <div id="customer-history-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-3 md:p-4 z-50">
     <div class="bg-parchment-100 border-2 border-leather-800 p-5 md:p-6 rounded-lg max-w-3xl w-full shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scroll">
@@ -1140,14 +1087,22 @@
         <div>
           <label class="block text-[11px] uppercase font-title font-bold text-leather-900 mb-1">Auftragsstatus:</label>
           <div class="flex items-center gap-2">
-            <select id="detail-order-status-select"  class="bg-white border border-leather-800/30 p-1.5 text-xs rounded font-semibold focus:outline-none">
+            <select id="detail-order-status-select" onchange="updateDetailTelegramCheck()" class="bg-white border border-leather-800/30 p-1.5 text-xs rounded font-semibold focus:outline-none">
               <option value="Offen">Offen</option>
               <option value="In Arbeit">In Arbeit</option>
               <option value="Abholbereit">Abholbereit</option>
               <option value="Erledigt">Erledigt (Wird ins Kassenbuch verbucht)</option>
             </select>
           </div>
-          <span class="text-[10px] text-leather-800/60 block mt-0.5 font-vintage italic">Erst bei Status "Erledigt" fließt der Betrag in den Kassenstand!</span>
+          <span class="text-[10px] text-leather-800/60 block mt-0.5 font-vintage italic">Erst bei Status "Erledigt" fließt der Betrag ins Kassenbuch!</span>
+          <!-- Telegramm-Haken: erscheint ab Status „Abholbereit" (und „Erledigt") -->
+          <div id="detail-telegram-row" class="hidden mt-2">
+            <label class="inline-flex items-center gap-2 text-xs font-title font-bold text-leather-900 cursor-pointer">
+              <input type="checkbox" id="detail-telegram-check" onchange="toggleTelegramSent(this.checked)" class="w-4 h-4 accent-emerald-800 cursor-pointer rounded">
+              📧 Telegramm verschickt
+            </label>
+            <span id="detail-telegram-info" class="block text-[10px] font-vintage italic text-leather-800/70 mt-0.5"></span>
+          </div>
         </div>
         <div class="text-right">
           <span class="text-[11px] uppercase font-title text-leather-800/70 block">Gesamtbetrag</span>
@@ -1158,9 +1113,6 @@
       <div class="flex justify-between items-center pt-2 border-t border-leather-800/20">
         <button id="detail-order-delete-btn" data-perm="orders_delete" class="text-xs text-western-red hover:underline font-title uppercase">Bestellung stornieren / löschen</button>
         <div class="flex items-center gap-2">
-          <button id="detail-telegram-btn" onclick="openTelegramModal(currentDetailOrderId)" class="hidden px-4 py-2 bg-western-red hover:bg-western-red/80 text-white rounded text-xs uppercase font-title font-bold shadow transition">
-            📧 Telegramm versenden
-          </button>
           <button data-perm="orders_edit" onclick="saveDetailOrderChanges()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs uppercase font-title font-bold shadow transition">
             ✓ Änderungen speichern & besiegeln
           </button>
@@ -1347,13 +1299,13 @@
   <div id="cash-reset-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
     <div class="bg-parchment-100 border-2 border-leather-800 p-6 rounded-lg max-w-md w-full shadow-2xl space-y-4">
       <h3 class="font-title text-xl font-bold text-leather-900">🔄 Kasse zurücksetzen</h3>
-      <p class="text-sm text-leather-800/80 font-body">Alle gewählten Buchungen werden unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</p>
+      <p class="text-sm text-leather-800/80 font-body">Setzt Gesamteinnahmen und/oder Gesamtausgaben zurück, indem die gewählten Buchungen unwiderruflich gelöscht werden. Diese Aktion kann nicht rückgängig gemacht werden.</p>
       <div>
         <label class="block text-xs uppercase font-title tracking-wider text-leather-900 mb-1">Art des Resets</label>
         <select id="cash-reset-type" onchange="updateCashResetOptions()" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded focus:outline-none font-semibold">
-          <option value="full">Kompletter Reset — alle Buchungen löschen</option>
-          <option value="before">Teilweise — alle Buchungen VOR einem Datum löschen</option>
-          <option value="type">Teilweise — nur Einnahmen oder nur Ausgaben löschen</option>
+          <option value="full">Kompletter Reset — Gesamteinnahmen und Gesamtausgaben auf $ 0.00 (alle Buchungen löschen)</option>
+          <option value="before">Teilweise — Einnahmen und Ausgaben VOR einem Datum löschen</option>
+          <option value="type">Teilweise — nur Gesamteinnahmen oder nur Gesamtausgaben zurücksetzen</option>
         </select>
       </div>
       <div id="cash-reset-date-row" class="hidden">
@@ -1363,14 +1315,58 @@
       <div id="cash-reset-type-row" class="hidden">
         <label class="block text-xs uppercase font-title tracking-wider text-leather-900 mb-1">Buchungsart</label>
         <select id="cash-reset-entry-type" onchange="updateCashResetOptions()" class="w-full bg-parchment-50 border border-leather-800/30 p-2 text-sm rounded focus:outline-none font-semibold">
-          <option value="in">Nur Einnahmen löschen</option>
-          <option value="out">Nur Ausgaben löschen</option>
+          <option value="in">Nur Einnahmen löschen (Gesamteinnahmen zurücksetzen)</option>
+          <option value="out">Nur Ausgaben löschen (Gesamtausgaben zurücksetzen)</option>
         </select>
       </div>
       <div id="cash-reset-preview" class="text-sm font-title text-western-red font-bold p-3 bg-parchment-200/60 rounded border border-western-red/30"></div>
       <div class="flex justify-end gap-3 pt-3">
         <button onclick="closeModal('cash-reset-modal')" class="px-4 py-2 text-xs uppercase font-title text-leather-800/80">Abbrechen</button>
         <button onclick="executeCashReset()" class="px-4 py-2 bg-western-red text-white rounded text-xs uppercase font-title font-bold hover:bg-western-red/80">Endgültig löschen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Entwicklung von Gesamteinnahmen & Gesamtausgaben (Verlaufskurve) -->
+  <div id="cash-chart-modal" class="fixed inset-0 bg-black/75 hidden items-center justify-center p-3 md:p-4 z-50">
+    <div class="bg-parchment-100 border-2 border-leather-800 p-5 md:p-6 rounded-lg max-w-3xl w-full shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scroll">
+      <div class="flex justify-between items-start border-b border-leather-800/20 pb-3">
+        <div>
+          <span class="text-xs uppercase font-title tracking-wider text-western-brass font-bold">📈 Kassenbuch</span>
+          <h3 class="font-title text-xl font-bold text-leather-900 leading-tight">Entwicklung: Gesamteinnahmen &amp; Gesamtausgaben</h3>
+          <p class="text-[11px] font-vintage text-leather-800/70">Aufsummiert pro Tag innerhalb des gewählten Zeitraums</p>
+        </div>
+        <button onclick="closeModal('cash-chart-modal')" class="text-leather-900 font-bold text-xl hover:text-western-red">✕</button>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span class="text-[11px] font-title uppercase tracking-wider text-leather-800/80 font-bold mr-1">Zeitraum:</span>
+        <button onclick="setCashPeriod('chart', 'alle')" id="cash-period-chart-alle">Gesamt</button>
+        <button onclick="setCashPeriod('chart', 'woche')" id="cash-period-chart-woche" title="Letzte 7 Tage inkl. heute">Woche (7 Tage)</button>
+        <button onclick="setCashPeriod('chart', 'monat')" id="cash-period-chart-monat" title="Letzte 30 Tage inkl. heute">Monat (30 Tage)</button>
+        <button onclick="setCashPeriod('chart', 'jahr')" id="cash-period-chart-jahr" title="Letzte 365 Tage inkl. heute">Jahr (365 Tage)</button>
+        <button onclick="setCashPeriod('chart', 'custom')" id="cash-period-chart-custom">Beliebiges Datum</button>
+        <span id="cash-period-chart-custom-row" class="hidden items-center gap-1.5 text-xs">
+          <label class="font-title uppercase text-[10px] text-leather-800/80">von</label>
+          <input type="date" id="cash-period-chart-from" onchange="setCashPeriodDates('chart')" class="bg-parchment-50 border border-leather-800/30 p-1 text-xs rounded focus:outline-none">
+          <label class="font-title uppercase text-[10px] text-leather-800/80">bis</label>
+          <input type="date" id="cash-period-chart-to" onchange="setCashPeriodDates('chart')" class="bg-parchment-50 border border-leather-800/30 p-1 text-xs rounded focus:outline-none">
+        </span>
+      </div>
+      <span id="cash-period-chart-label" class="block text-xs font-vintage italic text-leather-800/80">Aktiver Zeitraum: Gesamt (alle Buchungen)</span>
+
+      <div class="flex flex-wrap items-center gap-4 text-xs font-title">
+        <span class="inline-flex items-center gap-1.5"><span id="cash-chart-legend-in" class="inline-block w-5 h-1 rounded"></span> Gesamteinnahmen: <strong id="cash-chart-total-in" class="text-western-green">$ 0.00</strong></span>
+        <span class="inline-flex items-center gap-1.5"><span id="cash-chart-legend-out" class="inline-block w-5 h-1 rounded"></span> Gesamtausgaben: <strong id="cash-chart-total-out" class="text-western-red">$ 0.00</strong></span>
+      </div>
+
+      <div id="cash-chart-wrap" class="relative border border-leather-800/20 bg-parchment-50 rounded p-2">
+        <div id="cash-chart-svg"></div>
+        <div id="cash-chart-tooltip" class="hidden absolute pointer-events-none bg-parchment-100 border border-leather-800/40 rounded shadow-lg px-2.5 py-1.5 text-[11px] font-title text-leather-900 whitespace-nowrap"></div>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-leather-800/20">
+        <button onclick="closeModal('cash-chart-modal')" class="px-5 py-2 bg-leather-900 text-parchment-100 rounded text-xs uppercase font-title font-bold shadow">Schließen</button>
       </div>
     </div>
   </div>
@@ -1639,8 +1635,7 @@
       inventory: [],
       cash: [],
       staff: [],
-      purchases: [],
-      telegramTemplate: null
+      purchases: []
     };
 
     try {
@@ -1765,7 +1760,6 @@
     const dbSnapshot = {};        // letzter bekannter Stand der Datenbank je Tabelle (id -> Zeile als Text)
     let dbCategoryNames = null;   // Kategorienamen, wie sie in der Datenbank stehen
     let dbCoachAway = null;
-    let dbTelegramTemplate = null;
     let dbLoaded = false;
     let dbQueue = Promise.resolve();
     let localVersion = 0;
@@ -1870,16 +1864,6 @@
       if (dbCoachAway !== state.coachAway) {
         const wanted = state.coachAway;
         if (await run('farm_meta', canDb('farm_meta', 'update') && db.from('farm_meta').upsert({ key: 'coach_away', value: String(wanted) }))) dbCoachAway = wanted;
-      }
-
-      // Telegramm-Vorlage speichern
-      const tplJson = state.telegramTemplate ? JSON.stringify(state.telegramTemplate) : null;
-      if (tplJson !== dbTelegramTemplate) {
-        if (tplJson) {
-          if (await run('farm_meta', canDb('farm_meta', 'update') && db.from('farm_meta').upsert({ key: 'telegram_template', value: tplJson }))) dbTelegramTemplate = tplJson;
-        } else {
-          if (await run('farm_meta', canDb('farm_meta', 'delete') && db.from('farm_meta').delete().eq('key', 'telegram_template'))) dbTelegramTemplate = null;
-        }
       }
 
       if (idsChanged) renderAll();
@@ -1998,13 +1982,6 @@
         dbCoachAway = coachRow ? (coachRow.value === 'true' || coachRow.value === true) : null;
         state.coachAway = (dbCoachAway === true);
 
-        const tplRow = (meta.data || []).find(m => m.key === 'telegram_template');
-        if (tplRow && tplRow.value) {
-          try { state.telegramTemplate = JSON.parse(tplRow.value); dbTelegramTemplate = tplRow.value; } catch(e) { state.telegramTemplate = null; dbTelegramTemplate = null; }
-        } else {
-          dbTelegramTemplate = null;
-        }
-
         const maxOrderNum = state.orders.reduce((max, o) => Math.max(max, o.orderNumber || 0), 0);
         state.nextOrderNumber = maxOrderNum + 1;
 
@@ -2052,7 +2029,6 @@
       { id: 'products',         label: 'Produkte, Preise und Kategorien ändern' },
       { id: 'cash_view',        label: 'Kassenbuch ansehen' },
       { id: 'cash_edit',        label: 'Kassenbuch bearbeiten (buchen, ändern, löschen)' },
-      { id: 'telegram_edit',   label: 'Telegramm-Vorlagen bearbeiten' },
       { id: 'staff_manage',     label: 'Mitarbeiter und Zugriffe verwalten' },
       { id: 'cash_reset',       label: 'Kasse komplett oder teilweise zurücksetzen' }
     ];
@@ -2370,6 +2346,57 @@
         btn.style.borderColor = '#047857';
         document.getElementById('coach-btn-text').innerText = '🐴 Kutsche am Hof';
       }
+    }
+
+    /* ═══ Steuer-Erinnerung: jeden Donnerstag 24:00 (= Freitag 00:00, Europe/Berlin) wird die Kasse von Hand auf 1000 $ gesetzt.
+       Nur Erinnerung, keine Automatik. Farbgrenzen (lückenlos): Restzeit > 4 Tage grün, > 2 bis 4 Tage orange, <= 2 Tage rot. ═══ */
+    function getTaxDeadlineInfo(now = new Date()) {
+      // Uhrzeit und Wochentag in Berlin ermitteln (unabhängig von der Zeitzone des Rechners)
+      const parts = {};
+      new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Berlin', weekday: 'short', hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' })
+        .formatToParts(now).forEach(p => parts[p.type] = p.value);
+      const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(parts.weekday);
+      const secOfDay = Number(parts.hour) * 3600 + Number(parts.minute) * 60 + Number(parts.second);
+      // Tage bis zum nächsten Freitag 00:00; ist heute Freitag, ist der Termin gerade vorbei -> nächste Woche
+      const daysToFriday = ((5 - weekday + 7) % 7) || 7;
+      // Sommer-/Winterzeit-Wechsel innerhalb der Woche (±1 Std.) wird bewusst ignoriert
+      const remainingMs = daysToFriday * 86400000 - secOfDay * 1000;
+      return { remainingMs, deadline: new Date(now.getTime() + remainingMs) };
+    }
+
+    function formatTaxRemaining(ms) {
+      // Über 1 Tag aufrunden, damit Zahl und Farbe zusammenpassen (grün 5–7, orange 3–4, rot ≤ 2 Tage)
+      const totalMin = Math.max(0, Math.floor(ms / 60000));
+      if (totalMin > 1440) return `${Math.ceil(totalMin / 1440)} Tagen`;
+      if (totalMin >= 60) return `${Math.floor(totalMin / 60)} Std.`;
+      return `${totalMin} Min.`;
+    }
+
+    function updateTaxButton(now = new Date()) {
+      const btn = document.getElementById('tax-btn');
+      if (!btn) return;
+      const { remainingMs } = getTaxDeadlineInfo(now);
+      const days = remainingMs / 86400000;
+      let bg, border;
+      if (days > 4) { bg = '#059669'; border = '#047857'; }        // grün
+      else if (days > 2) { bg = '#ea580c'; border = '#c2410c'; }   // orange
+      else { bg = '#dc2626'; border = '#991b1b'; }                 // rot
+      btn.style.backgroundColor = bg;
+      btn.style.borderColor = border;
+      document.getElementById('tax-btn-text').innerText = `💰 Steuer in ${formatTaxRemaining(remainingMs)}`;
+    }
+
+    function showTaxReminder() {
+      const { remainingMs, deadline } = getTaxDeadlineInfo();
+      const when = deadline.toLocaleString('de-DE', { timeZone: 'Europe/Berlin', weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+      const totalMin = Math.max(0, Math.floor(remainingMs / 60000));
+      const rest = `${Math.floor(totalMin / 1440)} Tg. ${Math.floor((totalMin % 1440) / 60)} Std. ${totalMin % 60} Min.`;
+      westernAlert(
+        `Jeden Donnerstag um 24:00 Uhr (Wechsel von Donnerstag auf Freitag, 00:00 Uhr) wird die Kasse wegen der Steuer von Hand auf 1000 $ gesetzt.\n\n` +
+        `Nächster Termin: ${when}, 00:00 Uhr (Zeit Berlin)\nVerbleibend: ${rest}\n\n` +
+        `Dies ist nur eine Erinnerung – die App ändert die Kasse nicht automatisch.`,
+        'Steuer-Erinnerung'
+      );
     }
 
     function saveNewNote() {
@@ -2802,6 +2829,17 @@
       renderOrders();
     }
 
+    // Telegramm-Hinweis neben dem Status (Auftragsbuch & Archiv)
+    function telegramStatusHtml(o) {
+      if (o.telegramSent) {
+        return `<span class="text-[10px] font-title font-bold text-western-brass whitespace-nowrap" title="verschickt am ${fmtDate(o.telegramSent.date)}">📧 Telegramm: ${escapeHtml(o.telegramSent.by)}</span>`;
+      }
+      if (o.status === 'Abholbereit') {
+        return `<span class="text-[10px] font-vintage italic text-leather-800/60 whitespace-nowrap">📧 Telegramm offen</span>`;
+      }
+      return '';
+    }
+
     function renderOrders() {
       const container = document.getElementById('orders-container');
       const search = (document.getElementById('active-orders-search') ? document.getElementById('active-orders-search').value.toLowerCase().trim() : "");
@@ -2871,6 +2909,7 @@
                   const pc = p === 100 ? 'bg-western-green' : (p > 0 ? 'bg-western-brass' : 'bg-leather-800/20');
                   return `<div class="flex items-center gap-1.5 text-[11px]">
                     <span class="font-vintage text-leather-900 truncate max-w-[120px]">${it.amount}× ${it.name}</span>
+                    ${it.claimedBy ? `<span class="text-[10px] font-title text-orange-600 truncate max-w-[80px]" title="in Bearbeitung: ${escapeHtml(it.claimedBy)}">✋ ${escapeHtml(it.claimedBy)}</span>` : ''}
                     <div class="flex-1 bg-leather-800/10 rounded-full h-1.5 overflow-hidden min-w-[40px]"><div class="${pc} h-full rounded-full" style="width:${p}%"></div></div>
                     <span class="font-title font-bold ${d >= t ? 'text-western-green' : 'text-leather-800/70'} whitespace-nowrap">${d}/${t}</span>
                   </div>`;
@@ -2886,9 +2925,12 @@
 
               <div class="text-right">
                 <span class="text-lg font-title font-bold text-western-green block">$ ${Number(o.price).toFixed(2)}</span>
-                <span class="px-2 py-0.5 text-[11px] font-title uppercase tracking-wider font-bold rounded border ${badgeColor} inline-block mt-0.5 shadow-sm">
-                  ${o.status}
-                </span>
+                <div class="flex flex-wrap items-center justify-start md:justify-end gap-x-1.5 gap-y-0.5 mt-0.5">
+                  <span class="px-2 py-0.5 text-[11px] font-title uppercase tracking-wider font-bold rounded border ${badgeColor} inline-block shadow-sm">
+                    ${o.status}
+                  </span>
+                  ${telegramStatusHtml(o)}
+                </div>
               </div>
             </div>
           </div>
@@ -3044,10 +3086,7 @@
                 <span class="px-2 py-0.5 text-[11px] font-title uppercase tracking-wider font-bold rounded border ${badgeColor} inline-block mt-0.5 shadow-sm">
                   ${o.status}
                 </span>
-                ${o.telegramSent ? `<span class="block text-[10px] text-western-brass mt-1 font-vintage">📧 gesendet von ${escapeHtml(o.telegramSent.by)} am ${fmtDate(o.telegramSent.date)}</span>` : (o.status === 'Abholbereit' ? `<span class="block text-[10px] text-western-red mt-1 font-vintage font-bold">⚠️ Telegramm ausstehend</span>` : '')}
-                ${(o.status === 'Abholbereit' || o.status === 'Erledigt') ? `<button onclick="event.stopPropagation(); openTelegramModal(${o.id})" class="mt-1 px-2 py-0.5 rounded text-[10px] uppercase font-title font-bold shadow transition ${o.telegramSent ? 'bg-western-brass text-white hover:bg-western-brass/80' : 'bg-western-red text-white hover:bg-western-red/80'}">
-                  📧 ${o.telegramSent ? 'Telegramm erneut versenden' : 'Telegramm versenden'}
-                </button>` : ''}
+                <div class="mt-1">${telegramStatusHtml(o)}</div>
               </div>
             </div>
           </div>
@@ -3153,11 +3192,6 @@
       openModal('order-detail-modal');
     }
 
-    function openTelegramFromDetail() {
-      if (!currentDetailOrderId) return;
-      openTelegramModal(currentDetailOrderId);
-    }
-
     function toggleDetailCustomerChange() {
       const div = document.getElementById('detail-customer-change');
       const isHidden = div.classList.contains('hidden');
@@ -3191,25 +3225,64 @@
       renderOrderDetailChecklist();
       renderOrderDetailEditor();
       recalcEditingOrderTotal();
-      updateDetailTelegramBtn();
+      updateDetailTelegramCheck();
     }
 
-    function updateDetailTelegramBtn() {
-      const btn = document.getElementById('detail-telegram-btn');
-      if (!btn || !editingOrderClone) return;
-      const status = editingOrderClone.status;
-      if (status === 'Abholbereit' || status === 'Erledigt') {
-        btn.classList.remove('hidden');
-        if (editingOrderClone.telegramSent) {
-          btn.innerText = '📧 Telegramm erneut versenden';
-          btn.className = 'px-4 py-2 bg-western-brass hover:bg-western-brass/80 text-white rounded text-xs uppercase font-title font-bold shadow transition';
-        } else {
-          btn.innerText = '📧 Telegramm versenden';
-          btn.className = 'px-4 py-2 bg-western-red hover:bg-western-red/80 text-white rounded text-xs uppercase font-title font-bold shadow transition';
-        }
-      } else {
-        btn.classList.add('hidden');
+    // Haken „Telegramm verschickt": sichtbar ab Status „Abholbereit" (oder „Erledigt") laut Status-Auswahl im Popup
+    function updateDetailTelegramCheck() {
+      const row = document.getElementById('detail-telegram-row');
+      if (!row || !editingOrderClone) return;
+      const status = document.getElementById('detail-order-status-select').value;
+      row.classList.toggle('hidden', status !== 'Abholbereit' && status !== 'Erledigt');
+      const sent = editingOrderClone.telegramSent;
+      const check = document.getElementById('detail-telegram-check');
+      check.checked = !!sent;
+      check.disabled = !can('orders_edit');
+      document.getElementById('detail-telegram-info').innerText = sent
+        ? `verschickt von ${sent.by} am ${new Date(sent.date).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+        : 'Noch kein Telegramm verschickt.';
+    }
+
+    function toggleTelegramSent(isSent) {
+      if (!editingOrderClone) return;
+      editingOrderClone.telegramSent = isSent
+        ? { by: me.staffName || me.name || 'Unbekannt', date: new Date().toISOString() }
+        : null;
+      // Sofort ins Original übernehmen und speichern (wie der Fortschritt der Positionen)
+      const original = state.orders.find(o => o.id === currentDetailOrderId);
+      if (original) {
+        original.telegramSent = editingOrderClone.telegramSent;
+        localVersion++;
+        renderOrders();
+        renderArchiveOrders();
+        queuePush();
       }
+      updateDetailTelegramCheck();
+    }
+
+    // Haken „in Bearbeitung" je Position: speichert den Namen im items_json-Eintrag (Feld claimedBy)
+    function toggleItemClaim(index, isClaimed) {
+      if (!editingOrderClone || !editingOrderClone.itemsList[index]) return;
+      const item = editingOrderClone.itemsList[index];
+      const myName = me.staffName || me.name || 'Unbekannt';
+      if (item.claimedBy && item.claimedBy !== myName && !can('orders_delete')) {
+        // Nur Besitzer des Hakens oder Leitung (Recht „Bestellungen löschen") darf ihn ändern
+        westernAlert(`Diese Position ist bereits in Bearbeitung von ${item.claimedBy}.`, 'Gesperrt');
+        renderModalViews();
+        return;
+      }
+      if (isClaimed) item.claimedBy = myName;
+      else delete item.claimedBy;
+
+      const original = state.orders.find(o => o.id === currentDetailOrderId);
+      if (original) {
+        original.itemsList = JSON.parse(JSON.stringify(editingOrderClone.itemsList));
+        localVersion++;
+        renderOrders();
+        renderArchiveOrders();
+        queuePush();
+      }
+      renderModalViews();
     }
 
     function renderOrderDetailChecklist() {
@@ -3226,16 +3299,19 @@
       container.innerHTML = items.map((item, index) => {
         const invItem = state.inventory.find(inv => inv.name === item.name || inv.id === item.itemId);
         const yieldPerSeed = (invItem && invItem.yieldPerSeed) ? invItem.yieldPerSeed : 1;
-        const seedsNeeded = Math.ceil(item.amount / yieldPerSeed);
         const totalPrice = (item.amount * (item.unitPrice || 0)).toFixed(2);
         const done = Number(item.done || 0);
         const total = Number(item.amount || 1);
         const pct = Math.min(100, Math.round((done / total) * 100));
         const remaining = Math.max(0, total - done);
+        // Samen nur für die noch fehlende Menge (gleiche Quelle wie der Fortschritt: item.done)
+        const seedsNeeded = Math.ceil(remaining / yieldPerSeed);
         const progressColor = pct === 100 ? 'bg-western-green' : (pct > 0 ? 'bg-western-brass' : 'bg-leather-800/20');
+        const myName = me.staffName || me.name || 'Unbekannt';
+        const claimLocked = !!item.claimedBy && item.claimedBy !== myName && !can('orders_delete');
 
         return `
-          <div class="flex flex-col gap-1.5 p-2.5 rounded bg-white border border-leather-800/15 hover:bg-parchment-100 transition shadow-sm">
+          <div class="flex flex-col gap-1.5 p-2.5 rounded bg-white border ${item.claimedBy ? 'border-orange-500' : 'border-leather-800/15'} hover:bg-parchment-100 transition shadow-sm">
             <label class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer">
               <div class="flex items-center gap-3">
                 <input type="checkbox" onchange="toggleItemCheckedInClone(${index}, this.checked)" ${item.checked ? 'checked' : ''} class="w-4 h-4 accent-emerald-800 cursor-pointer rounded">
@@ -3246,13 +3322,21 @@
 
               <div class="flex items-center justify-between sm:justify-end gap-3 pl-7 sm:pl-0">
                 <span class="px-2 py-0.5 rounded text-[10px] font-title font-bold bg-amber-100/90 text-amber-950 border border-amber-800/30 whitespace-nowrap">
-                  🌱 ${seedsNeeded} Samen nötig <span class="font-vintage text-leather-800/70 font-normal">(${yieldPerSeed}/Samen)</span>
+                  🌱 ${seedsNeeded} Samen nötig <span class="font-vintage text-leather-800/70 font-normal">(für ${remaining} offen · ${yieldPerSeed}/Samen)</span>
                 </span>
                 <span class="font-bold text-western-green font-title text-sm whitespace-nowrap min-w-[65px] text-right">
                   $ ${totalPrice}
                 </span>
               </div>
             </label>
+
+            <!-- Haken „in Bearbeitung" (für alle sichtbar) -->
+            <div class="pl-7">
+              <label class="inline-flex items-center gap-1.5 text-[11px] font-title ${claimLocked ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} ${item.claimedBy ? 'text-orange-600 font-bold' : 'text-leather-800/70'}" title="${claimLocked ? 'Nur ' + escapeHtml(item.claimedBy) + ' oder die Leitung kann den Haken entfernen' : 'Position als „in Bearbeitung“ markieren'}">
+                <input type="checkbox" onchange="toggleItemClaim(${index}, this.checked)" ${item.claimedBy ? 'checked' : ''} ${claimLocked ? 'disabled' : ''} class="w-3.5 h-3.5 accent-orange-600 ${claimLocked ? 'cursor-not-allowed' : 'cursor-pointer'}">
+                ${item.claimedBy ? `in Bearbeitung: ${escapeHtml(item.claimedBy)}${claimLocked ? ' 🔒' : ''}` : 'in Bearbeitung'}
+              </label>
+            </div>
 
             <!-- Fortschritts-Tracker -->
             <div class="flex items-center gap-2 pl-7">
@@ -3509,8 +3593,6 @@
       }
 
       closeModal('order-detail-modal');
-
-      // Telegram-Button wird im Modal angezeigt wenn Status = Abholbereit
     }
 
     function renderInventory() {
@@ -4055,21 +4137,102 @@
       renderTreasury();
     }
 
+    /* ═══ Zeitraum-Filter (Kassenbuch „book" und Entwicklungs-Diagramm „chart")
+       Woche / Monat / Jahr sind gleitend: letzte 7 / 30 / 365 Tage inklusive heute (Datum des Browsers). ═══ */
+    const CASH_PERIOD_PRESETS = ['alle', 'woche', 'monat', 'jahr', 'custom'];
+    const cashPeriod = {
+      book:  { preset: 'alle', from: '', to: '' },
+      chart: { preset: 'alle', from: '', to: '' }
+    };
+
+    function localDateKey(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // Buchungsdatum als JJJJ-MM-TT (ISO oder dd.mm.yyyy), sonst ''
+    function cashDateKey(raw) {
+      const s = String(raw || '');
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+      const m = s.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+      return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
+    }
+
+    function getCashPeriodRange(p) {
+      const daysBack = n => { const d = new Date(); d.setDate(d.getDate() - n); return localDateKey(d); };
+      const today = localDateKey(new Date());
+      if (p.preset === 'woche') return { from: daysBack(6), to: today, label: 'Woche (letzte 7 Tage)' };
+      if (p.preset === 'monat') return { from: daysBack(29), to: today, label: 'Monat (letzte 30 Tage)' };
+      if (p.preset === 'jahr') return { from: daysBack(364), to: today, label: 'Jahr (letzte 365 Tage)' };
+      if (p.preset === 'custom') return { from: p.from || '', to: p.to || '', label: 'Beliebiger Zeitraum' };
+      return { from: '', to: '', label: 'Gesamt (alle Buchungen)' };
+    }
+
+    function cashPeriodText(p) {
+      const r = getCashPeriodRange(p);
+      if (p.preset === 'alle') return r.label;
+      return `${r.label}: ${r.from ? fmtDate(r.from) : 'Anfang'} – ${r.to ? fmtDate(r.to) : 'offen'}`;
+    }
+
+    function inCashRange(c, r) {
+      if (!r.from && !r.to) return true;
+      const k = cashDateKey(c.date);
+      if (!k) return false;
+      return (!r.from || k >= r.from) && (!r.to || k <= r.to);
+    }
+
+    function setCashPeriod(scope, preset) {
+      if (!CASH_PERIOD_PRESETS.includes(preset)) return;
+      cashPeriod[scope].preset = preset;
+      if (scope === 'book') { cashPage = 1; renderTreasury(); }
+      else renderCashChart();
+    }
+
+    function setCashPeriodDates(scope) {
+      cashPeriod[scope].from = document.getElementById(`cash-period-${scope}-from`).value || '';
+      cashPeriod[scope].to = document.getElementById(`cash-period-${scope}-to`).value || '';
+      if (scope === 'book') { cashPage = 1; renderTreasury(); }
+      else renderCashChart();
+    }
+
+    function updateCashPeriodButtons(scope) {
+      const p = cashPeriod[scope];
+      CASH_PERIOD_PRESETS.forEach(preset => {
+        const btn = document.getElementById(`cash-period-${scope}-${preset}`);
+        if (!btn) return;
+        btn.className = preset === p.preset
+          ? "px-3 py-1 text-xs font-title uppercase tracking-wider rounded border border-leather-900 bg-leather-900 text-parchment-100 font-bold"
+          : "px-3 py-1 text-xs font-title uppercase tracking-wider rounded border border-leather-800/30 bg-parchment-50 text-leather-800 hover:bg-parchment-200";
+      });
+      const row = document.getElementById(`cash-period-${scope}-custom-row`);
+      if (row) {
+        row.classList.toggle('hidden', p.preset !== 'custom');
+        row.classList.toggle('inline-flex', p.preset === 'custom');
+      }
+      const fromEl = document.getElementById(`cash-period-${scope}-from`);
+      const toEl = document.getElementById(`cash-period-${scope}-to`);
+      if (fromEl && fromEl.value !== p.from) fromEl.value = p.from;
+      if (toEl && toEl.value !== p.to) toEl.value = p.to;
+      const label = document.getElementById(`cash-period-${scope}-label`);
+      if (label) label.innerText = `Aktiver Zeitraum: ${cashPeriodText(p)}`;
+    }
+
     function renderTreasury() {
       let income = 0;
       let expense = 0;
+      const range = getCashPeriodRange(cashPeriod.book);
+      updateCashPeriodButtons('book');
 
+      // Gesamteinnahmen / Gesamtausgaben summieren den gewählten Zeitraum
       state.cash.forEach(c => {
+        if (!inCashRange(c, range)) return;
         const val = Number(c.amount) || 0;
-        if(c.type === 'in') income += val; 
+        if(c.type === 'in') income += val;
         else expense += val;
       });
 
-      const balance = income - expense;
       document.getElementById('total-income').innerText = `$ ${income.toFixed(2)}`;
       document.getElementById('total-expense').innerText = `$ ${expense.toFixed(2)}`;
-      document.getElementById('net-balance').innerText = `$ ${balance.toFixed(2)}`;
-      document.getElementById('header-balance').innerText = `$ ${balance.toFixed(2)}`;
+      document.querySelectorAll('.cash-period-info').forEach(el => el.innerText = cashPeriodText(cashPeriod.book));
 
       const search = (document.getElementById('cash-search-input') ? document.getElementById('cash-search-input').value.toLowerCase().trim() : "");
       const reversedCash = [...state.cash].reverse();
@@ -4077,7 +4240,7 @@
       const filteredCash = reversedCash.filter(c => {
         const matchType = (state.currentCashType === 'alle' || c.type === state.currentCashType);
         const matchSearch = !search || (c.desc && c.desc.toLowerCase().includes(search));
-        return matchType && matchSearch;
+        return matchType && matchSearch && inCashRange(c, range);
       });
 
       const totalPages = Math.ceil(filteredCash.length / PAGE_SIZE) || 1;
@@ -4144,6 +4307,153 @@
     function goToCashPage(page) {
       cashPage = page;
       renderTreasury();
+    }
+
+    /* ═══ Entwicklungs-Diagramm: Gesamteinnahmen & Gesamtausgaben kumuliert pro Tag (inline SVG, keine Bibliothek) ═══ */
+    let cashChartData = null;
+
+    function openCashChartModal() {
+      // Startet mit dem Zeitraum des Kassenbuchs
+      Object.assign(cashPeriod.chart, cashPeriod.book);
+      openModal('cash-chart-modal');
+      renderCashChart();
+    }
+
+    function renderCashChart() {
+      updateCashPeriodButtons('chart');
+      const box = document.getElementById('cash-chart-svg');
+      if (!box) return;
+      document.getElementById('cash-chart-tooltip').classList.add('hidden');
+
+      const dark = document.documentElement.classList.contains('dark');
+      const C = dark
+        ? { inc: '#5fb85a', out: '#e0604f', grid: '#33322E', text: '#8E8D87', axis: '#55544F' }
+        : { inc: '#2d5a27', out: '#842217', grid: 'rgba(38,22,14,0.12)', text: '#5a4636', axis: 'rgba(38,22,14,0.45)' };
+      document.getElementById('cash-chart-legend-in').style.backgroundColor = C.inc;
+      document.getElementById('cash-chart-legend-out').style.backgroundColor = C.out;
+      document.getElementById('cash-chart-total-in').style.color = C.inc;
+      document.getElementById('cash-chart-total-out').style.color = C.out;
+
+      const range = getCashPeriodRange(cashPeriod.chart);
+      const entries = state.cash.filter(c => cashDateKey(c.date) && inCashRange(c, range));
+
+      // Tage des Zeitraums bestimmen (bei „Gesamt" bzw. offenen Grenzen: erste Buchung bis heute)
+      const keys = entries.map(c => cashDateKey(c.date)).sort();
+      const today = localDateKey(new Date());
+      let from = range.from || keys[0] || today;
+      let to = range.to || (keys.length && keys[keys.length - 1] > today ? keys[keys.length - 1] : today);
+      if (from > to) { const t = from; from = to; to = t; }
+
+      const perDay = {};
+      entries.forEach(c => {
+        const k = cashDateKey(c.date);
+        if (!perDay[k]) perDay[k] = { in: 0, out: 0 };
+        perDay[k][c.type === 'in' ? 'in' : 'out'] += Number(c.amount) || 0;
+      });
+
+      const days = [];
+      const cur = new Date(from + 'T12:00:00');
+      const end = new Date(to + 'T12:00:00');
+      let sumIn = 0, sumOut = 0;
+      while (cur <= end && days.length < 4000) {
+        const k = localDateKey(cur);
+        if (perDay[k]) { sumIn += perDay[k].in; sumOut += perDay[k].out; }
+        days.push({ key: k, in: sumIn, out: sumOut });
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      document.getElementById('cash-chart-total-in').innerText = `$ ${sumIn.toFixed(2)}`;
+      document.getElementById('cash-chart-total-out').innerText = `$ ${sumOut.toFixed(2)}`;
+
+      if (entries.length === 0) {
+        cashChartData = null;
+        box.innerHTML = `<div class="text-center py-16 text-leather-800/60 font-vintage text-base">Keine Buchungen in diesem Zeitraum.</div>`;
+        return;
+      }
+
+      // Maße & Skalen
+      const W = 720, H = 320, padL = 64, padR = 16, padT = 14, padB = 36;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+      const rawMax = Math.max(sumIn, sumOut, 1);
+      const mag = Math.pow(10, Math.floor(Math.log10(rawMax)));
+      const step = [1, 2, 2.5, 5, 10].map(f => f * mag).find(s => rawMax / s <= 5) || mag * 10;
+      const yMax = Math.ceil(rawMax / step) * step;
+      const n = days.length;
+      const x = i => padL + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+      const y = v => padT + plotH - (v / yMax) * plotH;
+
+      let grid = '';
+      for (let v = 0; v <= yMax + 1e-9; v += step) {
+        grid += `<line x1="${padL}" x2="${W - padR}" y1="${y(v)}" y2="${y(v)}" stroke="${C.grid}" stroke-width="1"/>`;
+        grid += `<text x="${padL - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="${C.text}">$ ${v.toLocaleString('de-DE')}</text>`;
+      }
+      // X-Achse: bis zu 6 Datumsbeschriftungen
+      const tickCount = Math.min(6, n);
+      let xTicks = '';
+      for (let t = 0; t < tickCount; t++) {
+        const i = tickCount === 1 ? 0 : Math.round(t * (n - 1) / (tickCount - 1));
+        const d = days[i].key;
+        xTicks += `<text x="${x(i)}" y="${H - padB + 18}" text-anchor="${t === 0 && n > 1 ? 'start' : (t === tickCount - 1 && n > 1 ? 'end' : 'middle')}" font-size="11" fill="${C.text}">${d.slice(8, 10)}.${d.slice(5, 7)}.${d.slice(2, 4)}</text>`;
+      }
+
+      const line = key => days.map((d, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`).join(' ');
+      const dots = n <= 62
+        ? days.map((d, i) => `<circle cx="${x(i)}" cy="${y(d.in)}" r="2.5" fill="${C.inc}"/><circle cx="${x(i)}" cy="${y(d.out)}" r="2.5" fill="${C.out}"/>`).join('')
+        : '';
+
+      box.innerHTML = `
+        <svg viewBox="0 0 ${W} ${H}" class="w-full h-auto block" role="img" aria-label="Verlaufskurve Gesamteinnahmen und Gesamtausgaben">
+          ${grid}
+          <line x1="${padL}" x2="${W - padR}" y1="${y(0)}" y2="${y(0)}" stroke="${C.axis}" stroke-width="1.2"/>
+          <line x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT + plotH}" stroke="${C.axis}" stroke-width="1.2"/>
+          ${xTicks}
+          <text x="${padL + plotW / 2}" y="${H - 2}" text-anchor="middle" font-size="11" fill="${C.text}">Datum</text>
+          <text x="12" y="${padT + plotH / 2}" text-anchor="middle" font-size="11" fill="${C.text}" transform="rotate(-90 12 ${padT + plotH / 2})">Summe ($)</text>
+          <path d="${line('out')}" fill="none" stroke="${C.out}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <path d="${line('in')}" fill="none" stroke="${C.inc}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+          ${dots}
+          <line id="cash-chart-cursor" x1="0" x2="0" y1="${padT}" y2="${padT + plotH}" stroke="${C.axis}" stroke-dasharray="3 3" visibility="hidden"/>
+          <circle id="cash-chart-hl-in" r="4.5" fill="${C.inc}" visibility="hidden"/>
+          <circle id="cash-chart-hl-out" r="4.5" fill="${C.out}" visibility="hidden"/>
+          <rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="transparent" onmousemove="onCashChartHover(event)" onmouseleave="hideCashChartHover()"/>
+        </svg>`;
+      cashChartData = { days, x, y, W, padL, plotW, n, C };
+    }
+
+    function onCashChartHover(evt) {
+      if (!cashChartData) return;
+      const { days, x, y, W, padL, plotW, n, C } = cashChartData;
+      const svg = evt.currentTarget.ownerSVGElement;
+      const rect = svg.getBoundingClientRect();
+      const svgX = (evt.clientX - rect.left) * (W / rect.width);
+      const i = n === 1 ? 0 : Math.max(0, Math.min(n - 1, Math.round(((svgX - padL) / plotW) * (n - 1))));
+      const d = days[i];
+      const cursor = document.getElementById('cash-chart-cursor');
+      cursor.setAttribute('x1', x(i)); cursor.setAttribute('x2', x(i)); cursor.setAttribute('visibility', 'visible');
+      const hin = document.getElementById('cash-chart-hl-in');
+      const hout = document.getElementById('cash-chart-hl-out');
+      hin.setAttribute('cx', x(i)); hin.setAttribute('cy', y(d.in)); hin.setAttribute('visibility', 'visible');
+      hout.setAttribute('cx', x(i)); hout.setAttribute('cy', y(d.out)); hout.setAttribute('visibility', 'visible');
+
+      const tip = document.getElementById('cash-chart-tooltip');
+      tip.innerHTML = `<div class="font-bold mb-0.5">${fmtDate(d.key)}</div>
+        <div style="color:${C.inc}">Einnahmen (kumuliert): $ ${d.in.toFixed(2)}</div>
+        <div style="color:${C.out}">Ausgaben (kumuliert): $ ${d.out.toFixed(2)}</div>`;
+      tip.classList.remove('hidden');
+      const wrap = document.getElementById('cash-chart-wrap').getBoundingClientRect();
+      const px = rect.left - wrap.left + x(i) * (rect.width / W);
+      const left = px + 12 + tip.offsetWidth > wrap.width ? px - tip.offsetWidth - 12 : px + 12;
+      tip.style.left = `${Math.max(4, left)}px`;
+      tip.style.top = `${Math.max(4, evt.clientY - wrap.top - tip.offsetHeight - 10)}px`;
+    }
+
+    function hideCashChartHover() {
+      ['cash-chart-cursor', 'cash-chart-hl-in', 'cash-chart-hl-out'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('visibility', 'hidden');
+      });
+      const tip = document.getElementById('cash-chart-tooltip');
+      if (tip) tip.classList.add('hidden');
     }
 
     function openNewCashModal() {
@@ -4227,8 +4537,9 @@
       if (affected.length === 0) {
         preview.innerHTML = 'Keine Buchungen betroffen.';
       } else {
-        const sum = affected.reduce((s, c) => s + (c.type === 'in' ? c.amount : -c.amount), 0);
-        preview.innerHTML = `⚠️ ${affected.length} Buchung${affected.length !== 1 ? 'en' : ''} betroffen (Netto: $ ${sum.toFixed(2)})`;
+        const sumIn = affected.filter(c => c.type === 'in').reduce((s, c) => s + (Number(c.amount) || 0), 0);
+        const sumOut = affected.filter(c => c.type !== 'in').reduce((s, c) => s + (Number(c.amount) || 0), 0);
+        preview.innerHTML = `⚠️ ${affected.length} Buchung${affected.length !== 1 ? 'en' : ''} betroffen<br>Gesamteinnahmen −$ ${sumIn.toFixed(2)} · Gesamtausgaben −$ ${sumOut.toFixed(2)}`;
       }
     }
 
@@ -4257,13 +4568,13 @@
       const type = document.getElementById('cash-reset-type').value;
       let msg = '';
       if (type === 'full') {
-        msg = `ALLE ${affected.length} Buchungen werden unwiderruflich gelöscht. Der Kassenstand wird auf $ 0.00 zurückgesetzt.`;
+        msg = `ALLE ${affected.length} Buchungen werden unwiderruflich gelöscht. Gesamteinnahmen und Gesamtausgaben werden auf $ 0.00 zurückgesetzt.`;
       } else if (type === 'before') {
         const cutoff = document.getElementById('cash-reset-date').value;
-        msg = `${affected.length} Buchungen vor dem ${fmtDate(cutoff)} werden unwiderruflich gelöscht.`;
+        msg = `${affected.length} Buchungen (Einnahmen und Ausgaben) vor dem ${fmtDate(cutoff)} werden unwiderruflich gelöscht.`;
       } else {
-        const label = document.getElementById('cash-reset-entry-type').value === 'in' ? 'Einnahmen' : 'Ausgaben';
-        msg = `Alle ${affected.length} ${label} werden unwiderruflich gelöscht.`;
+        const isIn = document.getElementById('cash-reset-entry-type').value === 'in';
+        msg = `Alle ${affected.length} ${isIn ? 'Einnahmen' : 'Ausgaben'} werden unwiderruflich gelöscht. ${isIn ? 'Gesamteinnahmen' : 'Gesamtausgaben'} werden auf $ 0.00 zurückgesetzt.`;
       }
       const confirmed = await westernConfirm(msg + '\n\nDiese Aktion kann NICHT rückgängig gemacht werden!', 'Kasse zurücksetzen — Bestätigung', 'Endgültig löschen', 'Abbrechen');
       if (!confirmed) return;
@@ -4856,181 +5167,6 @@
       westernAlert('Einkauf in den Warenkorb geladen. Bearbeite und buche ihn erneut.');
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // TELEGRAMM-GENERATOR — Kundennachrichten aus Bestellungen
-    // ═══════════════════════════════════════════════════════════════
-
-    let currentTelegramOrderId = null;
-
-    function getDefaultTelegramTemplate() {
-      return {
-        title: 'Braithwaite Manor — Bestellung #{bestellNummer}',
-        body: 'Werte(r) {kundenName},\n\nIhre Bestellung bei Braithwaite Manor wurde bearbeitet und ist abholbereit.\n\n══════════════════════════\nIhre Bestellübersicht:\n══════════════════════════\n\n{artikelListe}\n\n──────────────────────────\nGesamtbetrag: {gesamtPreis}\nLieferart: {lieferInfo}\n──────────────────────────\n\nAnsprechpartner: {ansprechpartner}\nBestelldatum: {bestellDatum}\n\nMit freundlichen Grüßen,\nBraithwaite Manor — Gewerbe & Handel'
-      };
-    }
-
-    function getTelegramTemplate() {
-      if (state.telegramTemplate && state.telegramTemplate.title) return state.telegramTemplate;
-      return getDefaultTelegramTemplate();
-    }
-
-    function replaceTelegramPlaceholders(text, order) {
-      const kundenName = order.customer || 'Kunde';
-      const bestellDatum = fmtDate(order.date || new Date().toISOString());
-      const bestellNummer = order.orderNumber || '—';
-      const mitarbeiterName = me.staffName || me.name || 'Unbekannt';
-      const gesamtPreis = `$ ${Number(order.price || 0).toFixed(2)}`;
-
-      let artikelListe = '';
-      if (order.itemsList && order.itemsList.length > 0) {
-        artikelListe = order.itemsList.map(item => {
-          const name = item.name || item.text || 'Unbekannt';
-          const amount = item.amount || item.qty || 1;
-          const unitPrice = Number(item.unitPrice || 0);
-          const lineTotal = amount * unitPrice;
-          return `  • ${amount}× ${name} á $ ${unitPrice.toFixed(2)} — $ ${lineTotal.toFixed(2)}`;
-        }).join('\n');
-      } else if (order.items) {
-        artikelListe = '  ' + order.items;
-      }
-
-      const lieferart = order.deliveryMode || 'Nicht angegeben';
-      const zeitfenster = order.timeslot || 'Zeitnah nach Absprache';
-      const lieferInfo = `${lieferart} — ${zeitfenster}`;
-      const ansprechpartner = mitarbeiterName;
-
-      return text
-        .replace(/\{kundenName\}/g, kundenName)
-        .replace(/\{bestellDatum\}/g, bestellDatum)
-        .replace(/\{bestellNummer\}/g, bestellNummer)
-        .replace(/\{mitarbeiterName\}/g, mitarbeiterName)
-        .replace(/\{artikelListe\}/g, artikelListe)
-        .replace(/\{gesamtPreis\}/g, gesamtPreis)
-        .replace(/\{lieferInfo\}/g, lieferInfo)
-        .replace(/\{ansprechpartner\}/g, ansprechpartner);
-    }
-
-    function generateTelegramTitle(order) {
-      const tpl = getTelegramTemplate();
-      return replaceTelegramPlaceholders(tpl.title, order);
-    }
-
-    function generateTelegramBody(order) {
-      const tpl = getTelegramTemplate();
-      return replaceTelegramPlaceholders(tpl.body, order);
-    }
-
-    function openTelegramModal(orderId) {
-      const order = state.orders.find(o => o.id === orderId);
-      if (!order) { westernAlert('Bestellung nicht gefunden.'); return; }
-      currentTelegramOrderId = orderId;
-
-      document.getElementById('telegram-order-info').innerText = `Bestellung #${order.orderNumber || '—'} — ${order.customer || 'Kunde'}`;
-      document.getElementById('telegram-title-text').innerText = generateTelegramTitle(order);
-      document.getElementById('telegram-body-text').innerText = generateTelegramBody(order);
-
-      // Template-Felder vorbelegen
-      const tpl = getTelegramTemplate();
-      const tplTitle = document.getElementById('tpl-title');
-      const tplBody = document.getElementById('tpl-body');
-      if (tplTitle) tplTitle.value = tpl.title;
-      if (tplBody) tplBody.value = tpl.body;
-
-      // Gesendet-Info
-      const sentInfo = document.getElementById('telegram-sent-info');
-      const sentBtn = document.getElementById('telegram-mark-sent-btn');
-      if (order.telegramSent) {
-        sentInfo.innerText = `📧 Telegramm gesendet von ${order.telegramSent.by} am ${fmtDate(order.telegramSent.date)}`;
-        if (sentBtn) sentBtn.style.display = 'none';
-      } else {
-        sentInfo.innerText = '';
-        if (sentBtn) sentBtn.style.display = '';
-      }
-
-      // Template-Edit ausblenden
-      const tplEdit = document.getElementById('telegram-template-edit');
-      if (tplEdit) tplEdit.classList.add('hidden');
-
-      openModal('telegram-modal');
-    }
-
-    function toggleTelegramTemplateEdit() {
-      const el = document.getElementById('telegram-template-edit');
-      if (el) el.classList.toggle('hidden');
-    }
-
-    function saveTelegramTemplate() {
-      const title = document.getElementById('tpl-title')?.value?.trim() || getDefaultTelegramTemplate().title;
-      const body = document.getElementById('tpl-body')?.value?.trim() || getDefaultTelegramTemplate().body;
-      state.telegramTemplate = { title, body };
-      saveState();
-
-      // Vorschau aktualisieren
-      if (currentTelegramOrderId) {
-        const order = state.orders.find(o => o.id === currentTelegramOrderId);
-        if (order) {
-          document.getElementById('telegram-title-text').innerText = generateTelegramTitle(order);
-          document.getElementById('telegram-body-text').innerText = generateTelegramBody(order);
-        }
-      }
-      westernAlert('Telegramm-Vorlage gespeichert!');
-    }
-
-    function resetTelegramTemplate() {
-      const def = getDefaultTelegramTemplate();
-      const tplTitle = document.getElementById('tpl-title');
-      const tplBody = document.getElementById('tpl-body');
-      if (tplTitle) tplTitle.value = def.title;
-      if (tplBody) tplBody.value = def.body;
-      state.telegramTemplate = { ...def };
-      saveState();
-      // Vorschau aktualisieren
-      if (currentTelegramOrderId) {
-        const order = state.orders.find(o => o.id === currentTelegramOrderId);
-        if (order) {
-          document.getElementById('telegram-title-text').innerText = generateTelegramTitle(order);
-          document.getElementById('telegram-body-text').innerText = generateTelegramBody(order);
-        }
-      }
-      westernAlert('Vorlage auf Standard zurückgesetzt!');
-    }
-
-    function copyTelegramField(elementId) {
-      const el = document.getElementById(elementId);
-      if (!el) return;
-      const text = el.innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        westernAlert('In die Zwischenablage kopiert!');
-      }).catch(() => {
-        // Fallback
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        westernAlert('In die Zwischenablage kopiert!');
-      });
-    }
-
-    function markTelegramSent() {
-      if (!currentTelegramOrderId) return;
-      const order = state.orders.find(o => o.id === currentTelegramOrderId);
-      if (!order) return;
-      order.telegramSent = {
-        by: me.staffName || me.name || 'Unbekannt',
-        date: new Date().toISOString()
-      };
-      saveState();
-      renderOrders();
-      renderArchiveOrders();
-
-      const sentInfo = document.getElementById('telegram-sent-info');
-      const sentBtn = document.getElementById('telegram-mark-sent-btn');
-      sentInfo.innerText = `📧 Telegramm gesendet von ${order.telegramSent.by} am ${fmtDate(order.telegramSent.date)}`;
-      if (sentBtn) sentBtn.style.display = 'none';
-    }
-
     // Jeder Bereich wird einzeln gezeichnet, damit ein Fehler in einem Bereich nicht die ganze App lahmlegt
     function renderAll() {
       const steps = [
@@ -5111,7 +5247,7 @@
         customers_delete: ['deleteCustomer'],
         customers_edit:   ['saveCustomer'],
         orders_delete:    ['deleteOrder'],
-        orders_edit:      ['commitOrder', 'toggleItemCheckedInClone', 'saveDetailOrderChanges'],
+        orders_edit:      ['commitOrder', 'toggleItemCheckedInClone', 'saveDetailOrderChanges', 'toggleItemClaim', 'toggleTelegramSent'],
         coach:            ['toggleCoach'],
         notes:            ['saveNote', 'deleteCurrentNote', 'addNoteCategory', 'deleteNoteCategory', 'changeNoteCategoryColor', 'renameNoteCategory']
       };
@@ -5121,7 +5257,7 @@
         window[name] = function(...args) {
           if (!can(perm)) {
             westernAlert('Für diese Aktion fehlt dir die Berechtigung.', 'Kein Zugriff');
-            if (name === 'toggleItemCheckedInClone') { try { renderModalViews(); } catch(e) {} }
+            if (name === 'toggleItemCheckedInClone' || name === 'toggleItemClaim' || name === 'toggleTelegramSent') { try { renderModalViews(); } catch(e) {} }
             return;
           }
           return original.apply(this, args);
@@ -5135,6 +5271,8 @@
     switchTab('orders');
     startApp();
     setInterval(refreshFromDatabase, 15000);
+    updateTaxButton();
+    setInterval(() => updateTaxButton(), 60000);
     window.addEventListener('focus', refreshFromDatabase);
     document.addEventListener('visibilitychange', refreshFromDatabase);
   </script>
