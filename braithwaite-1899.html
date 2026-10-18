@@ -328,10 +328,11 @@
   <div class="w-full max-w-6xl parchment-sheet rounded-lg border border-leather-800 flex flex-col min-h-[920px] shadow-2xl mb-8">
     
     <header class="border-b-2 border-leather-800/40 bg-parchment-200/60 px-4 md:px-8 py-5 select-none relative">
-      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <!-- Ab xl (Desktop) 3 Spalten (gleich breit | Titel | gleich breit): der Titel bleibt exakt mittig; schmaler wie bisher als Flex-Reihe/-Spalte -->
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4 xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         
         <!-- Linkes Siegel & Live Status -->
-        <div class="flex flex-col items-start gap-1">
+        <div class="flex flex-col items-start gap-1 xl:justify-self-start">
           <div class="flex items-center gap-2 text-western-brass font-vintage text-sm">
             <span class="text-xl">⚜️</span>
             <span>Gegr. 1899 • Rhodes, Lemoyne</span>
@@ -358,11 +359,11 @@
         </div>
 
         <!-- Rechts: Kutsche Status Button + Steuer-Erinnerung -->
-        <div class="flex flex-col sm:flex-row items-center gap-2">
-          <button id="coach-btn" onclick="toggleCoach()" class="py-3 px-4 rounded-lg font-title text-sm md:text-base tracking-widest uppercase font-bold text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] border-2 flex flex-col items-center justify-center gap-1 min-w-[160px]">
+        <div class="flex flex-col items-stretch gap-2 xl:justify-self-end">
+          <button id="coach-btn" onclick="toggleCoach()" class="py-3 px-3 rounded-lg font-title text-[13px] tracking-wide uppercase font-bold text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] border-2 flex flex-col items-center justify-center gap-1 min-w-[160px] w-full whitespace-nowrap">
             <span id="coach-btn-text">🐴 Kutsche am Hof</span>
           </button>
-          <button id="tax-btn" onclick="showTaxReminder()" title="Erinnerung: Kasse wegen Steuer auf 1000 $ setzen" class="py-3 px-4 rounded-lg font-title text-sm md:text-base tracking-widest uppercase font-bold text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] border-2 flex flex-col items-center justify-center gap-1 min-w-[160px]">
+          <button id="tax-btn" onclick="showTaxReminder()" title="Erinnerung: Kasse wegen Steuer auf 1000 $ setzen" class="py-3 px-3 rounded-lg font-title text-[13px] tracking-wide uppercase font-bold text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] border-2 flex flex-col items-center justify-center gap-1 min-w-[160px] w-full whitespace-nowrap">
             <span id="tax-btn-text">💰 Steuer</span>
           </button>
         </div>
@@ -1334,7 +1335,7 @@
         <div>
           <span class="text-xs uppercase font-title tracking-wider text-western-brass font-bold">📈 Kassenbuch</span>
           <h3 class="font-title text-xl font-bold text-leather-900 leading-tight">Entwicklung: Gesamteinnahmen &amp; Gesamtausgaben</h3>
-          <p class="text-[11px] font-vintage text-leather-800/70">Aufsummiert pro Tag innerhalb des gewählten Zeitraums</p>
+          <p class="text-[11px] font-vintage text-leather-800/70">Kumulierte Summen je Tag (bei langen Zeiträumen je Woche bzw. Abschnitt) – Einnahmen und Ausgaben als Balken nebeneinander</p>
         </div>
         <button onclick="closeModal('cash-chart-modal')" class="text-leather-900 font-bold text-xl hover:text-western-red">✕</button>
       </div>
@@ -1356,8 +1357,8 @@
       <span id="cash-period-chart-label" class="block text-xs font-vintage italic text-leather-800/80">Aktiver Zeitraum: Gesamt (alle Buchungen)</span>
 
       <div class="flex flex-wrap items-center gap-4 text-xs font-title">
-        <span class="inline-flex items-center gap-1.5"><span id="cash-chart-legend-in" class="inline-block w-5 h-1 rounded"></span> Gesamteinnahmen: <strong id="cash-chart-total-in" class="text-western-green">$ 0.00</strong></span>
-        <span class="inline-flex items-center gap-1.5"><span id="cash-chart-legend-out" class="inline-block w-5 h-1 rounded"></span> Gesamtausgaben: <strong id="cash-chart-total-out" class="text-western-red">$ 0.00</strong></span>
+        <span class="inline-flex items-center gap-1.5"><span id="cash-chart-legend-in" class="inline-block w-3 h-3 rounded-sm"></span> Gesamteinnahmen: <strong id="cash-chart-total-in" class="text-western-green">$ 0.00</strong></span>
+        <span class="inline-flex items-center gap-1.5"><span id="cash-chart-legend-out" class="inline-block w-3 h-3 rounded-sm"></span> Gesamtausgaben: <strong id="cash-chart-total-out" class="text-western-red">$ 0.00</strong></span>
       </div>
 
       <div id="cash-chart-wrap" class="relative border border-leather-800/20 bg-parchment-50 rounded p-2">
@@ -1656,6 +1657,7 @@
     let archivePage = 1;
     let cashPage = 1;
     const PAGE_SIZE = 20;
+    const CASH_PAGE_SIZE = 10;   // Historisches Kassenbuch: 10 Buchungen pro Seite
 
     let currentPosCategory = 'alle';
     let currentCart = [];
@@ -2917,12 +2919,7 @@
               </div>
             </div>
 
-            <div class="md:w-3/12 flex items-center justify-between md:justify-end gap-3.5">
-              <div class="text-left md:text-right text-xs">
-                <span class="text-leather-900 font-semibold block">${o.deliveryMode || 'Abholung'}</span>
-                <span class="text-leather-800/70 italic text-[11px] block">${o.timeslot || 'Zeitnah'}</span>
-              </div>
-
+            <div class="md:w-3/12 flex items-center justify-end gap-3.5">
               <div class="text-right">
                 <span class="text-lg font-title font-bold text-western-green block">$ ${Number(o.price).toFixed(2)}</span>
                 <div class="flex flex-wrap items-center justify-start md:justify-end gap-x-1.5 gap-y-0.5 mt-0.5">
@@ -3075,12 +3072,7 @@
               </p>
             </div>
 
-            <div class="md:w-3/12 flex items-center justify-between md:justify-end gap-3.5">
-              <div class="text-left md:text-right text-xs">
-                <span class="text-leather-900 font-semibold block">${o.deliveryMode || 'Abholung'}</span>
-                <span class="text-leather-800/70 italic text-[11px] block">${o.timeslot || 'Zeitnah'}</span>
-              </div>
-
+            <div class="md:w-3/12 flex items-center justify-end gap-3.5">
               <div class="text-right">
                 <span class="text-lg font-title font-bold text-western-green block">$ ${Number(o.price).toFixed(2)}</span>
                 <span class="px-2 py-0.5 text-[11px] font-title uppercase tracking-wider font-bold rounded border ${badgeColor} inline-block mt-0.5 shadow-sm">
@@ -4235,18 +4227,19 @@
       document.querySelectorAll('.cash-period-info').forEach(el => el.innerText = cashPeriodText(cashPeriod.book));
 
       const search = (document.getElementById('cash-search-input') ? document.getElementById('cash-search-input').value.toLowerCase().trim() : "");
-      const reversedCash = [...state.cash].reverse();
+      // Neueste Buchung zuerst: nach Datum, bei gleichem Datum nach id (absteigend)
+      const sortedCash = [...state.cash].sort((a, b) => cashDateKey(b.date).localeCompare(cashDateKey(a.date)) || (Number(b.id) - Number(a.id)));
 
-      const filteredCash = reversedCash.filter(c => {
+      const filteredCash = sortedCash.filter(c => {
         const matchType = (state.currentCashType === 'alle' || c.type === state.currentCashType);
         const matchSearch = !search || (c.desc && c.desc.toLowerCase().includes(search));
         return matchType && matchSearch && inCashRange(c, range);
       });
 
-      const totalPages = Math.ceil(filteredCash.length / PAGE_SIZE) || 1;
+      const totalPages = Math.ceil(filteredCash.length / CASH_PAGE_SIZE) || 1;
       if (cashPage > totalPages) cashPage = totalPages;
-      const startIndex = (cashPage - 1) * PAGE_SIZE;
-      const paginatedCash = filteredCash.slice(startIndex, startIndex + PAGE_SIZE);
+      const startIndex = (cashPage - 1) * CASH_PAGE_SIZE;
+      const paginatedCash = filteredCash.slice(startIndex, startIndex + CASH_PAGE_SIZE);
 
       const tbody = document.getElementById('cash-table-body');
       if(paginatedCash.length === 0) {
@@ -4254,7 +4247,7 @@
       } else {
         tbody.innerHTML = paginatedCash.map(c => `
           <tr class="hover:bg-leather-800/5 transition">
-            <td class="py-2.5 px-3 text-xs text-leather-800/70 font-vintage">${c.date}</td>
+            <td class="py-2.5 px-3 text-xs text-leather-800/70 font-vintage whitespace-nowrap">${fmtDate(c.date)}</td>
             <td class="py-2.5 px-3 text-leather-900 font-vintage text-base font-semibold">${c.desc}</td>
             <td class="py-2.5 px-3 text-xs uppercase font-title font-semibold">${c.type === 'in' ? '<span class="text-western-green">Einnahme</span>' : '<span class="text-western-red">Ausgabe</span>'}</td>
             <td class="py-2.5 px-3 text-right font-bold ${c.type === 'in' ? 'text-western-green' : 'text-western-red'}">
@@ -4280,6 +4273,11 @@
 
       let pagesHtml = '';
       for(let p = 1; p <= totalPages; p++) {
+        // Bei vielen Seiten nur erste, letzte und Seiten um die aktuelle zeigen
+        if (totalPages > 9 && p !== 1 && p !== totalPages && Math.abs(p - cashPage) > 2) {
+          if (p === 2 || p === totalPages - 1) pagesHtml += `<span class="px-1 text-leather-800/60">…</span>`;
+          continue;
+        }
         const isCurrent = p === cashPage;
         pagesHtml += `
           <button onclick="goToCashPage(${p})" class="px-2.5 py-1 rounded text-xs font-title font-bold ${isCurrent ? 'bg-leather-900 text-parchment-100' : 'bg-parchment-200 hover:bg-parchment-300 text-leather-900 border border-leather-800/20'}">
@@ -4371,6 +4369,18 @@
         return;
       }
 
+      // Bei vielen Tagen zusammenfassen: bis 31 Tage je Tag, bis 210 Tage je Woche, sonst höchstens ~30 Gruppen
+      const n = days.length;
+      const groupSize = n <= 31 ? 1 : (n <= 210 ? 7 : Math.ceil(n / 30));
+      const groups = [];
+      for (let i = 0; i < n; i += groupSize) {
+        const last = days[Math.min(n - 1, i + groupSize - 1)];
+        groups.push({ fromKey: days[i].key, toKey: last.key, in: last.in, out: last.out });   // Stand am Ende der Gruppe (kumuliert)
+      }
+      const g = groups.length;
+      const short = k => `${k.slice(8, 10)}.${k.slice(5, 7)}.${k.slice(2, 4)}`;
+      const groupLabel = gr => gr.fromKey === gr.toKey ? fmtDate(gr.fromKey) : `${fmtDate(gr.fromKey)} – ${fmtDate(gr.toKey)}`;
+
       // Maße & Skalen
       const W = 720, H = 320, padL = 64, padR = 16, padT = 14, padB = 36;
       const plotW = W - padL - padR, plotH = H - padT - padB;
@@ -4378,8 +4388,9 @@
       const mag = Math.pow(10, Math.floor(Math.log10(rawMax)));
       const step = [1, 2, 2.5, 5, 10].map(f => f * mag).find(s => rawMax / s <= 5) || mag * 10;
       const yMax = Math.ceil(rawMax / step) * step;
-      const n = days.length;
-      const x = i => padL + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+      const slot = plotW / g;                                  // Breite je Balkengruppe
+      const barW = Math.max(2, Math.min(28, slot * 0.36));      // zwei Balken nebeneinander + Abstand
+      const cx = i => padL + slot * (i + 0.5);                 // Mitte der Gruppe
       const y = v => padT + plotH - (v / yMax) * plotH;
 
       let grid = '';
@@ -4387,71 +4398,62 @@
         grid += `<line x1="${padL}" x2="${W - padR}" y1="${y(v)}" y2="${y(v)}" stroke="${C.grid}" stroke-width="1"/>`;
         grid += `<text x="${padL - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="${C.text}">$ ${v.toLocaleString('de-DE')}</text>`;
       }
-      // X-Achse: bis zu 6 Datumsbeschriftungen
-      const tickCount = Math.min(6, n);
+      // X-Achse: bis zu 6 Beschriftungen (Enddatum der Gruppe)
+      const tickCount = Math.min(6, g);
       let xTicks = '';
       for (let t = 0; t < tickCount; t++) {
-        const i = tickCount === 1 ? 0 : Math.round(t * (n - 1) / (tickCount - 1));
-        const d = days[i].key;
-        xTicks += `<text x="${x(i)}" y="${H - padB + 18}" text-anchor="${t === 0 && n > 1 ? 'start' : (t === tickCount - 1 && n > 1 ? 'end' : 'middle')}" font-size="11" fill="${C.text}">${d.slice(8, 10)}.${d.slice(5, 7)}.${d.slice(2, 4)}</text>`;
+        const i = tickCount === 1 ? 0 : Math.round(t * (g - 1) / (tickCount - 1));
+        xTicks += `<text x="${cx(i)}" y="${H - padB + 18}" text-anchor="middle" font-size="11" fill="${C.text}">${short(groups[i].toKey)}</text>`;
       }
 
-      const line = key => days.map((d, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`).join(' ');
-      const dots = n <= 62
-        ? days.map((d, i) => `<circle cx="${x(i)}" cy="${y(d.in)}" r="2.5" fill="${C.inc}"/><circle cx="${x(i)}" cy="${y(d.out)}" r="2.5" fill="${C.out}"/>`).join('')
-        : '';
+      const base = y(0);
+      const bars = groups.map((gr, i) => {
+        const hIn = base - y(gr.in), hOut = base - y(gr.out);
+        return `<rect x="${(cx(i) - barW - 1).toFixed(1)}" y="${y(gr.in).toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0, hIn).toFixed(1)}" fill="${C.inc}" rx="1.5"/>` +
+               `<rect x="${(cx(i) + 1).toFixed(1)}" y="${y(gr.out).toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0, hOut).toFixed(1)}" fill="${C.out}" rx="1.5"/>`;
+      }).join('');
 
       box.innerHTML = `
-        <svg viewBox="0 0 ${W} ${H}" class="w-full h-auto block" role="img" aria-label="Verlaufskurve Gesamteinnahmen und Gesamtausgaben">
+        <svg viewBox="0 0 ${W} ${H}" class="w-full h-auto block" role="img" aria-label="Balkendiagramm Gesamteinnahmen und Gesamtausgaben">
           ${grid}
-          <line x1="${padL}" x2="${W - padR}" y1="${y(0)}" y2="${y(0)}" stroke="${C.axis}" stroke-width="1.2"/>
+          <rect id="cash-chart-cursor" x="0" y="${padT}" width="${slot}" height="${plotH}" fill="${C.grid}" visibility="hidden"/>
+          ${bars}
+          <line x1="${padL}" x2="${W - padR}" y1="${base}" y2="${base}" stroke="${C.axis}" stroke-width="1.2"/>
           <line x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT + plotH}" stroke="${C.axis}" stroke-width="1.2"/>
           ${xTicks}
-          <text x="${padL + plotW / 2}" y="${H - 2}" text-anchor="middle" font-size="11" fill="${C.text}">Datum</text>
+          <text x="${padL + plotW / 2}" y="${H - 2}" text-anchor="middle" font-size="11" fill="${C.text}">Datum${groupSize > 1 ? ` (je ${groupSize === 7 ? 'Woche' : groupSize + ' Tage'}, Stand am Ende)` : ''}</text>
           <text x="12" y="${padT + plotH / 2}" text-anchor="middle" font-size="11" fill="${C.text}" transform="rotate(-90 12 ${padT + plotH / 2})">Summe ($)</text>
-          <path d="${line('out')}" fill="none" stroke="${C.out}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-          <path d="${line('in')}" fill="none" stroke="${C.inc}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-          ${dots}
-          <line id="cash-chart-cursor" x1="0" x2="0" y1="${padT}" y2="${padT + plotH}" stroke="${C.axis}" stroke-dasharray="3 3" visibility="hidden"/>
-          <circle id="cash-chart-hl-in" r="4.5" fill="${C.inc}" visibility="hidden"/>
-          <circle id="cash-chart-hl-out" r="4.5" fill="${C.out}" visibility="hidden"/>
           <rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="transparent" onmousemove="onCashChartHover(event)" onmouseleave="hideCashChartHover()"/>
         </svg>`;
-      cashChartData = { days, x, y, W, padL, plotW, n, C };
+      cashChartData = { groups, groupLabel, slot, W, padL, g, C };
     }
 
     function onCashChartHover(evt) {
       if (!cashChartData) return;
-      const { days, x, y, W, padL, plotW, n, C } = cashChartData;
+      const { groups, groupLabel, slot, W, padL, g, C } = cashChartData;
       const svg = evt.currentTarget.ownerSVGElement;
       const rect = svg.getBoundingClientRect();
       const svgX = (evt.clientX - rect.left) * (W / rect.width);
-      const i = n === 1 ? 0 : Math.max(0, Math.min(n - 1, Math.round(((svgX - padL) / plotW) * (n - 1))));
-      const d = days[i];
+      const i = Math.max(0, Math.min(g - 1, Math.floor((svgX - padL) / slot)));
+      const gr = groups[i];
       const cursor = document.getElementById('cash-chart-cursor');
-      cursor.setAttribute('x1', x(i)); cursor.setAttribute('x2', x(i)); cursor.setAttribute('visibility', 'visible');
-      const hin = document.getElementById('cash-chart-hl-in');
-      const hout = document.getElementById('cash-chart-hl-out');
-      hin.setAttribute('cx', x(i)); hin.setAttribute('cy', y(d.in)); hin.setAttribute('visibility', 'visible');
-      hout.setAttribute('cx', x(i)); hout.setAttribute('cy', y(d.out)); hout.setAttribute('visibility', 'visible');
+      cursor.setAttribute('x', padL + slot * i); cursor.setAttribute('visibility', 'visible');
 
       const tip = document.getElementById('cash-chart-tooltip');
-      tip.innerHTML = `<div class="font-bold mb-0.5">${fmtDate(d.key)}</div>
-        <div style="color:${C.inc}">Einnahmen (kumuliert): $ ${d.in.toFixed(2)}</div>
-        <div style="color:${C.out}">Ausgaben (kumuliert): $ ${d.out.toFixed(2)}</div>`;
+      tip.innerHTML = `<div class="font-bold mb-0.5">${groupLabel(gr)}</div>
+        <div style="color:${C.inc}">Einnahmen (kumuliert): $ ${gr.in.toFixed(2)}</div>
+        <div style="color:${C.out}">Ausgaben (kumuliert): $ ${gr.out.toFixed(2)}</div>`;
       tip.classList.remove('hidden');
       const wrap = document.getElementById('cash-chart-wrap').getBoundingClientRect();
-      const px = rect.left - wrap.left + x(i) * (rect.width / W);
+      const px = rect.left - wrap.left + (padL + slot * (i + 0.5)) * (rect.width / W);
       const left = px + 12 + tip.offsetWidth > wrap.width ? px - tip.offsetWidth - 12 : px + 12;
       tip.style.left = `${Math.max(4, left)}px`;
       tip.style.top = `${Math.max(4, evt.clientY - wrap.top - tip.offsetHeight - 10)}px`;
     }
 
     function hideCashChartHover() {
-      ['cash-chart-cursor', 'cash-chart-hl-in', 'cash-chart-hl-out'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.setAttribute('visibility', 'hidden');
-      });
+      const cursor = document.getElementById('cash-chart-cursor');
+      if (cursor) cursor.setAttribute('visibility', 'hidden');
       const tip = document.getElementById('cash-chart-tooltip');
       if (tip) tip.classList.add('hidden');
     }
