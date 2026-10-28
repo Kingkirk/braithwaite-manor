@@ -3303,11 +3303,11 @@
         const claimLocked = !!item.claimedBy && item.claimedBy !== myName && !can('orders_delete');
 
         return `
-          <div class="flex flex-col gap-1.5 p-2.5 rounded bg-white border ${item.claimedBy ? 'border-orange-500' : 'border-leather-800/15'} hover:bg-parchment-100 transition shadow-sm">
+          <div class="flex flex-col gap-1.5 p-2.5 rounded border ${item.checked ? 'bg-emerald-50/70 border-emerald-700/30' : 'bg-white ' + (item.claimedBy ? 'border-orange-500' : 'border-leather-800/15')} hover:bg-parchment-100 transition shadow-sm">
             <label class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer">
               <div class="flex items-center gap-3">
                 <input type="checkbox" onchange="toggleItemCheckedInClone(${index}, this.checked)" ${item.checked ? 'checked' : ''} class="w-4 h-4 accent-emerald-800 cursor-pointer rounded">
-                <span class="text-xs font-title font-semibold ${item.checked ? 'line-through text-leather-800/50' : 'text-leather-900'}">
+                <span class="text-xs font-title font-semibold ${item.checked ? 'text-emerald-950' : 'text-leather-900'}">
                   ${item.amount}× ${item.name} <span class="text-[11px] text-leather-800/70 font-vintage font-normal">(${item.tierName || 'Normal'})</span>
                 </span>
               </div>
@@ -3335,12 +3335,12 @@
               <div class="flex-1 bg-leather-800/10 rounded-full h-3 overflow-hidden border border-leather-800/15">
                 <div class="${progressColor} h-full rounded-full transition-all duration-300" style="width:${pct}%"></div>
               </div>
-              <div class="flex items-center gap-1.5 flex-shrink-0">
+              <div class="flex items-center gap-2 flex-shrink-0">
                 <input type="number" min="0" max="${total}" value="${done}"
                   onchange="updateItemProgress(${index}, this.value)"
-                  class="w-14 text-center text-[11px] font-title font-bold border border-leather-800/20 rounded px-1 py-0.5 bg-parchment-50">
-                <span class="text-[11px] font-title text-leather-800/70">/ ${total}</span>
-                <span class="text-[10px] font-vintage ${remaining === 0 ? 'text-western-green font-bold' : 'text-western-red'}">${remaining === 0 ? '✓ fertig' : remaining + ' offen'}</span>
+                  class="w-14 text-center text-xs font-title font-bold border border-leather-800/20 rounded px-1 py-1 bg-parchment-50">
+                <span class="text-xs font-title font-semibold text-leather-800/80 whitespace-nowrap">/ ${total}</span>
+                <span class="px-2.5 py-1 rounded border text-[11px] font-title font-extrabold uppercase tracking-wide whitespace-nowrap ${remaining === 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-700/40' : 'bg-red-100 text-red-900 border-red-700/40'}">${remaining === 0 ? '✓ Fertig' : remaining + ' offen'}</span>
               </div>
             </div>
           </div>
